@@ -1,0 +1,2 @@
+# Script to run an experiment
+# Should start the docker container of the participants, run the generation of synthetic data, run evaluation on synthetic data, archive and send the results to the user, and finally clean up the environment.

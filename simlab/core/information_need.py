@@ -1,0 +1,53 @@
+"""Interface to represent an information need.
+
+The information need comprises two elements: constraints and requests. The 
+constraints specify the slot-value pairs that the item of interest
+must satisfy, while the requests specify the slots for which the user wants
+information.
+"""
+
+from __future__ import annotations
+
+from collections import defaultdict
+from typing import Any, Dict, List
+
+# TODO: Implement a function to generate random information needs given a
+# domain and possible values for each slot or an item collection.
+
+
+class InformationNeed:
+    def __init__(
+        self,
+        constraints: Dict[str, Any],
+        requests: List[str],
+    ) -> None:
+        """Initializes an information need.
+
+        Args:
+            constraints: Slot-value pairs representing constraints on the item
+              of interest.
+            requests: Slots representing the desired information.
+        """
+        self.constraints = constraints
+        self.requested_slots = defaultdict(
+            None, {slot: None for slot in requests}
+        )
+
+    def get_constraint_value(self, slot: str) -> Any:
+        """Returns the value of a constraint slot.
+
+        Args:
+            slot: Slot.
+
+        Returns:
+            Value of the slot.
+        """
+        return self.constraints.get(slot)
+
+    def get_requestable_slots(self) -> List[str]:
+        """Returns the list of requestable slots."""
+        return [
+            slot
+            for slot in self.requested_slots
+            if not self.requested_slots[slot]
+        ]

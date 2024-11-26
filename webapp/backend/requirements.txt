@@ -1,0 +1,9 @@
+Flask-PyMongo==2.3.0
+Flask==3.0.3
+Flask-Cors==5.0.0
+bcrypt
+requests
+PyYAML
+cryptography
+PyJWT
+Flask-Session
