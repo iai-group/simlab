@@ -1,15 +1,9 @@
-version: '3'
-name: simlab-project
+name: simlab-app
+
+include:
+  - ./infrastructure.yaml
 
 services:
-  mongo:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    networks:
-      - auth_net
-
   backend:
     build: ./webapp/backend
     container_name: backend
@@ -23,7 +17,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - auth_net
+      - simlab_net
 
   frontend:
     build: ./webapp/frontend
@@ -33,7 +27,7 @@ services:
     depends_on:
       - backend
     networks:
-      - auth_net
+      - simlab_net
 
   nginx:
     image: nginx:latest
@@ -45,25 +39,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl
     networks:
-      - auth_net
+      - simlab_net
     depends_on:
       - registry
       - backend
       - frontend
-
-  registry:
-    image: registry:2
-    container_name: registry
-    environment:
-      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
-      - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem
-      - REGISTRY_HTTP_TLS_KEY=/certs/privkey.pem
-      - REGISTRY_STORAGE_DELETE_ENABLED=true
-    volumes:
-      - ./nginx/ssl:/certs
-    networks:
-      - auth_net
-
-networks:
-  auth_net:
-    driver: bridge
