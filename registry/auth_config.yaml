@@ -1,0 +1,37 @@
+server:
+  addr: ":5006"
+  certificate: "/certs/cert.pem"
+  key: "/certs/privkey.pem"
+
+mongo_auth:
+  dial_info:
+    addrs: ["mongo"]
+    timeout: "10s"
+    database: "simlab"
+    username: "admin"
+    password_file: "/run/secrets/mongo_root_password"
+    enable_tls: false
+  collection: "users"
+
+acl:
+  - match: {account: "admin"}
+    actions: ["*"]
+    comment: "Admin has full access to everything."
+  - match: {account: "/.+/"}
+    actions: ["pull", "push"]
+    comment: "All authenticated users can pull and push."
+
+acl_mongo:
+  dial_info:
+    addrs: ["mongo"]
+    timeout: "10s"
+    database: "simlab"
+    username: "admin"
+    password_file: "/run/secrets/mongo_root_password"
+    enable_tls: false
+  collection: "acl"
+  cache_ttl: "1m"
+
+token:  
+  issuer: "docker_auth"
+  expiration: 900

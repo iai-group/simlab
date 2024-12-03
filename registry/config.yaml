@@ -1,0 +1,20 @@
+version: 0.1
+log:
+  level: debug
+  fields:
+    service: registry
+http:
+  addr: :5000
+  secret: 8c4353bbcd5e27e47104ef997acfd39c4154da29
+  headers:
+    X-Content-Type-Options: [nosniff]
+auth:
+  token:
+    realm: "http://docker_auth:5001/auth"
+    service: "Docker registry"
+    issuer: "docker_auth"
+    rootcertbundle: "/certs/cert.pem"
+    autoredirect: false
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry

@@ -24,6 +24,7 @@ const LoginForm = () => {
         password: password,
       })
       .then((response) => {
+        console.log(response);
         setUser({ username: username });
         navigate("/");
       })

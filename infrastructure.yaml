@@ -4,25 +4,49 @@ name: infrastructure
 services:
   mongo:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - ./data/mongo:/data/db
     ports:
       - "27017:27017"
     restart: always
     networks:
       - simlab_net
 
+  docker_auth:
+    image: cesanta/docker_auth:latest
+    container_name: docker_auth
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./registry/auth_config.yaml:/config/auth_config.yml:ro
+      - ./nginx/ssl:/certs
+    secrets:
+      - mongo_root_password
+    networks:
+      - simlab_net
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
   registry:
     image: registry:2
     container_name: registry
     environment:
-      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
-      - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem
-      - REGISTRY_HTTP_TLS_KEY=/certs/privkey.pem
       - REGISTRY_STORAGE_DELETE_ENABLED=true
+    ports:
+      - "5000:5000"
     volumes:
       - ./nginx/ssl:/certs
+      - ./registry/config.yaml:/etc/docker/registry/config.yaml:ro
+    depends_on:
+      - docker_auth
     networks:
       - simlab_net
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus
@@ -42,7 +66,7 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - "3001:3000"
+      - "3000:3000"
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -57,3 +81,6 @@ networks:
   simlab_net:
     driver: bridge
   
+secrets:
+  mongo_root_password:
+    file: ./secrets/mongo_root_password.txt

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const ResetPasswordForm = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
@@ -16,8 +16,8 @@ const ResetPasswordForm = () => {
   const handleResetPassword = () => {
     axios
       .post(`${baseURL}/reset-password`, {
-        email: email,
-        new_password: newPassword,
+        username: username,
+        password: newPassword,
       })
       .then(
         (response) => {
@@ -36,10 +36,10 @@ const ResetPasswordForm = () => {
         <Form.Group className="mb-3" controlId="formUsername">
           <Form.Label>Username</Form.Label>
           <Form.Control
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="test"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="formNewPassword">

@@ -131,3 +131,4 @@ dmypy.json
 
 dialoguekit/
 nginx/ssl/
+data/mongo/*

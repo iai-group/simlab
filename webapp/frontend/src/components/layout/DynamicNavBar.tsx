@@ -22,8 +22,8 @@ const DynamicNavBar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    APIAuth.post("/logout")
-      .then((response) => {
+    APIAuth.post("/logout", {}, { withCredentials: true })
+      .then(() => {
         setUser(null);
         navigate("/");
       })
