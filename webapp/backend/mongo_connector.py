@@ -13,11 +13,27 @@ DEFAULT_DB = os.environ.get("MONGO_DB", "simlab")
 
 
 class MongoDBConnector:
-    def __init__(self) -> None:
-        """Initializes the MongoDB connector."""
+    def __init__(
+        self, uri: str = MONGO_URI, default_db: str = DEFAULT_DB
+    ) -> None:
+        """Initializes the MongoDB connector.
+
+        Args:
+            uri: MongoDB URI. Defaults to MONGO_URI.
+            default_db: Default database name. Defaults to DEFAULT_DB.
+        """
         super().__init__()
-        self.uri = MONGO_URI
+        self.uri = uri
+        self.default_db = default_db
         self.client = self._connect()
+
+    def set_default_db(self, default_db: str) -> None:
+        """Sets the default database.
+
+        Args:
+            default_db: Default database name.
+        """
+        self.default_db = default_db
 
     def _connect(self) -> MongoClient:
         """Connects to the MongoDB database.
@@ -31,13 +47,15 @@ class MongoDBConnector:
         """Closes the connection to the MongoDB database."""
         self.client.close()
 
-    def get_database(self, database_name: str = DEFAULT_DB) -> Database:
+    def get_database(self, database_name: str = None) -> Database:
         """Gets a specific database.
 
         Args:
-            database_name: Database name. Defaults to DEFAULT_DB.
+            database_name: Database name. Defaults to None.
 
         Returns:
             Database.
         """
+        if not database_name:
+            return self.client.get_database(self.default_db)
         return self.client.get_database(database_name)

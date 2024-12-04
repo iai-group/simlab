@@ -32,8 +32,12 @@ def load_user(user_id: str) -> User:
     return User.from_mongo_document(user_data)
 
 
-def create_app() -> Flask:
-    """Creates a Flask app."""
+def create_app(testing: bool = False) -> Flask:
+    """Creates a Flask app.
+
+    Args:
+        testing: Whether the app is for testing. Defaults to False.
+    """
     app = Flask(__name__)
     app.secret_key = "hUoOv1vgi0pQVgxETY4/K2f7lXL90gtJunFXzwj/g0w="
 
@@ -52,6 +56,7 @@ def create_app() -> Flask:
     )
 
     login_manager.init_app(app)
+
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = (
@@ -62,6 +67,9 @@ def create_app() -> Flask:
     app.config["REMEMBER_COOKIE_SAMESITE"] = (
         "None"  # Allow cross-site remember cookies
     )
+
+    if testing:
+        mongo_connector.set_default_db("simlab_test")
 
     # Register blueprints
     from auth import auth as auth_blueprint

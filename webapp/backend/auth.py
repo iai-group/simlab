@@ -18,6 +18,9 @@ def login() -> Response:
     username = data.get("username")
     password = data.get("password")
 
+    if not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
+
     database = mongo_connector.get_database()
 
     user = database.users.find_one({"username": username})
@@ -58,6 +61,9 @@ def register() -> Response:
     username = data.get("username")
     password = data.get("password")
 
+    if not email or not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
+
     database = mongo_connector.get_database()
 
     # Check if user already exists
@@ -84,6 +90,9 @@ def reset_password() -> Response:
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
 
     # Check if user exists
     database = mongo_connector.get_database()
