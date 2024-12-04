@@ -53,17 +53,6 @@ jobs:
     if: always()
     timeout-minutes: 20
 
-    services:
-      mongodb:
-        image: mongo:latest
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'" 
-          --health-interval 10s 
-          --health-timeout 5s 
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v3
       - name: Setup python
@@ -79,9 +68,10 @@ jobs:
           pip install -r webapp/backend/requirements.txt
           pip install pytest-github-actions-annotate-failures
 
-      - name: Wait for MongoDB
-        run: |
-          while ! nc -z localhost 27017; do sleep 1; done
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: "8.0"
 
       - name: PyTest with code coverage
         continue-on-error: true
