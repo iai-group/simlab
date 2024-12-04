@@ -22,6 +22,7 @@ runs:
         cache: "pip"
 
     - name: Install Dependencies
+      shell: bash
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
