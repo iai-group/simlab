@@ -76,6 +76,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -r webapp/backend/requirements.txt
           pip install pytest-github-actions-annotate-failures
 
       - name: Wait for MongoDB
