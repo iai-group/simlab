@@ -1,10 +1,11 @@
 """Authentication module."""
 
 import bcrypt
-from app import mongo_connector
 from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required, login_user, logout_user
-from user import User
+
+from webapp.backend.app import mongo_connector
+from webapp.backend.user import User
 
 auth = Blueprint("authentication", __name__)
 

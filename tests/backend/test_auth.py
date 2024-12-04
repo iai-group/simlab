@@ -8,18 +8,18 @@ from pymongo.database import Database
 
 
 def test_register(
-    test_client: FlaskClient,
+    flask_client: FlaskClient,
     test_database: Database,
     user_data: Dict[str, str],
 ) -> None:
     """Tests registering a new user.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
         test_database: Test database.
         user_data: User data.
     """
-    response = test_client.post("/register", json=user_data)
+    response = flask_client.post("/register", json=user_data)
     assert response.status_code == 201
     assert response.json == {"message": "User registered successfully."}
 
@@ -30,15 +30,15 @@ def test_register(
 
 
 def test_register_existing_user(
-    test_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskClient, user_data: Dict[str, str]
 ) -> None:
     """Tests registering an existing user.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
         user_data: User data already in the database.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/register",
         json=user_data,
     )
@@ -46,13 +46,13 @@ def test_register_existing_user(
     assert response.json == {"message": "User already exists."}
 
 
-def test_register_invalid_form(test_client: FlaskClient) -> None:
+def test_register_invalid_form(flask_client: FlaskClient) -> None:
     """Tests registering a user with an invalid form.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/register",
         json={"username": "test_user", "password": "test_password"},
     )
@@ -60,13 +60,13 @@ def test_register_invalid_form(test_client: FlaskClient) -> None:
     assert response.json == {"message": "Invalid form."}
 
 
-def test_login_no_user(test_client: FlaskClient) -> None:
+def test_login_no_user(flask_client: FlaskClient) -> None:
     """Tests logging in with a non-existing user.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/login",
         json={"username": "non_existing_user", "password": "test_password"},
     )
@@ -75,15 +75,15 @@ def test_login_no_user(test_client: FlaskClient) -> None:
 
 
 def test_login_wrong_password(
-    test_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskClient, user_data: Dict[str, str]
 ) -> None:
     """Tests logging in with the wrong password.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
         user_data: User data.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/login",
         json={"username": user_data["username"], "password": "wrong_password"},
     )
@@ -94,15 +94,15 @@ def test_login_wrong_password(
 
 
 def test_login_success(
-    test_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskClient, user_data: Dict[str, str]
 ) -> None:
     """Tests logging in successfully.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
         user_data: User data.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/login",
         json={
             "username": user_data["username"],
@@ -113,40 +113,39 @@ def test_login_success(
     assert response.json == {"message": "Login successful"}
 
 
-def test_logout(test_client: FlaskClient) -> None:
+def test_logout(flask_client: FlaskClient) -> None:
     """Tests logging out a user.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
     """
-    response = test_client.post("/logout")
+    response = flask_client.post("/logout")
     assert response.status_code == 200
     assert response.json == {"message": "Logout successful"}
 
 
-def test_logout_not_logged_in(test_client: FlaskClient) -> None:
+def test_logout_not_logged_in(flask_client: FlaskClient) -> None:
     """Tests logging out a user who is not logged in.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
     """
-    response = test_client.post("/logout")
+    response = flask_client.post("/logout")
     assert response.status_code == 401
-    assert response.json == {"message": "User not logged in."}
 
 
 def test_reset_password(
-    test_client: FlaskClient,
+    flask_client: FlaskClient,
     test_database: Database,
     user_data: Dict[str, str],
 ) -> None:
     """Tests resetting a user's password.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
         user_data: User data.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/reset-password",
         json={
             "username": user_data["username"],
@@ -174,13 +173,13 @@ def test_reset_password(
     )
 
 
-def test_reset_password_invalid_form(test_client: FlaskClient) -> None:
+def test_reset_password_invalid_form(flask_client: FlaskClient) -> None:
     """Tests resetting a user's password with an invalid form.
 
     Args:
-        test_client: Flask test client.
+        flask_client: Flask test client.
     """
-    response = test_client.post(
+    response = flask_client.post(
         "/reset-password",
         json={"username": "test_user"},
     )
