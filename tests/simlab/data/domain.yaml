@@ -1,0 +1,17 @@
+name: movies_testing
+
+slot_names:
+  title:
+  year:
+  rating:
+  genre:
+
+requestable_slots:
+  - year
+  - rating
+  - genre
+  - title
+
+informable_slots:
+  - year
+  - genre
