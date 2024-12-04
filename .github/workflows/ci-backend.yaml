@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements/requirements.txt
+          pip install -r requirements.txt
 
       - name: Run black
         shell: bash
@@ -75,7 +75,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements/requirements.txt
+          pip install -r requirements.txt
           pip install pytest-github-actions-annotate-failures
 
       - name: Wait for MongoDB
