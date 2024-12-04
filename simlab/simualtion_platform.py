@@ -58,6 +58,7 @@ class SimulationPlatform(Platform):
             return self._agent_class(**self._agent_config)
         except AttributeError as e:
             logging.error(f"Error while creating agent: {e}")
+        return None
 
     def get_new_user(self, config: Dict[str, Any]) -> User:
         """Returns a new instance of the user.
@@ -72,6 +73,7 @@ class SimulationPlatform(Platform):
             return self._user_class(**config)
         except AttributeError as e:
             logging.error(f"Error while creating user: {e}")
+        return None
 
     def connect(self, user_id: str) -> None:
         """Connects a user to an agent.

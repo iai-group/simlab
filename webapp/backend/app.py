@@ -5,8 +5,8 @@ from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
-from webapp.backend.mongo_connector import MongoDBConnector
-from webapp.backend.user import User
+from webapp.backend.db.mongo_connector import MongoDBConnector
+from webapp.backend.db.user import User
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
@@ -73,7 +73,7 @@ def create_app(testing: bool = False) -> Flask:
         mongo_connector.set_default_db("simlab_test")
 
     # Register blueprints
-    from webapp.backend.auth import auth as auth_blueprint
+    from webapp.backend.routes.auth import auth as auth_blueprint
 
     app.register_blueprint(auth_blueprint)
 

@@ -1,7 +1,8 @@
 """Simulation domain knowledge.
 
-This domain knowledge allows the definition of requestable and informable slots.
-If not specified, all the slots are considered requestable and informable.
+This domain knowledge allows the definition of requestable and
+informable slots. If not specified, all the slots are considered
+requestable and informable.
 """
 
 # Taken from UserSimCRS

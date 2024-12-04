@@ -1,9 +1,9 @@
 """Interface to represent an information need.
 
-The information need comprises two elements: constraints and requests. The 
-constraints specify the slot-value pairs that the item of interest
-must satisfy, while the requests specify the slots for which the user wants
-information.
+The information need comprises two elements: constraints and requests.
+The constraints specify the slot-value pairs that the item of interest
+must satisfy, while the requests specify the slots for which the user
+wants information.
 """
 
 from __future__ import annotations

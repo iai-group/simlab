@@ -143,6 +143,7 @@ def test_reset_password(
 
     Args:
         flask_client: Flask test client.
+        test_database: Test database.
         user_data: User data.
     """
     response = flask_client.post(

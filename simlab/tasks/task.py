@@ -4,8 +4,9 @@ from typing import Dict, List, Optional
 
 from core.information_need import InformationNeed
 from core.simulation_domain import SimulationDomain
-from dialoguekit.core.dialogue import Dialogue
 from metric.metric import Metric
+
+from dialoguekit.core.dialogue import Dialogue
 
 
 class Task:
@@ -42,9 +43,9 @@ class Task:
             return self._retrieve_information_needs(batch_id)
 
         # Generate new batch of information needs
-        information_needs = []
+        information_needs: List[InformationNeed] = []
         # TODO: Implement a function to generate random information needs
-        new_batch_id = None
+        # new_batch_id = None
         # Save new batch of information needs to MongoDB
 
         return information_needs
@@ -64,7 +65,7 @@ class Task:
             List of information needs.
         """
         # Retrieve information needs from MongoDB
-        information_needs = []
+        information_needs: List[InformationNeed] = []
         return information_needs
 
     def evaluation(self, dialogues: List[Dialogue]) -> Dict[str, List[float]]:
