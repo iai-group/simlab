@@ -1,5 +1,12 @@
 # SimLab
 
+![Python version](https://img.shields.io/badge/python-3.9-blue)
+
+**Code coverage**
+
+![backend](https://img.shields.io/)
+![simlab](https://img.shields.io)
+
 This repository contains the code for the SimLab platform. SimLab is a cloud-based platform for benchmarking user simulators and conversational recommender systems. The platform is designed to allow researchers/contributors to easily evaluate their systems (i.e., simulator or conversational recommender) on different tasks.
 
 ## Envisioned Features

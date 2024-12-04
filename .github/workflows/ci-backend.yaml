@@ -17,35 +17,11 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Run Pre-commit Checks
+        uses: ./.github/actions/pre_commit
         with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
-
-      - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run black
-        shell: bash
-        run: pre-commit run black --files webapp/backend/* tests/backend/*
-
-      - name: Run flake8
-        shell: bash
-        run: pre-commit run flake8 --files webapp/backend/* tests/backend/*
-
-      - name: Run docformatter
-        shell: bash
-        run: pre-commit run docformatter --files webapp/backend/* tests/backend/*
-
-      - name: Run mypy
-        shell: bash
-        run: pre-commit run mypy --files webapp/backend/* tests/backend/*
+          code_dir: "webapp/backend"
+          test_dir: "tests/backend"
 
   build-and-test:
     name: "Build and Test Python 3.9"
@@ -54,50 +30,16 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
-
-      - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r webapp/backend/requirements.txt
-          pip install pytest-github-actions-annotate-failures
-
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.11.0
         with:
-          mongodb-version: "8.0"
+          mongodb-version: "6.0"
 
-      - name: PyTest with code coverage
-        continue-on-error: true
-        run: |
-          pytest --junitxml pytest.xml --cov=webapp/backend/ --cov-report=term-missing --cov-report=xml --cov-branch tests/backend/ | tee pytest-coverage.txt
-
-      - name: Upload Coverage Results txt
-        if: always()
-        uses: actions/upload-artifact@v3
+      - name: Build and Test Python Code
+        uses: ./.github/actions/build_test
         with:
-          name: coverage-results-txt
-          path: ./pytest-coverage.txt
-
-      - name: Upload Coverage Results xml
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-results-xml
-          path: ./coverage.xml
-
-      - name: Upload Unit Test Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: unit-test-py39
-          path: ./pytest.xml
+          code_dir: "webapp/backend"
+          test_dir: "tests/backend"
 
   publish-test-results:
     name: "Publish Unit Tests Results"

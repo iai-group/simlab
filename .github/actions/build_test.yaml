@@ -1,0 +1,54 @@
+name: "Build and Test Python Code"
+description: "Build and test Python code."
+
+inputs:
+  code_dir:
+    description: "The directory containing the Python code."
+    required: true
+  test_dir:
+    description: "The directory containing the Python tests."
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+        cache: "pip"
+
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r ${{ inputs.code_dir }}/requirements.txt
+        pip install pytest-github-actions-annotate-failures
+
+    - name: PyTest with code coverage
+      continue-on-error: true
+      run: |
+        pytest --junitxml pytest.xml --cov=${{ inputs.code_dir }} --cov-report=term-missing --cov-report=xml --cov-branch ${{ inputs.test_dir }} | tee pytest-coverage.txt
+
+    - name: Upload Coverage Results txt
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-results-txt
+        path: ./pytest-coverage.txt
+
+    - name: Upload Coverage Results xml
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-results-xml
+        path: ./coverage.xml
+
+    - name: Upload Unit Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-test-py39
+        path: ./pytest.xml
+  

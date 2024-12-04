@@ -1,0 +1,43 @@
+name: "Pre-commit"
+description: "Run pre-commit checks."
+
+inputs:
+  code_dir:
+    description: "The directory containing the Python code."
+    required: true
+  test_dir:
+    description: "The directory containing the Python tests."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+        cache: "pip"
+
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run black
+      shell: bash
+      run: pre-commit run black --files ${{ inputs.code_dir }}/* ${{ inputs.test_dir }}/*
+
+    - name: Run flake8
+      shell: bash
+      run: pre-commit run flake8 --files ${{ inputs.code_dir }}/* ${{ inputs.test_dir }}/*
+
+    - name: Run docformatter
+      shell: bash
+      run: pre-commit run docformatter --files ${{ inputs.code_dir }}/* ${{ inputs.test_dir }}/*
+
+    - name: Run mypy
+      shell: bash
+      run: pre-commit run mypy --files ${{ inputs.code_dir }}/* ${{ inputs.test_dir }}/*

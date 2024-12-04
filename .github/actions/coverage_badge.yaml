@@ -1,0 +1,75 @@
+name: "Coverage Badge"
+description: "Create coverage badge with shield.io and update README.md."
+
+inputs:
+  coverage_file:
+    description: "File with pytest coverage results."
+    required: true
+    default: "coverage-results-txt/pytest-coverage.txt"
+  badge_title:
+    description: "Title for the coverage badge."
+    required: true
+    default: "Coverage"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Read Coverage and Generate Badge
+      shell: bash
+      env:
+        COVERAGE_FILE: ${{ inputs.coverage_file }}
+        BADGE_TITLE: ${{ inputs.badge_title }}
+      run: |
+        # Ensure the file exists
+        if [[ ! -f "artifacts/$COVERAGE_FILE" ]]; then
+          echo "Coverage file not found at artifacts/$COVERAGE_FILE"
+          exit 1
+        fi
+        
+        # Extract coverage percentage
+        COVERAGE=$(grep TOTAL "artifacts/$COVERAGE_FILE" | awk '{print $4}' | sed 's/%//')
+        if [[ -z "$COVERAGE" ]]; then
+          echo "Failed to extract coverage percentage"
+          exit 1
+        fi
+
+        # Determine badge color based on coverage
+        if [ "$COVERAGE" -ge 90 ]; then
+          COLOR="brightgreen"
+        elif [ "$COVERAGE" -ge 80 ]; then
+          COLOR="green"
+        elif [ "$COVERAGE" -ge 70 ]; then
+          COLOR="yellowgreen"
+        elif [ "$COVERAGE" -ge 60 ]; then
+          COLOR="yellow"
+        elif [ "$COVERAGE" -ge 50 ]; then
+          COLOR="orange"
+        else
+          COLOR="red"
+        fi
+
+        # Generate badge URL
+        BADGE_URL="https://img.shields.io/badge/$BADGE_TITLE-$COVERAGE%25-$COLOR"
+
+        # Update README.md
+        if grep -q "!\[$BADGE_TITLE\](https://img.shields.io)" README.md; then
+          # Replace existing badge
+          sed -i "s|!\[$BADGE_TITLE\](https://img.shields.io.*)|![${BADGE_TITLE}](${BADGE_URL})|" README.md
+        else
+          # Add new badge at the top
+          echo "![${BADGE_TITLE}](${BADGE_URL})" | cat - README.md > temp && mv temp README.md
+        fi
+
+    - name: Commit Updated README.md
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git add README.md
+        git commit -m "Update coverage badge in README"
+        git push
