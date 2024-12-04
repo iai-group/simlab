@@ -1,4 +1,4 @@
-"""Authentication module."""
+"""Authentication routes."""
 
 import bcrypt
 from flask import Blueprint, Response, jsonify, request

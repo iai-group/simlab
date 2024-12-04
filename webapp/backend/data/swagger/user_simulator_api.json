@@ -1,0 +1,229 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Template User Simulator API",
+        "description": "API facilitating interaction with a user simulator",
+        "version": "1.0.0"
+    },
+    "servers": [],
+    "paths": {
+        "/receive_utterance": {
+            "post": {
+                "summary": "Receive an utterance from a CRS agent",
+                "description": "Receive an utterance from a CRS agent and return the user's response",
+                "requestBody": {
+                    "required": true,
+                    "description": "Body of the request includes the context, the agent ID, and the user's message",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "context": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "agent_id": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "context": [
+                                    "Hello, how can I help you today?",
+                                    "I am looking an action movie",
+                                    "Do you a favorite actor?",
+                                    "I like Tom Cruise"
+                                ],
+                                "agent_id": "CRS1",
+                                "message": "I suggest you watch Top Gun"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Object containing the user's response and optionally dialogue acts, annotations, and metadata",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "required": true
+                                        },
+                                        "dialogue_acts": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DialogueAct"
+                                            }
+                                        },
+                                        "annotations": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Annotation"
+                                            }
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "AnyValue": {}
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "message": "I have seen Top Gun before",
+                                    "dialogue_acts": [],
+                                    "annotations": [],
+                                    "metadata": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/configure": {
+            "post": {
+                "summary": "Configure the user simulator",
+                "description": "Configure the user simulator with the desired parameters",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "parameters": {
+                                        "type": "object",
+                                        "properties": {
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "AnyValue": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "parameters": {
+                                    "key": "value"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Acknowledgement of successful configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "required": true
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "message": "User simulator configured successfully"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error in configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "required": true
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "message": "Error in configuration"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "required": true
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "message": "Internal server error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "DialogueAct": {
+                "type": "object",
+                "properties": {
+                    "intent": {
+                        "type": "string"
+                    },
+                    "annotations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "slot": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Annotation": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "AnyValue": {}
+                    }
+                }
+            }
+        }
+    }
+}
