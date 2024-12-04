@@ -12,6 +12,11 @@ services:
       - ./data/mongo:/data/db
     ports:
       - "27017:27017"
+    healthcheck:
+      test: "echo 'db.runCommand(\"ping\").ok' | mongo --quiet mongodb://admin:admin@localhost:27017"
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
     networks:
       - simlab_net

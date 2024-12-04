@@ -8,7 +8,6 @@ services:
     build: ./webapp/backend
     container_name: backend
     environment:
-      - FLASK_APP=app.py
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5005
       - MONGO_URI=mongodb://admin:admin@mongo:27017
