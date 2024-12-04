@@ -4,8 +4,9 @@ from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
-from mongo_connector import MongoDBConnector
-from user import User
+
+from webapp.backend.mongo_connector import MongoDBConnector
+from webapp.backend.user import User
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
@@ -32,8 +33,12 @@ def load_user(user_id: str) -> User:
     return User.from_mongo_document(user_data)
 
 
-def create_app() -> Flask:
-    """Creates a Flask app."""
+def create_app(testing: bool = False) -> Flask:
+    """Creates a Flask app.
+
+    Args:
+        testing: Whether the app is for testing. Defaults to False.
+    """
     app = Flask(__name__)
     app.secret_key = "hUoOv1vgi0pQVgxETY4/K2f7lXL90gtJunFXzwj/g0w="
 
@@ -52,19 +57,23 @@ def create_app() -> Flask:
     )
 
     login_manager.init_app(app)
+
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = (
-        "None"  # Allow cross-site cookies (needed for cross-origin requests)
-    )
+    app.config[
+        "SESSION_COOKIE_SAMESITE"
+    ] = "None"  # Allow cross-site cookies (needed for cross-origin requests)
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SECURE"] = True
-    app.config["REMEMBER_COOKIE_SAMESITE"] = (
-        "None"  # Allow cross-site remember cookies
-    )
+    app.config[
+        "REMEMBER_COOKIE_SAMESITE"
+    ] = "None"  # Allow cross-site remember cookies
+
+    if testing:
+        mongo_connector.set_default_db("simlab_test")
 
     # Register blueprints
-    from auth import auth as auth_blueprint
+    from webapp.backend.auth import auth as auth_blueprint
 
     app.register_blueprint(auth_blueprint)
 

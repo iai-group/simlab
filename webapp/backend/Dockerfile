@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /webapp/backend
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
@@ -8,5 +8,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 EXPOSE 5005
+
+ENV FLASK_APP=webapp.backend.app
+
+WORKDIR /
 
 CMD ["flask", "run", "--host", "0.0.0.0", "--port", "5005", "--cert", "adhoc", "--debug"]  

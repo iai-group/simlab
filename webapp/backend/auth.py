@@ -1,10 +1,11 @@
 """Authentication module."""
 
 import bcrypt
-from app import mongo_connector
 from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required, login_user, logout_user
-from user import User
+
+from webapp.backend.app import mongo_connector
+from webapp.backend.user import User
 
 auth = Blueprint("authentication", __name__)
 
@@ -17,6 +18,9 @@ def login() -> Response:
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
 
     database = mongo_connector.get_database()
 
@@ -58,6 +62,9 @@ def register() -> Response:
     username = data.get("username")
     password = data.get("password")
 
+    if not email or not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
+
     database = mongo_connector.get_database()
 
     # Check if user already exists
@@ -84,6 +91,9 @@ def reset_password() -> Response:
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"message": "Invalid form."}), 400
 
     # Check if user exists
     database = mongo_connector.get_database()

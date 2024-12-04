@@ -1,0 +1,130 @@
+name: "CI Webapp Backend"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - "webapp/backend/**"
+      - "tests/backend/**"
+
+jobs:
+  pre-commit:
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run black
+        shell: bash
+        run: pre-commit run black --files webapp/backend/* tests/backend/*
+
+      - name: Run flake8
+        shell: bash
+        run: pre-commit run flake8 --files webapp/backend/* tests/backend/*
+
+      - name: Run docformatter
+        shell: bash
+        run: pre-commit run docformatter --files webapp/backend/* tests/backend/*
+
+      - name: Run mypy
+        shell: bash
+        run: pre-commit run mypy --files webapp/backend/* tests/backend/*
+
+  build-and-test:
+    name: "Build and Test Python 3.9"
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r webapp/backend/requirements.txt
+          pip install pytest-github-actions-annotate-failures
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: "8.0"
+
+      - name: PyTest with code coverage
+        continue-on-error: true
+        run: |
+          pytest --junitxml pytest.xml --cov=webapp/backend/ --cov-report=term-missing --cov-report=xml --cov-branch tests/backend/ | tee pytest-coverage.txt
+
+      - name: Upload Coverage Results txt
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-results-txt
+          path: ./pytest-coverage.txt
+
+      - name: Upload Coverage Results xml
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-results-xml
+          path: ./coverage.xml
+
+      - name: Upload Unit Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-py39
+          path: ./pytest.xml
+
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 20
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/unit-test-py39/*.xml
+
+      - name: Publish Coverage Results
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          default-branch: main
+          pytest-coverage-path: artifacts/coverage-results-txt/pytest-coverage.txt
+          title: Backend Coverage Report
+          badge-title: Coverage
+          hide-badge: false
+          hide-report: false
+          create-new-comment: false
+          hide-comment: false

@@ -49,9 +49,7 @@ class User(UserMixin):
         Returns:
             User.
         """
-        if not all(
-            field in document for field in ["_id", "username", "email"]
-        ):
+        if not all(field in document for field in ["_id", "username", "email"]):
             raise ValueError(
                 "Invalid document, the fields: _id, username, email are "
                 "required."
