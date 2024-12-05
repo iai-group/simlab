@@ -79,66 +79,6 @@ def test_task_not_found(flask_client: FlaskClient) -> None:
     assert response.status_code == 400
 
 
-def test_agents(flask_client: FlaskClient) -> None:
-    """Tests the agents route.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/agents")
-    assert response.status_code == 501
-
-
-def test_agent(flask_client: FlaskClient) -> None:
-    """Tests the agent route.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/agents/agent1")
-    assert response.status_code == 501
-
-
-def test_agent_not_found(flask_client: FlaskClient) -> None:
-    """Tests the agent route when the agent is not found.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/agents/unknown")
-    assert response.status_code == 501
-
-
-def test_simulators(flask_client: FlaskClient) -> None:
-    """Tests the simulators route.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/simulators")
-    assert response.status_code == 501
-
-
-def test_simulator(flask_client: FlaskClient) -> None:
-    """Tests the simulator route.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/simulators/simulator1")
-    assert response.status_code == 501
-
-
-def test_simulator_not_found(flask_client: FlaskClient) -> None:
-    """Tests the simulator route when the simulator is not found.
-
-    Args:
-        flask_client: A Flask test client.
-    """
-    response = flask_client.get("/simulators/unknown")
-    assert response.status_code == 501
-
-
 def test_metrics(flask_client: FlaskClient) -> None:
     """Tests the metrics route.
 
@@ -176,4 +116,92 @@ def test_metric_not_found(flask_client: FlaskClient) -> None:
         flask_client: A Flask test client.
     """
     response = flask_client.get("/metrics/unknown")
+    assert response.status_code == 400
+
+
+def test_agents(flask_client: FlaskClient) -> None:
+    """Tests the agents route.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/agents")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) > 0
+    assert all(
+        key in ["id", "tags", "labels"]
+        for agent in data
+        for key in agent.keys()
+    )
+
+
+def test_agent(flask_client: FlaskClient) -> None:
+    """Tests the agent route.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/agents/agent1")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data.get("id") == "agent1"
+    assert data.get("tags") == ["crs"]
+    assert data.get("labels") == {
+        "type": "agent",
+        "agent_id": "agent1",
+    }
+
+
+def test_agent_not_found(flask_client: FlaskClient) -> None:
+    """Tests the agent route when the agent is not found.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/agents/unknown")
+    assert response.status_code == 400
+
+
+def test_simulators(flask_client: FlaskClient) -> None:
+    """Tests the simulators route.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/simulators")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) > 0
+    assert all(
+        key in ["id", "tags", "labels"]
+        for simulator in data
+        for key in simulator.keys()
+    )
+
+
+def test_simulator(flask_client: FlaskClient) -> None:
+    """Tests the simulator route.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/simulators/simulator1")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data.get("id") == "simulator1"
+    assert data.get("tags") == ["us"]
+    assert data.get("labels") == {
+        "type": "simulator",
+        "simulator_id": "simulator1",
+    }
+
+
+def test_simulator_not_found(flask_client: FlaskClient) -> None:
+    """Tests the simulator route when the simulator is not found.
+
+    Args:
+        flask_client: A Flask test client.
+    """
+    response = flask_client.get("/simulators/unknown")
     assert response.status_code == 400

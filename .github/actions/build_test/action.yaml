@@ -27,11 +27,27 @@ runs:
         pip install -r ${{ inputs.code_dir }}/requirements.txt
         pip install pytest-github-actions-annotate-failures
 
+    - name: Start Docker Registry
+      shell: bash
+      run: |
+        docker run -d -p 5000:5000 --name registry registry:2
+
+    - name: Wait for Docker Registry
+      shell: bash
+      run: |
+        while ! curl -s http://localhost:5000/v2/; do sleep 1; done
+
     - name: PyTest with code coverage
       shell: bash
       continue-on-error: true
       run: |
         pytest --junitxml pytest.xml --cov=${{ inputs.code_dir }} --cov-report=term-missing --cov-report=xml --cov-branch ${{ inputs.test_dir }} | tee pytest-coverage.txt
+
+    - name: Stop and Remove Docker Registry
+      shell: bash
+      run: |
+        docker stop registry || true
+        docker rm registry || true
 
     - name: Upload Coverage Results txt
       if: always()

@@ -5,11 +5,13 @@ from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
-from webapp.backend.db.mongo_connector import MongoDBConnector
-from webapp.backend.db.user import User
+from connectors.docker.docker_registry_connector import DockerRegistryConnector
+from connectors.mongo.mongo_connector import MongoDBConnector
+from connectors.mongo.user import User
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
+docker_registry_connector = DockerRegistryConnector()
 
 
 @login_manager.user_loader
