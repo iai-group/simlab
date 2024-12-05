@@ -87,8 +87,7 @@ def test_metrics(flask_client: FlaskClient) -> None:
     json_data = response.get_json()
     assert len(json_data) > 0
     assert all(
-        metric.get("name") and metric.get("description")
-        for metric in json_data
+        metric.get("name") and metric.get("description") for metric in json_data
     )
 
 
