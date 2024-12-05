@@ -1,6 +1,9 @@
 """Documentation routes."""
 
-from flask import Blueprint, Response, request, send_file
+from flask import Blueprint, Response, jsonify, request, send_file
+
+from webapp.backend.app import mongo_connector
+from webapp.backend.db.utils import find_records
 
 docs = Blueprint("documentation", __name__)
 
@@ -23,14 +26,28 @@ def template_simulator_api() -> Response:
 def tasks() -> Response:
     """Returns a list of available tasks."""
     assert request.method == "GET", "Invalid request method"
-    return Response("Not implemented", 501)
+
+    tasks = find_records(mongo_connector, "tasks", {})
+
+    if not tasks:
+        return Response("No tasks found", 400)
+
+    return jsonify(tasks), 200
 
 
 @docs.route("/tasks/<task_id>", methods=["GET"])
 def task(task_id: str) -> Response:
     """Returns the details of a task."""
     assert request.method == "GET", "Invalid request method"
-    return Response("Not implemented", 501)
+
+    task = find_records(mongo_connector, "tasks", {"name": task_id})
+
+    if len(task) > 1:
+        return Response("Multiple tasks found", 500)
+
+    if not task:
+        return Response("Task not found", 404)
+    return jsonify(task), 200
 
 
 @docs.route("/agents", methods=["GET"])
@@ -65,11 +82,25 @@ def simulator(simulator_id: str) -> Response:
 def metrics() -> Response:
     """Returns a list of available metrics."""
     assert request.method == "GET", "Invalid request method"
-    return Response("Not implemented", 501)
+
+    metrics = find_records(mongo_connector, "metrics", {})
+    if not metrics:
+        return Response("No metrics found", 404)
+
+    return jsonify(metrics), 200
 
 
 @docs.route("/metrics/<metric_id>", methods=["GET"])
 def metric(metric_id: str) -> Response:
     """Returns the details of a metric."""
     assert request.method == "GET", "Invalid request method"
-    return Response("Not implemented", 501)
+
+    metric = find_records(mongo_connector, "metrics", {"name": metric_id})
+
+    if len(metric) > 1:
+        return Response("Multiple metrics found", 500)
+
+    if not metric:
+        return Response("Metric not found", 400)
+
+    return jsonify(metric), 200
