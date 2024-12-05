@@ -7,6 +7,7 @@ from simlab.core.information_need import InformationNeed
 
 @pytest.fixture
 def information_need() -> InformationNeed:
+    """Fixture for information need."""
     return InformationNeed(
         constraints={"title": "title", "year": 2024},
         requests=["rating"],

@@ -2,11 +2,10 @@
 
 from typing import Dict, List, Optional
 
-from core.information_need import InformationNeed
-from core.simulation_domain import SimulationDomain
-from metric.metric import Metric
-
 from dialoguekit.core.dialogue import Dialogue
+from simlab.core.information_need import InformationNeed
+from simlab.core.simulation_domain import SimulationDomain
+from simlab.metrics.metric import Metric
 
 
 class Task:

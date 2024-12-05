@@ -5,6 +5,3 @@ bcrypt
 requests
 PyYAML
 cryptography
-pymongo
-pytest
-pytest-cov

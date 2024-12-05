@@ -1,6 +1,7 @@
 black
 flake8
 pytest
+pytest-cov
 mypy
 docformatter
 pydocstyle==6.1.1
@@ -9,3 +10,5 @@ pre-commit==3.8.0
 pydocstyle==6.1.1
 types-PyYAML
 types-requests
+pymongo
+docker
