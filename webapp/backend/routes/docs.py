@@ -47,7 +47,7 @@ def task(task_id: str) -> Response:
         return Response("Multiple tasks found", 500)
 
     if not task:
-        return Response("Task not found", 404)
+        return Response("Task not found", 400)
     return jsonify(task), 200
 
 
@@ -58,7 +58,7 @@ def metrics() -> Response:
 
     metrics = find_records(mongo_connector, "metrics", {})
     if not metrics:
-        return Response("No metrics found", 404)
+        return Response("No metrics found", 400)
 
     return jsonify(metrics), 200
 

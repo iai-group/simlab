@@ -19,12 +19,15 @@ def find_records(
     Returns:
         List of records.
     """
+    records = []
     db = connector.get_database()
     try:
-        return [record for record in db[collection].find(query)]
+        for record in db[collection].find(query):
+            record["_id"] = str(record["_id"])  # Convert ObjectId to string
+            records.append(record)
     except Exception as e:
         logging.error(f"Error finding records: {e}")
-    return []
+    return records
 
 
 def insert_record(
