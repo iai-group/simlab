@@ -5,3 +5,5 @@ bcrypt
 requests
 PyYAML
 cryptography
+pymongo
+docker

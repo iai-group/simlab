@@ -11,8 +11,15 @@ services:
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5005
       - MONGO_URI=mongodb://admin:admin@mongo:27017
+      - DOCKER_BASE_URL=unix:///var/run/docker.sock
+      - DOCKER_REGISTRY_URI=https://localhost
+      - DOCKER_REGISTRY_USER=admin
+      - DOCKER_REGISTRY_PASSWORD=admin
     ports:
       - "5005:5005"
+    volumes:
+      - ./connectors:/connectors
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mongo
     networks:
@@ -40,5 +47,6 @@ services:
     depends_on:
       - backend
       - frontend
+      - registry
     networks:
       - simlab_net
