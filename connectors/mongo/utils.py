@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict, List
 
-from webapp.backend.connectors.mongo.mongo_connector import MongoDBConnector
+from connectors.mongo.mongo_connector import MongoDBConnector
 
 
 def find_records(
