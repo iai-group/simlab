@@ -62,14 +62,14 @@ def create_app(testing: bool = False) -> Flask:
 
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = (
-        "None"  # Allow cross-site cookies (needed for cross-origin requests)
-    )
+    app.config[
+        "SESSION_COOKIE_SAMESITE"
+    ] = "None"  # Allow cross-site cookies (needed for cross-origin requests)
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SECURE"] = True
-    app.config["REMEMBER_COOKIE_SAMESITE"] = (
-        "None"  # Allow cross-site remember cookies
-    )
+    app.config[
+        "REMEMBER_COOKIE_SAMESITE"
+    ] = "None"  # Allow cross-site remember cookies
 
     if testing:
         mongo_connector.set_default_db("simlab_test")
