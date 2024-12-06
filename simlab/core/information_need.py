@@ -17,9 +17,7 @@ from typing import Any, Dict, List
 
 class InformationNeed:
     def __init__(
-        self,
-        constraints: Dict[str, Any],
-        requests: List[str],
+        self, constraints: Dict[str, Any], requests: List[str]
     ) -> None:
         """Initializes an information need.
 
@@ -51,3 +49,38 @@ class InformationNeed:
             for slot in self.requested_slots
             if not self.requested_slots[slot]
         ]
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Returns the information need as a dictionary."""
+        return {
+            "constraints": self.constraints,
+            "requested_slots": self.get_requestable_slots(),
+            "fulfilled_slots": {
+                slot: value
+                for slot, value in self.requested_slots.items()
+                if value
+            },
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> InformationNeed:
+        """Creates an information need from a dictionary.
+
+        Args:
+            data: Information need data as a dictionary.
+
+        Raises:
+            KeyError: If the dictionary does not contain the required keys.
+
+        Returns:
+            Information need instance.
+        """
+        if not all(key in data for key in ["constraints", "requested_slots"]):
+            raise KeyError(
+                "The dictionary must contain constraints and requested_slots."
+            )
+
+        return cls(
+            constraints=data.get("constraints", {}),
+            requests=data.get("requested_slots", []),
+        )
