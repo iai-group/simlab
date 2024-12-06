@@ -27,19 +27,9 @@ const Documentation = () => {
           </p>
         );
       case "agentAPI":
-        return (
-          <>
-            <h3>Swagger UI for Template Agent API</h3>
-            <SwaggerUIComponent swaggerUrl={urlTemplateAgentAPI} />
-          </>
-        );
+        return <SwaggerUIComponent swaggerUrl={urlTemplateAgentAPI} />;
       case "simulatorAPI":
-        return (
-          <>
-            <h3>Swagger UI for Template Simulation API</h3>
-            <SwaggerUIComponent swaggerUrl={urlTemplateSimulatorAPI} />
-          </>
-        );
+        return <SwaggerUIComponent swaggerUrl={urlTemplateSimulatorAPI} />;
       case "tutorials":
         return <p>Here you can add tutorials on how to use the application.</p>;
       case "addSystem":
