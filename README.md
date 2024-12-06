@@ -26,6 +26,7 @@ The repository is structured as follows:
   * `prometheus`: Contains the configuration files for the Prometheus monitoring system.
   * `nginx`: Contains the configuration files for the Nginx reverse proxy.
   * `registry`: Contains the configuration files for the Docker registry and the authentication service.
+  * `connectors`: Contains the code base for the external connectors to MongoDB and the Docker registry.
   * `simlab`: Contains the code base to run the experiments and manage the platform.
   * `webapp`: Contains the code base for the web application, it includes the frontend and backend code in folders with the same name.
   * `tests`: Contains the unit tests for the code base and web application.
@@ -48,3 +49,5 @@ docker-compose -f docker-compose.yaml up
 ```
 
 This command will start SimLab and make it available at `https://localhost/`.
+
+*Note*: Think of updating the images if you have made changes to the code base.
