@@ -33,3 +33,44 @@ def test_get_requestable_slots(information_need: InformationNeed) -> None:
         information_need: Information need.
     """
     assert information_need.get_requestable_slots() == ["rating"]
+
+
+def test_to_dict(information_need: InformationNeed) -> None:
+    """Tests to_dict.
+
+    Args:
+        information_need: Information need.
+    """
+    d = information_need.to_dict()
+    assert d.get("constraints") == {"title": "title", "year": 2024}
+    assert d.get("requested_slots") == ["rating"]
+    assert d.get("fulfilled_slots") == {}
+
+
+def test_from_dict(information_need: InformationNeed) -> None:
+    """Tests from_dict.
+
+    Args:
+        information_need: Information need.
+    """
+    data = {
+        "constraints": {"title": "title", "year": 2024},
+        "requested_slots": {"rating": None},
+    }
+    loaded_information_need = InformationNeed.from_dict(data)
+
+    assert loaded_information_need.constraints == information_need.constraints
+    assert (
+        loaded_information_need.requested_slots
+        == information_need.requested_slots
+    )
+
+
+def test_from_dict_error() -> None:
+    """Tests from_dict with an error."""
+    with pytest.raises(KeyError):
+        InformationNeed.from_dict(
+            {
+                "constraints": {"title": "title", "year": 2024},
+            }
+        )
