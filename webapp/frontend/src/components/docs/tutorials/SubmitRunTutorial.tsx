@@ -58,7 +58,9 @@ const SubmitRunTutorial = () => {
         task with two agents and one user simulator:
       </p>
 
-      <pre>{/* TODO: Add example configuration */}</pre>
+      <pre>
+        {/* TODO: Add example configuration. See issue: https://github.com/iai-group/simlab/issues/22 */}
+      </pre>
 
       <h4>Submit a run</h4>
 
