@@ -1,6 +1,7 @@
 """Tests for run related routes."""
 
 import pytest
+from bson import ObjectId
 from flask_login import FlaskLoginClient
 
 from connectors.mongo.utils import find_records
@@ -35,7 +36,7 @@ def test_parse_task() -> None:
     mongo_task_id = find_records(mongo_connector, "tasks", {"name": "crs"})[
         0
     ].get("_id")
-    assert task_id == mongo_task_id
+    assert task_id == ObjectId(mongo_task_id)
 
 
 def test_parse_task_no_task_name() -> None:
