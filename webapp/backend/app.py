@@ -71,14 +71,19 @@ def create_app(testing: bool = False) -> Flask:
         "REMEMBER_COOKIE_SAMESITE"
     ] = "None"  # Allow cross-site remember cookies
 
+    app.config["UPLOAD_FOLDER"] = "data/uploads"
+    app.config["ALLOWED_EXTENSIONS"] = {"json"}
+
     if testing:
         mongo_connector.set_default_db("simlab_test")
 
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
     from webapp.backend.routes.docs import docs as docs_blueprint
+    from webapp.backend.routes.run import run as run_blueprint
 
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(docs_blueprint)
+    app.register_blueprint(run_blueprint)
 
     return app
