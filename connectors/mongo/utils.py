@@ -9,7 +9,9 @@ from connectors.mongo.mongo_connector import MongoDBConnector
 
 
 def find_records(
-    connector: MongoDBConnector, collection: str, query: Dict[str, str]
+    connector: MongoDBConnector,
+    collection: str,
+    query: Dict[str, Union[str, ObjectId, Dict]],
 ) -> List[Dict[str, Any]]:
     """Finds records in a collection that match a query.
 
@@ -25,7 +27,6 @@ def find_records(
     db = connector.get_database()
     try:
         for record in db[collection].find(query):
-            record["_id"] = str(record["_id"])  # Convert ObjectId to string
             records.append(record)
     except Exception as e:
         logging.error(f"Error finding records: {e}")
@@ -101,8 +102,8 @@ def delete_records(
 
 
 def parse_object_id_to_str(
-    data: Union[Dict[str, Any], List, ObjectId]
-) -> Union[Dict[str, Any], List, ObjectId]:
+    data: Union[Dict[str, Any], List[Any], ObjectId]
+) -> Union[Dict[str, Any], List[Any], str]:
     """Parses ObjectId to string recursively.
 
     Args:

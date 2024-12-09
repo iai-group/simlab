@@ -33,11 +33,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_module(module: str, base_class) -> List[Dict[str, str]]:
+def parse_module(module_name: str, base_class) -> List[Dict[str, str]]:
     """Parses a module to extract classes that inherit from a base class.
 
     Args:
-        module: Module name.
+        module_name: Module name.
         base_class: Base class to filter classes.
 
     Returns:
@@ -45,7 +45,7 @@ def parse_module(module: str, base_class) -> List[Dict[str, str]]:
     """
     classes = []
     try:
-        module = importlib.import_module(module)
+        module = importlib.import_module(module_name)
         for name, cls in inspect.getmembers(module, inspect.isclass):
             if issubclass(cls, base_class) and cls != base_class:
                 description = (
@@ -55,7 +55,7 @@ def parse_module(module: str, base_class) -> List[Dict[str, str]]:
                 )
                 classes.append({"name": name, "description": description})
     except Exception as e:
-        logging.error(f"Error parsing module {module}: {e}")
+        logging.error(f"Error parsing module {module_name}: {e}")
 
     return classes
 
