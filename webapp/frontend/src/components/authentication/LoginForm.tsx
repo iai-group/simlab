@@ -17,19 +17,16 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    console.log("Login");
     axios
       .post(`${baseURL}/login`, {
         username: username,
         password: password,
       })
       .then((response) => {
-        console.log(response);
         setUser({ username: username });
         navigate("/");
       })
       .catch((error) => {
-        console.error(error);
         setErrorMessage(error.message || "An unknown error occurred.");
       });
   };

@@ -4,7 +4,7 @@ export type User = {
   username: string;
 };
 
-export type AuthContext = {
+export type AuthContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
 };
@@ -13,7 +13,7 @@ type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-export const AuthContext = React.createContext<AuthContext>({
+export const AuthContext = React.createContext<AuthContextType>({
   user: null,
   setUser: () => {},
 });
