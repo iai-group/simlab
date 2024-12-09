@@ -3,6 +3,7 @@
 from typing import Dict
 
 import pytest
+from flask_login import FlaskLoginClient
 
 from webapp.backend.app import create_app, mongo_connector
 
@@ -16,6 +17,7 @@ def flask_app():
             "TESTING": True,
         }
     )
+    app.test_client_class = FlaskLoginClient
 
     yield app
 
@@ -29,6 +31,23 @@ def flask_client(flask_app):
     """
     with flask_app.test_client() as client:
         yield client
+
+
+@pytest.fixture
+def flask_logged_client(flask_client: FlaskLoginClient):
+    """Creates a Flask test client with a logged user.
+
+    Args:
+        flask_client: Flask test client.
+    """
+    response = flask_client.post(
+        "/login", json={"username": "test_user", "password": "test_password"}
+    )
+    assert response.status_code == 200
+
+    yield flask_client
+
+    flask_client.post("/logout")
 
 
 @pytest.fixture(scope="session")

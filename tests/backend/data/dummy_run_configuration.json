@@ -1,0 +1,33 @@
+{
+    "task": {
+        "name": "dummy_task",
+        "information_need_batch": "dummy_information_need_batch",
+        "arguments": {
+            "dummy_argument": "dummy_value"
+        }
+    },
+    "agents": [
+        {
+            "name": "dummy_agent",
+            "arguments": {
+                "dummy_argument": "dummy_value"
+            }
+        }
+    ],
+    "user_simulators": [
+        {
+            "name": "dummy_user_simulator",
+            "arguments": {
+                "dummy_argument": "dummy_value"
+            }
+        }
+    ],
+    "metrics": [
+        {
+            "name": "dummy_metric",
+            "arguments": {
+                "dummy_argument": "dummy_value"
+            }
+        }
+    ]
+}

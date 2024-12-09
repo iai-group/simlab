@@ -1,9 +1,9 @@
 """Tests for documentation routes."""
 
-from flask.testing import FlaskClient
+from flask_login import FlaskLoginClient
 
 
-def test_template_agent_api(flask_client: FlaskClient) -> None:
+def test_template_agent_api(flask_client: FlaskLoginClient) -> None:
     """Tests the template_agent_api route.
 
     Args:
@@ -19,7 +19,7 @@ def test_template_agent_api(flask_client: FlaskClient) -> None:
     )
 
 
-def test_template_simulator_api(flask_client: FlaskClient) -> None:
+def test_template_simulator_api(flask_client: FlaskLoginClient) -> None:
     """Tests the template_simulator_api route.
 
     Args:
@@ -37,7 +37,7 @@ def test_template_simulator_api(flask_client: FlaskClient) -> None:
     )
 
 
-def test_tasks(flask_client: FlaskClient) -> None:
+def test_tasks(flask_client: FlaskLoginClient) -> None:
     """Tests the tasks route.
 
     Args:
@@ -52,7 +52,7 @@ def test_tasks(flask_client: FlaskClient) -> None:
     )
 
 
-def test_task(flask_client: FlaskClient) -> None:
+def test_task(flask_client: FlaskLoginClient) -> None:
     """Tests the task route.
 
     Args:
@@ -66,7 +66,7 @@ def test_task(flask_client: FlaskClient) -> None:
     assert json_data[0].get("description") == "CRS Evaluation"
 
 
-def test_task_not_found(flask_client: FlaskClient) -> None:
+def test_task_not_found(flask_client: FlaskLoginClient) -> None:
     """Tests the task route when the task is not found.
 
     Args:
@@ -76,7 +76,7 @@ def test_task_not_found(flask_client: FlaskClient) -> None:
     assert response.status_code == 400
 
 
-def test_metrics(flask_client: FlaskClient) -> None:
+def test_metrics(flask_client: FlaskLoginClient) -> None:
     """Tests the metrics route.
 
     Args:
@@ -91,7 +91,7 @@ def test_metrics(flask_client: FlaskClient) -> None:
     )
 
 
-def test_metric(flask_client: FlaskClient) -> None:
+def test_metric(flask_client: FlaskLoginClient) -> None:
     """Tests the metric route.
 
     Args:
@@ -105,7 +105,7 @@ def test_metric(flask_client: FlaskClient) -> None:
     assert json_data[0].get("description") == "Success rate"
 
 
-def test_metric_not_found(flask_client: FlaskClient) -> None:
+def test_metric_not_found(flask_client: FlaskLoginClient) -> None:
     """Tests the metric route when the metric is not found.
 
     Args:
@@ -115,7 +115,7 @@ def test_metric_not_found(flask_client: FlaskClient) -> None:
     assert response.status_code == 400
 
 
-def test_agents(flask_client: FlaskClient) -> None:
+def test_agents(flask_client: FlaskLoginClient) -> None:
     """Tests the agents route.
 
     Args:
@@ -132,7 +132,7 @@ def test_agents(flask_client: FlaskClient) -> None:
     )
 
 
-def test_agent(flask_client: FlaskClient) -> None:
+def test_agent(flask_client: FlaskLoginClient) -> None:
     """Tests the agent route.
 
     Args:
@@ -149,7 +149,7 @@ def test_agent(flask_client: FlaskClient) -> None:
     }
 
 
-def test_agent_not_found(flask_client: FlaskClient) -> None:
+def test_agent_not_found(flask_client: FlaskLoginClient) -> None:
     """Tests the agent route when the agent is not found.
 
     Args:
@@ -159,7 +159,7 @@ def test_agent_not_found(flask_client: FlaskClient) -> None:
     assert response.status_code == 400
 
 
-def test_simulators(flask_client: FlaskClient) -> None:
+def test_simulators(flask_client: FlaskLoginClient) -> None:
     """Tests the simulators route.
 
     Args:
@@ -176,7 +176,7 @@ def test_simulators(flask_client: FlaskClient) -> None:
     )
 
 
-def test_simulator(flask_client: FlaskClient) -> None:
+def test_simulator(flask_client: FlaskLoginClient) -> None:
     """Tests the simulator route.
 
     Args:
@@ -193,7 +193,7 @@ def test_simulator(flask_client: FlaskClient) -> None:
     }
 
 
-def test_simulator_not_found(flask_client: FlaskClient) -> None:
+def test_simulator_not_found(flask_client: FlaskLoginClient) -> None:
     """Tests the simulator route when the simulator is not found.
 
     Args:

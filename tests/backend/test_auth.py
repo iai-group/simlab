@@ -3,12 +3,12 @@
 from typing import Dict
 
 import bcrypt
-from flask.testing import FlaskClient
+from flask_login import FlaskLoginClient
 from pymongo.database import Database
 
 
 def test_register(
-    flask_client: FlaskClient,
+    flask_client: FlaskLoginClient,
     test_database: Database,
     user_data: Dict[str, str],
 ) -> None:
@@ -30,7 +30,7 @@ def test_register(
 
 
 def test_register_existing_user(
-    flask_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskLoginClient, user_data: Dict[str, str]
 ) -> None:
     """Tests registering an existing user.
 
@@ -46,7 +46,7 @@ def test_register_existing_user(
     assert response.json == {"message": "User already exists."}
 
 
-def test_register_invalid_form(flask_client: FlaskClient) -> None:
+def test_register_invalid_form(flask_client: FlaskLoginClient) -> None:
     """Tests registering a user with an invalid form.
 
     Args:
@@ -60,7 +60,7 @@ def test_register_invalid_form(flask_client: FlaskClient) -> None:
     assert response.json == {"message": "Invalid form."}
 
 
-def test_login_no_user(flask_client: FlaskClient) -> None:
+def test_login_no_user(flask_client: FlaskLoginClient) -> None:
     """Tests logging in with a non-existing user.
 
     Args:
@@ -75,7 +75,7 @@ def test_login_no_user(flask_client: FlaskClient) -> None:
 
 
 def test_login_wrong_password(
-    flask_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskLoginClient, user_data: Dict[str, str]
 ) -> None:
     """Tests logging in with the wrong password.
 
@@ -94,7 +94,7 @@ def test_login_wrong_password(
 
 
 def test_login_success(
-    flask_client: FlaskClient, user_data: Dict[str, str]
+    flask_client: FlaskLoginClient, user_data: Dict[str, str]
 ) -> None:
     """Tests logging in successfully.
 
@@ -113,7 +113,7 @@ def test_login_success(
     assert response.json == {"message": "Login successful"}
 
 
-def test_logout(flask_client: FlaskClient) -> None:
+def test_logout(flask_client: FlaskLoginClient) -> None:
     """Tests logging out a user.
 
     Args:
@@ -124,7 +124,7 @@ def test_logout(flask_client: FlaskClient) -> None:
     assert response.json == {"message": "Logout successful"}
 
 
-def test_logout_not_logged_in(flask_client: FlaskClient) -> None:
+def test_logout_not_logged_in(flask_client: FlaskLoginClient) -> None:
     """Tests logging out a user who is not logged in.
 
     Args:
@@ -135,7 +135,7 @@ def test_logout_not_logged_in(flask_client: FlaskClient) -> None:
 
 
 def test_reset_password(
-    flask_client: FlaskClient,
+    flask_client: FlaskLoginClient,
     test_database: Database,
     user_data: Dict[str, str],
 ) -> None:
@@ -174,7 +174,7 @@ def test_reset_password(
     )
 
 
-def test_reset_password_invalid_form(flask_client: FlaskClient) -> None:
+def test_reset_password_invalid_form(flask_client: FlaskLoginClient) -> None:
     """Tests resetting a user's password with an invalid form.
 
     Args:
