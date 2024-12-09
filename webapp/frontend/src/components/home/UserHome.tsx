@@ -1,6 +1,5 @@
 // Home page for logged in users
 
-import { APIAuth } from "../API";
 import { AuthContext } from "../../contexts/AuthContext";
 import { Container } from "react-bootstrap";
 import { useContext } from "react";
