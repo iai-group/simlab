@@ -3,15 +3,10 @@
 from typing import Any, Dict
 
 from bson import ObjectId
-from flask import Blueprint, Response, json, request
+from flask import Blueprint, Response, json, jsonify, request
 from flask_login import current_user, login_required
 
-from connectors.mongo.utils import (
-    delete_records,
-    find_records,
-    insert_record,
-    parse_object_id_to_str,
-)
+from connectors.mongo.utils import delete_records, find_records, insert_record
 from webapp.backend.app import mongo_connector
 
 run = Blueprint("run", __name__)
@@ -114,25 +109,35 @@ def run_request() -> Response:
             run_configuration_file.filename
         )
     ):
-        return {
-            "message": (
-                "Invalid request. Please provide run name and configuration"
-                " file."
-            )
-        }, 400
+        return (
+            jsonify(
+                {
+                    "message": (
+                        "Invalid request. Please provide run name and "
+                        "configuration file."
+                    )
+                }
+            ),
+            400,
+        )
 
     # Load run configuration from file
     try:
         run_configuration = json.load(run_configuration_file)
     except json.JSONDecodeError:
-        return {
-            "message": (
-                "Invalid run configuration. Please check documentation for "
-                "correct format."
-            )
-        }, 400
+        return (
+            jsonify(
+                {
+                    "message": (
+                        "Invalid run configuration. Please check documentation "
+                        "for correct format."
+                    )
+                }
+            ),
+            400,
+        )
     except Exception as e:
-        return {"message": str(e)}, 500
+        return jsonify({"message": str(e)}), 500
 
     # Retrieve task and metrics ids from MongoDB
     try:
@@ -141,7 +146,7 @@ def run_request() -> Response:
         for metric in run_configuration["metrics"]:
             metric["_id"] = metric_ids[metric["name"]]
     except Exception as e:
-        return {"message": str(e)}, 500
+        return jsonify({"message": str(e)}), 500
 
     # Save run configuration to MongoDB
     run_id = insert_record(
@@ -158,10 +163,15 @@ def run_request() -> Response:
     # TODO: Implement Jenkins server integration
     # See: https://github.com/iai-group/simlab/issues/5
 
-    return {
-        "message": f"Run {run_name} submitted successfully.",
-        "run_id": run_id,
-    }, 200
+    return (
+        jsonify(
+            {
+                "message": f"Run {run_name} submitted successfully.",
+                "run_id": run_id,
+            }
+        ),
+        200,
+    )
 
 
 @run.route("/run-info/<run_id>", methods=["GET"])
@@ -180,13 +190,12 @@ def run_info(run_id: str) -> Response:
     )
 
     if not records:
-        return {"message": "Run not found."}, 400
+        return jsonify({"message": "Run not found."}), 400
     elif len(records) > 1:
-        return {"message": "Multiple runs found."}, 500
+        return jsonify({"message": "Multiple runs found."}), 500
 
     run_info = records[0]
-    run_info = parse_object_id_to_str(run_info)
-    return {"run_info": run_info}, 200
+    return jsonify({"run_info": run_info}), 200
 
 
 @run.route("/delete-run/<run_id>", methods=["DELETE"])
@@ -204,6 +213,6 @@ def delete_run(run_id: str) -> Response:
     )
 
     if not b_success:
-        return {"message": "Failed to delete run."}, 500
+        return jsonify({"message": "Failed to delete run."}), 500
 
-    return {"message": "Run deleted successfully."}, 200
+    return jsonify({"message": "Run deleted successfully."}), 200

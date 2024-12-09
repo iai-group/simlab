@@ -12,7 +12,7 @@ def find_records(
     connector: MongoDBConnector,
     collection: str,
     query: Dict[str, Union[str, ObjectId, Dict]],
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     """Finds records in a collection that match a query.
 
     Args:
@@ -27,7 +27,7 @@ def find_records(
     db = connector.get_database()
     try:
         for record in db[collection].find(query):
-            records.append(record)
+            records.append(parse_object_id_to_str(record))  # type: ignore
     except Exception as e:
         logging.error(f"Error finding records: {e}")
     return records
