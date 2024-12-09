@@ -132,3 +132,6 @@ dmypy.json
 dialoguekit/
 nginx/ssl/
 data/mongo/*
+
+# Ignore all .DS_Store files
+**/.DS_Store
