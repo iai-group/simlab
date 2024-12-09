@@ -12,7 +12,7 @@ def find_records(
     connector: MongoDBConnector,
     collection: str,
     query: Dict[str, Union[str, ObjectId, Dict]],
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """Finds records in a collection that match a query.
 
     Args:

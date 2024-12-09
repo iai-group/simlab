@@ -43,7 +43,7 @@ def parse_task(configuration: Dict[str, Any]) -> ObjectId:
     elif len(tasks) > 1:
         raise RuntimeError(f"Multiple tasks found for {task_name}.")
 
-    task_id = tasks[0].get("_id")
+    task_id = ObjectId(tasks[0].get("_id"))
 
     if not task_id:
         raise ValueError(f"Task ID not found for {task_name}.")
@@ -84,7 +84,7 @@ def parse_metrics(configuration: Dict[str, Any]) -> Dict[str, ObjectId]:
         raise RuntimeError("Multiple metrics found.")
 
     for metric in metrics_records:
-        id = metric.get("_id")
+        id = ObjectId(metric.get("_id"))
         if not id:
             raise ValueError(f"Metric ID not found for {metric['name']}.")
         metrics_dict[metric["name"]] = metric["_id"]
