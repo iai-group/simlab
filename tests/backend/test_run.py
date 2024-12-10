@@ -15,7 +15,6 @@ from webapp.backend.routes.run import (
 
 def test_validate_configuration_file_extension():
     """Tests validate_configuration_file_extension."""
-
     assert validate_configuration_file_extension("file.json")
     assert not validate_configuration_file_extension("file.txt")
     assert not validate_configuration_file_extension("file")
@@ -103,7 +102,6 @@ def test_parse_metrics_metric_not_found() -> None:
 
 def test_run_request_unauthorized(flask_client: FlaskLoginClient) -> None:
     """Tests run_request route with unauthorized user."""
-
     response = flask_client.post("/run-request")
     assert response.status_code == 401
 
