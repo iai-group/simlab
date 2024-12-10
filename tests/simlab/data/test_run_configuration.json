@@ -1,0 +1,44 @@
+{
+    "task": {
+        "class_name": "Task",
+        "arguments": {
+            "name": "Template Task",
+            "domain": {
+                "type": "domain",
+                "class_name": "SimulationDomain",
+                "arguments": {
+                    "config_file": "tests/simlab/data/domain.yaml"
+                }
+            },
+            "db_name": "simlab",
+            "num_simulation": 100
+        }
+    },
+    "agents": [
+        {
+            "class_name": "WrapperAgent",
+            "arguments": {
+                "id": "template_wrapper_agent",
+                "uri": "http://localhost:6000"
+            }
+        }
+    ],
+    "user_simulators": [
+        {
+            "class_name": "WrapperUserSimulator",
+            "arguments": {
+                "id": "template_wrapper_user_simulator",
+                "uri": "http://localhost:6001"
+            }
+        }
+    ],
+    "metrics": [
+        {
+            "class_name": "SuccessRate",
+            "type": "metric",
+            "arguments": {
+                "name": "Success Rate"
+            }
+        }
+    ]
+}

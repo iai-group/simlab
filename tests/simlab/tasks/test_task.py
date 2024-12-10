@@ -35,6 +35,7 @@ def task(simulation_domain: SimulationDomain, metric) -> Task:
         domain=simulation_domain,
         metrics=[metric],
         db_name="simlab_test",
+        num_simulation=5,
     )
 
     assert t.name == "task_testing"
