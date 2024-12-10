@@ -33,6 +33,9 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Build and Test Python Code
         uses: ./.github/actions/build_test
         with:
