@@ -19,6 +19,8 @@ class Task:
         domain: SimulationDomain,
         metrics: List[Metric],
         db_name: str,
+        n: Optional[int] = None,
+        batch_id: Optional[str] = None,
     ) -> None:
         """Initializes a task.
 
@@ -27,11 +29,16 @@ class Task:
             domain: Domain knowledge.
             metrics: Metrics to evaluate the dialogue.
             db_name: Name of the MongoDB database.
+            n: Number of information needs to generate. Defaults to None.
+            batch_id: Information need batch identifier. Defaults to None.
         """
         self.name = name
         self.domain = domain
         self.metrics = metrics
         self.db_name = db_name
+        self.batch_id, self.information_needs = self.get_information_needs(
+            n, batch_id
+        )
 
     def get_information_needs(
         self, n: Optional[int] = None, batch_id: Optional[str] = None
