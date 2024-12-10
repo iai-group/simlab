@@ -36,11 +36,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
-        with:
-          mongodb-version: "6.0"
-
       - name: Build and Test Python Code
         uses: ./.github/actions/build_test
         with:
