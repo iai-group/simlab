@@ -1,5 +1,6 @@
 """Success rate metric."""
 
+from dialoguekit.core.dialogue import Dialogue
 from simlab.metrics.metric import Metric
 
 
@@ -15,7 +16,7 @@ class SuccessRate(Metric):
         """
         super().__init__(name)
 
-    def evaluate_dialogue(self, dialogue) -> float:
+    def evaluate_dialogue(self, dialogue: Dialogue) -> float:
         """Evaluates if the dialogue is successful.
 
         Args:
