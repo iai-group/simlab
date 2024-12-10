@@ -19,25 +19,29 @@ class Task:
         domain: SimulationDomain,
         metrics: List[Metric],
         db_name: str,
-        n: Optional[int] = None,
+        num_simulation: Optional[int] = None,
         batch_id: Optional[str] = None,
     ) -> None:
         """Initializes a task.
+
+        The number of simulation to run is equal to the number of information
+        needs.
 
         Args:
             name: Name of the task.
             domain: Domain knowledge.
             metrics: Metrics to evaluate the dialogue.
             db_name: Name of the MongoDB database.
-            n: Number of information needs to generate. Defaults to None.
+            num_simulation: Number of simulations to run. Defaults to None.
             batch_id: Information need batch identifier. Defaults to None.
         """
         self.name = name
         self.domain = domain
         self.metrics = metrics
         self.db_name = db_name
+        self.num_simulation = num_simulation
         self.batch_id, self.information_needs = self.get_information_needs(
-            n, batch_id
+            num_simulation, batch_id
         )
 
     def get_information_needs(
@@ -69,6 +73,7 @@ class Task:
         # TODO: Implement a function to generate random information needs
         # Save new batch of information needs to MongoDB
         batch_id = self.save_information_need_batch(information_needs)
+        self.num_simulation = len(information_needs)
 
         return batch_id, information_needs
 

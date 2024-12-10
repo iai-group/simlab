@@ -67,6 +67,8 @@ class BaseComponentGenerator:
     def _inspect_module(self, module_name: str) -> Dict[str, Any]:
         """Inspects a module and extracts its classes.
 
+        This method assumes that classes are not reused across modules.
+
         Args:
             module_name: Module name.
 
@@ -75,7 +77,7 @@ class BaseComponentGenerator:
         """
         module = importlib.import_module(module_name)
         classes = {
-            f"{module_name}.{name}": obj
+            name: obj
             for name, obj in inspect.getmembers(module, inspect.isclass)
             if obj.__module__.startswith(module_name)
         }
@@ -110,7 +112,9 @@ class BaseComponentGenerator:
         component_arguments = component_config.get("arguments", {})
         component_arguments = {
             key: (
-                self.generate_component(value.pop("type"), value)
+                self.generate_component(
+                    value.pop("type"), value.pop("class_name"), value
+                )
                 if isinstance(value, dict)
                 else value
             )

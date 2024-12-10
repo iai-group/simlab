@@ -72,7 +72,7 @@ class BaseConfigurationReader:
 
         # Parse metrics
         metrics = [
-            self._component_generator.get_component(
+            self._component_generator.generate_component(
                 "metric", metric.get("class_name"), metric
             )
             for metric in self.configuration_dict.get("metrics", [])
@@ -82,8 +82,10 @@ class BaseConfigurationReader:
         self.configuration_dict.get("task", {}).get("arguments", {}).update(
             {"metrics": metrics}
         )
-        task = self._component_generator.get_component(
-            "task", task_class_name, self.configuration_dict.get("task")
+        task = self._component_generator.generate_component(
+            "task",
+            task_class_name,
+            self.configuration_dict.get("task"),
         )
         return task
 
@@ -97,7 +99,7 @@ class BaseConfigurationReader:
         for agent in self.configuration_dict.get("agents", []):
             agent_class_name = agent.get("class_name", "WrapperAgent")
             agents.append(
-                self._component_generator.get_component(
+                self._component_generator.generate_component(
                     "agent", agent_class_name, agent
                 )
             )
@@ -117,7 +119,7 @@ class BaseConfigurationReader:
                 "class_name", "WrapperUserSimulator"
             )
             user_simulators.append(
-                self._component_generator.get_component(
+                self._component_generator.generate_component(
                     "user_simulator", user_simulator_class_name, user_simulator
                 )
             )

@@ -1,4 +1,4 @@
-"""Utility functions."""
+"""Utility functions for parsing the response from a participant's API."""
 
 import logging
 from typing import Any, Dict, List, Tuple

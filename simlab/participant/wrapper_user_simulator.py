@@ -1,10 +1,11 @@
 """Wrapper for user simulator served with an API."""
 
 import requests
+
 from dialoguekit.core import AnnotatedUtterance, Utterance
 from dialoguekit.participant import User
 from dialoguekit.participant.user import UserType
-from utils import parse_API_response
+from simlab.utils.utils_response_parsing import parse_API_response
 
 
 class WrapperUserSimulator(User):

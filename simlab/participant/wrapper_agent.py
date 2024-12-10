@@ -1,11 +1,12 @@
 """Wrapper for conversational agent served with an API."""
 
 import requests
+
 from dialoguekit.core import AnnotatedUtterance, Intent, Utterance
 from dialoguekit.core.dialogue_act import DialogueAct
 from dialoguekit.participant import Agent
 from dialoguekit.participant.agent import AgentType
-from utils import parse_API_response
+from simlab.utils.utils_response_parsing import parse_API_response
 
 
 class WrapperAgent(Agent):
