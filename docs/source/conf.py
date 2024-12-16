@@ -27,7 +27,7 @@ extensions = [
     "autoapi.extension",
     "myst_parser",
     "sphinx_multiversion",
-    "sphinxcontrib.openapi",
+    "sphinxcontrib.redoc",
 ]
 
 templates_path = ["_templates"]
@@ -61,3 +61,13 @@ autoapi_options = [
     "show-module-summary",
 ]
 autoapi_python_class_content = "init"
+
+
+# Redoc OpenAPI
+redoc = [
+    {
+        "name": "SimLab Backend API",
+        "page": "webapp/backend_api",
+        "spec": "webapp/specs/backend_api_routes.yaml",
+    }
+]
