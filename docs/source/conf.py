@@ -69,5 +69,9 @@ redoc = [
         "name": "SimLab Backend API",
         "page": "webapp/backend_api",
         "spec": "webapp/specs/backend_api_routes.yaml",
+        "embed": True,
+        "opts": {
+            "hide-hostname": True,
+        },
     }
 ]
