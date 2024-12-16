@@ -31,7 +31,7 @@ paths:
                             username: "testuser"
                             password: "testpassword"
             responses:
-                '201':
+                201:
                     description: "User registered successfully."
                     content:
                         application/json:
@@ -41,7 +41,7 @@ paths:
                                     message:
                                         type: string
                                         example: "User registered successfully."
-                '400':
+                400:
                     description: "Invalid request body or user already exists."
                     content:
                         application/json:
@@ -76,7 +76,7 @@ paths:
                             username: "testuser"
                             password: "testpassword"
             responses:
-                '200':
+                200:
                     description: "User logged in successfully."
                     headers:
                         Set-Cookie:
@@ -91,7 +91,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Login successful."
-                '400':
+                400:
                     description: "Invalid request body or user does not exist."
                     content:
                         application/json:
@@ -105,7 +105,7 @@ paths:
                                     value: "User not found."
                                 invalid_request:
                                     value: "Invalid request body."
-                '401':
+                401:
                     description: "Invalid credentials."
                     content:
                         application/json:
@@ -122,7 +122,7 @@ paths:
             tags:
                 - "Authentication"
             responses:
-                '200':
+                200:
                     description: "User logged out successfully."
                     content:
                         application/json:
@@ -132,7 +132,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Logout successful."
-                '401':
+                401:
                     description: "Unauthorized access."
                     content:
                         application/json:
@@ -163,7 +163,7 @@ paths:
                             username: "testuser"
                             password: "newpassword"
             responses:
-                '200':
+                200:
                     description: "Password reset successful."
                     content:
                         application/json:
@@ -173,7 +173,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Password reset successful."
-                '400':
+                400:
                     description: "Invalid request body or user does not exist."
                     content:
                         application/json:
@@ -197,7 +197,7 @@ paths:
                 - "Documentation"
                 - "Template API"
             responses:
-                '200':
+                200:
                     description: "Template Agent API documentation."
                     content:
                         multipart/form-data:
@@ -215,7 +215,7 @@ paths:
                 - "Documentation"
                 - "Template API"
             responses:
-                '200':
+                200:
                     description: "Template Simulator API documentation."
                     content:
                         multipart/form-data:
@@ -233,7 +233,7 @@ paths:
                 - "Documentation"
                 - "Tasks"
             responses:
-                '200':
+                200:
                     description: "List of supported tasks."
                     content:
                         application/json:
@@ -259,7 +259,7 @@ paths:
                                     - _id: "2"
                                       name: "Task 2"
                                       description: "Description of Task 2"
-                '400':
+                400:
                     description: "No tasks found."
                     content:
                         application/json:
@@ -284,7 +284,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Task details."
                     content:
                         application/json:
@@ -301,7 +301,7 @@ paths:
                                 _id: "1"
                                 name: "Task 1"
                                 description: "Description of Task 1"
-                '400':
+                400:
                     description: "Task not found."
                     content:
                         application/json:
@@ -311,7 +311,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Task not found."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -329,7 +329,7 @@ paths:
                 - "Documentation"
                 - "Metrics"
             responses:
-                '200':
+                200:
                     description: "List of evaluation metrics."
                     content:
                         application/json:
@@ -355,7 +355,7 @@ paths:
                                     - _id: "2"
                                       name: "Metric 2"
                                       description: "Description of Metric 2"
-                '400':
+                400:
                     description: "No metrics found."
                     content:
                         application/json:
@@ -380,7 +380,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Metric details."
                     content:
                         application/json:
@@ -397,7 +397,7 @@ paths:
                                 _id: "1"
                                 name: "Metric 1"
                                 description: "Description of Metric 1"
-                '400':
+                400:
                     description: "Metric not found."
                     content:
                         application/json:
@@ -407,7 +407,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Metric not found."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -425,7 +425,7 @@ paths:
                 - "Documentation"
                 - "Conversational agents"
             responses:
-                '200':
+                200:
                     description: "List of available agents."
                     content:
                         application/json:
@@ -443,7 +443,7 @@ paths:
                                                     type: object
                                                 labels:
                                                     type: object
-                '400':
+                400:
                     description: "No agents found."
                     content:
                         application/json:
@@ -468,7 +468,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Agent details."
                     content:
                         application/json:
@@ -481,7 +481,7 @@ paths:
                                         type: object
                                     labels:
                                         type: object
-                '400':
+                400:
                     description: "Agent not found."
                     content:
                         application/json:
@@ -491,7 +491,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Agent not found."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -509,7 +509,7 @@ paths:
                 - "Documentation"
                 - "User simulators"
             responses:
-                '200':
+                200:
                     description: "List of available simulators."
                     content:
                         application/json:
@@ -527,7 +527,7 @@ paths:
                                                     type: object
                                                 labels:
                                                     type: object
-                '400':
+                400:
                     description: "No simulators found."
                     content:
                         application/json:
@@ -552,7 +552,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Simulator details."
                     content:
                         application/json:
@@ -565,7 +565,7 @@ paths:
                                         type: object
                                     labels:
                                         type: object
-                '400':
+                400:
                     description: "Simulator not found."
                     content:
                         application/json:
@@ -575,7 +575,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Simulator not found."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -608,7 +608,7 @@ paths:
                             run_name: "Run 1"
                             run_configuration_file: "config.json"
             responses:
-                '200':
+                200:
                     description: "Run request submitted successfully."
                     content:
                         application/json:
@@ -618,7 +618,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Run request submitted successfully."
-                '400':
+                400:
                     description: "Invalid request body or configuration file."
                     content:
                         application/json:
@@ -631,7 +631,7 @@ paths:
                                     run_id:
                                         type: string
                                         example: "6758ab1ed758f93bddbedaca"
-                '401':
+                401:
                     description: "Unauthorized access."
                     content:
                         application/json:
@@ -641,7 +641,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Unauthorized access. User not logged in."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -665,7 +665,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Run information."
                     content:
                         application/json:
@@ -674,7 +674,7 @@ paths:
                                 properties:
                                     run_info:
                                         type: object
-                '400':
+                400:
                     description: "Run not found."
                     content:
                         application/json:
@@ -684,7 +684,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Run not found."
-                '401':
+                401:
                     description: "Unauthorized access."
                     content:
                         application/json:
@@ -694,7 +694,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Unauthorized access."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:
@@ -718,7 +718,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                200:
                     description: "Run deleted successfully."
                     content:
                         application/json:
@@ -728,7 +728,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Run deleted successfully."
-                '401':
+                401:
                     description: "Unauthorized access."
                     content:
                         application/json:
@@ -738,7 +738,7 @@ paths:
                                     message:
                                         type: string
                                         example: "Unauthorized access."
-                '500':
+                500:
                     description: "Internal server error."
                     content:
                         application/json:

@@ -51,3 +51,23 @@ docker-compose -f docker-compose.yaml up
 This command will start SimLab and make it available at `https://localhost/`.
 
 *Note*: Think of updating the images if you have made changes to the code base.
+
+## Internal Documentation
+
+The internal documentation for the code base can be found in the `docs` folder.
+
+Steps to generate the internal documentation with Sphinx:
+
+1. Install documentation related requirements:
+
+```bash
+pip install -r doc_requirements.txt
+```
+
+2. Run the following command to generate the documentation:
+
+```bash
+sphinx-build -M html docs/source/ build/
+```
+
+The generated documentation will be available in the `build` folder. You can open the `index.html` file in a browser to view the documentation.
