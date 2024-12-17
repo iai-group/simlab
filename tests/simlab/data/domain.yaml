@@ -15,3 +15,6 @@ requestable_slots:
 informable_slots:
   - year
   - genre
+
+item_collections:
+  - collection_name: imdb_movies

@@ -7,7 +7,10 @@ from bson import ObjectId
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.utils import find_records, insert_records
 from dialoguekit.core.dialogue import Dialogue
-from simlab.core.information_need import InformationNeed
+from simlab.core.information_need import (
+    InformationNeed,
+    generate_random_information_needs,
+)
 from simlab.core.simulation_domain import SimulationDomain
 from simlab.metrics.metric import Metric
 
@@ -69,8 +72,9 @@ class Task:
             return batch_id, self._retrieve_information_needs(batch_id)
 
         # Generate new batch of information needs
-        information_needs: List[InformationNeed] = []
-        # TODO: Implement a function to generate random information needs
+        information_needs: List[
+            InformationNeed
+        ] = generate_random_information_needs(self.domain, n)
         # Save new batch of information needs to MongoDB
         batch_id = self.save_information_need_batch(information_needs)
         self.num_simulation = len(information_needs)

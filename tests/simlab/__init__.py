@@ -36,3 +36,36 @@ insert_records(
         }
     ],
 )
+
+# Insert dummy item collections into the database
+items = [
+    {
+        "_id": ObjectId("675380fa0f51790295721dac"),
+        "title": "The Matrix",
+        "year": 1999,
+        "genre": "action",
+        "rating": 4,
+    },
+    {
+        "_id": ObjectId("675380fa0f51790295722dac"),
+        "title": "Inception",
+        "year": 2010,
+        "genre": "action",
+    },
+    {
+        "_id": ObjectId("675380fa0f51790295723dac"),
+        "title": "The Titanic",
+        "year": 1997,
+        "genre": "romance",
+    },
+    {
+        "_id": ObjectId("675380fa0f51790295724dac"),
+        "title": "The Hangover",
+        "year": 2009,
+        "genre": "comedy",
+        "rating": 3,
+    },
+]
+
+mongo_connector.set_default_db("datasets")
+insert_records(mongo_connector, "imdb_movies", items)

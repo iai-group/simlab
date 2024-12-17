@@ -11,7 +11,7 @@
                 }
             },
             "db_name": "simlab",
-            "num_simulation": 100
+            "num_simulation": 5
         }
     },
     "agents": [

@@ -14,6 +14,7 @@ def simulation_domain() -> SimulationDomain:
     """Returns the simulation domain for testing."""
     domain = SimulationDomain("tests/simlab/data/domain.yaml")
     assert domain.get_name() == "movies_testing"
+    assert len(domain.get_item_collections()) == 1
     return domain
 
 
