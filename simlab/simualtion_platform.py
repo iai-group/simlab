@@ -5,6 +5,7 @@ from copy import deepcopy
 from typing import Any, Dict, Type
 
 from dialoguekit.connector import DialogueConnector
+from dialoguekit.core.utterance import Utterance
 from dialoguekit.participant import Agent, User
 from dialoguekit.platforms import Platform
 
@@ -56,7 +57,7 @@ class SimulationPlatform(Platform):
         """
         try:
             return self._agent_class(**self._agent_config)
-        except AttributeError as e:
+        except Exception as e:
             logging.error(f"Error while creating agent: {e}")
         return None
 
@@ -71,7 +72,7 @@ class SimulationPlatform(Platform):
         """
         try:
             return self._user_class(**config)
-        except AttributeError as e:
+        except Exception as e:
             logging.error(f"Error while creating user: {e}")
         return None
 
@@ -91,20 +92,25 @@ class SimulationPlatform(Platform):
         )
         dialogue_connector.start()
 
-    def display_agent_utterance(self, user_id: str, utterance: str) -> None:
+    def display_agent_utterance(
+        self, utterance: Utterance, agent_id: str, user_id: str = None
+    ) -> None:
         """Displays an agent utterance.
 
         Args:
-            user_id: User ID.
             utterance: An instance of Utterance.
+            agent_id: Agent ID.
+            user_id: User ID of the recipient. Defaults to None.
         """
-        print(f"Agent: {utterance}")
+        print(f"{agent_id}: {utterance.text}")
 
-    def display_user_utterance(self, user_id: str, utterance: str) -> None:
+    def display_user_utterance(
+        self, utterance: Utterance, user_id: str
+    ) -> None:
         """Displays a user utterance.
 
         Args:
-            user_id: User ID.
             utterance: An instance of Utterance.
+            user_id: User ID.
         """
-        print(f"User: {utterance}")
+        print(f"{user_id}: {utterance.text}")
