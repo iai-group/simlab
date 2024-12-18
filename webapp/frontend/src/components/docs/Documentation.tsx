@@ -1,4 +1,4 @@
-import { Col, Container, Nav, Row } from "react-bootstrap";
+import { Col, Nav, Row } from "react-bootstrap";
 import React, { useState } from "react";
 
 import AddSystemTutorial from "./tutorials/AddSystemTutorial";
