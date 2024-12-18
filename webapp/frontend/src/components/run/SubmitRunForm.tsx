@@ -1,6 +1,7 @@
 // Run submission form
 
 import { Agent, Metric, Simulator, Task } from "../../types";
+import { Container, Toast, ToastContainer } from "react-bootstrap";
 import {
   MDBBtn,
   MDBInput,
@@ -9,9 +10,8 @@ import {
 } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
 
-import { Container } from "react-bootstrap";
-import ResourcesCheckBoxList from "./ResourcesCheckBoxList";
-import ResourcesRadioList from "./ResourcesRadioList";
+import AddResourcesList from "./AddResourcesList";
+import TaskRadioList from "./TaskRadioList";
 import axios from "axios";
 import { baseURL } from "../API";
 
@@ -28,6 +28,7 @@ const RunSubmissionForm = () => {
   const [selectedUserSimulators, setSelectedUserSimulators] = useState<
     Simulator[]
   >([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleNext = () => {
     if (page < 5) {
@@ -65,6 +66,7 @@ const RunSubmissionForm = () => {
               return {
                 name,
                 type: type,
+                value: arg["default"] || null,
               };
             }
           })
@@ -79,7 +81,7 @@ const RunSubmissionForm = () => {
       });
       return fetchedTasks;
     } catch (error) {
-      console.error("Error fetching tasks:", error); // TODO: Display error as a toast
+      setToastMessage("Error fetching tasks. Please reach out to the admin.");
       return []; // Return an empty array if there's an error
     }
   };
@@ -96,6 +98,7 @@ const RunSubmissionForm = () => {
               return {
                 name,
                 type: type,
+                value: arg["default"] || null,
               };
             }
           })
@@ -109,7 +112,7 @@ const RunSubmissionForm = () => {
       });
       return fetchedMetrics;
     } catch (error) {
-      console.error("Error fetching metrics:", error);
+      setToastMessage("Error fetching metrics. Please reach out to the admin.");
       return []; // Return an empty array if there's an error
     }
   };
@@ -120,7 +123,7 @@ const RunSubmissionForm = () => {
       console.log("Fetched agents:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching agents:", error);
+      setToastMessage("Error fetching agents. Please reach out to the admin.");
       return []; // Return an empty array if there's an error
     }
   };
@@ -131,7 +134,9 @@ const RunSubmissionForm = () => {
       console.log("Fetched simulators:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching simulators:", error);
+      setToastMessage(
+        "Error fetching user simulators. Please reach out to the admin."
+      );
       return []; // Return an empty array if there's an error
     }
   };
@@ -184,13 +189,11 @@ const RunSubmissionForm = () => {
               type="text"
               onChange={(e) => setRunName(e.target.value)}
             />
-            {tasks.length === 0 ? (
-              <p>Loading tasks...</p>
-            ) : (
-              <ResourcesRadioList<Task>
+            {tasks.length > 0 && (
+              <TaskRadioList
                 items={tasks}
-                selectedItem={selectedTask}
-                setSelectedItem={setSelectedTask}
+                selectedTask={selectedTask}
+                setSelectedTask={setSelectedTask}
               />
             )}
           </div>
@@ -198,10 +201,9 @@ const RunSubmissionForm = () => {
       case 2:
         return (
           <div>
-            {metrics.length === 0 ? (
-              <p>Loading metrics...</p>
-            ) : (
-              <ResourcesCheckBoxList<Metric>
+            {metrics.length > 0 && (
+              <AddResourcesList
+                resourceType="metrics"
                 items={metrics}
                 selectedItems={selectedMetrics}
                 setSelectedItems={setSelectedMetrics}
@@ -212,10 +214,9 @@ const RunSubmissionForm = () => {
       case 3:
         return (
           <div>
-            {agents.length === 0 ? (
-              <p>Loading agents...</p>
-            ) : (
-              <ResourcesCheckBoxList
+            {agents.length > 0 && (
+              <AddResourcesList
+                resourceType="agents"
                 items={agents}
                 selectedItems={selectedAgents}
                 setSelectedItems={setSelectedAgents}
@@ -226,10 +227,9 @@ const RunSubmissionForm = () => {
       case 4:
         return (
           <div>
-            {userSimulators.length === 0 ? (
-              <p>Loading user simulators...</p>
-            ) : (
-              <ResourcesCheckBoxList
+            {userSimulators.length > 0 && (
+              <AddResourcesList
+                resourceType="user simulators"
                 items={userSimulators}
                 selectedItems={selectedUserSimulators}
                 setSelectedItems={setSelectedUserSimulators}
@@ -240,13 +240,12 @@ const RunSubmissionForm = () => {
       case 5:
         return (
           <div>
-            <p>Review your run details:</p>
+            <strong>Review your run details:</strong>
             <p>Run name: {runName}</p>
             <p>Task: {selectedTask.name}</p>
             <p>Metrics: {selectedMetrics.map((m) => m.name).join(", ")}</p>
             <p>Agents: {selectedAgents.join(", ")}</p>
             <p>User simulators: {selectedUserSimulators.join(", ")}</p>
-
             <MDBBtn onClick={handleSubmit}>Submit run</MDBBtn>
           </div>
         );
@@ -256,22 +255,37 @@ const RunSubmissionForm = () => {
   return (
     <Container>
       <h3>Submit a new run</h3>
-      <Container>
-        <MDBProgress height="20">
-          <MDBProgressBar width={(page / 5) * 100} valuemin={1} valuemax={5}>
-            {Math.round((page / 5) * 100)}%
-          </MDBProgressBar>
-        </MDBProgress>
-        <br />
-        {renderPage()}
-        <br />
-        <MDBBtn onClick={handleBack} disabled={page === 1} className="me-2">
-          Back
-        </MDBBtn>
-        <MDBBtn onClick={handleNext} disabled={page === 5}>
-          Next
-        </MDBBtn>
-      </Container>
+      <MDBProgress height="20">
+        <MDBProgressBar width={(page / 5) * 100} valuemin={1} valuemax={5}>
+          {Math.round((page / 5) * 100)}%
+        </MDBProgressBar>
+      </MDBProgress>
+
+      <br />
+      {renderPage()}
+      <br />
+      <MDBBtn onClick={handleBack} disabled={page === 1} className="me-2">
+        Back
+      </MDBBtn>
+      <MDBBtn onClick={handleNext} disabled={page === 5}>
+        Next
+      </MDBBtn>
+
+      {/* Toast Notifications */}
+      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
+        <Toast
+          onClose={() => setToastMessage(null)}
+          show={!!toastMessage}
+          delay={5000}
+          autohide
+          bg="danger"
+        >
+          <Toast.Header>
+            <strong className="me-auto">SimLab Error</strong>
+          </Toast.Header>
+          <Toast.Body>{toastMessage}</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </Container>
   );
 };
