@@ -10,6 +10,8 @@ import {
 import { useEffect, useState } from "react";
 
 import { Container } from "react-bootstrap";
+import ResourcesCheckBoxList from "./ResourcesCheckBoxList";
+import ResourcesRadioList from "./ResourcesRadioList";
 import axios from "axios";
 import { baseURL } from "../API";
 
@@ -17,14 +19,14 @@ const RunSubmissionForm = () => {
   const [page, setPage] = useState(1);
   const [runName, setRunName] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTask, setSelectedTask] = useState("");
+  const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
   const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
+  const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [userSimulators, setUserSimulators] = useState<Simulator[]>([]);
   const [selectedUserSimulators, setSelectedUserSimulators] = useState<
-    string[]
+    Simulator[]
   >([]);
 
   const handleNext = () => {
@@ -39,13 +41,45 @@ const RunSubmissionForm = () => {
     }
   };
 
+  const convertPythonTypetoJSType = (arg: any) => {
+    // Convert argument Python types to TypeScript types
+    let type: string;
+    if (arg["type"] === "str") {
+      type = "string";
+    } else if (arg["type"] === "int") {
+      type = "number";
+    } else {
+      type = "unknown";
+    }
+    return type;
+  };
+
   const fetchTasks = async (): Promise<Task[]> => {
     try {
       const response = await axios.get(`${baseURL}/tasks`);
-      console.log("Fetched tasks:", response.data);
-      return response.data;
+      const fetchedTasks = response.data.map((d: any) => {
+        const args = Object.entries(d["arguments"])
+          .map(([name, arg]: [string, any]) => {
+            if (arg["configurable"] === true) {
+              let type: string = convertPythonTypetoJSType(arg);
+              return {
+                name,
+                type: type,
+              };
+            }
+          })
+          .filter((arg: any) => arg !== undefined);
+
+        return {
+          id: d["_id"],
+          name: d["name"],
+          description: d["description"],
+          arguments: args,
+        };
+      });
+      return fetchedTasks;
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error fetching tasks:", error); // TODO: Display error as a toast
       return []; // Return an empty array if there's an error
     }
   };
@@ -53,8 +87,27 @@ const RunSubmissionForm = () => {
   const fetchMetrics = async (): Promise<Metric[]> => {
     try {
       const response = await axios.get(`${baseURL}/metrics`);
-      console.log("Fetched metrics:", response.data);
-      return response.data;
+
+      const fetchedMetrics = response.data.map((d: any) => {
+        const args = Object.entries(d["arguments"])
+          .map(([name, arg]: [string, any]) => {
+            if (arg["configurable"] === true) {
+              let type: string = convertPythonTypetoJSType(arg);
+              return {
+                name,
+                type: type,
+              };
+            }
+          })
+          .filter((arg: any) => arg !== undefined);
+        return {
+          id: d["_id"],
+          name: d["name"],
+          description: d["description"],
+          arguments: args,
+        };
+      });
+      return fetchedMetrics;
     } catch (error) {
       console.error("Error fetching metrics:", error);
       return []; // Return an empty array if there's an error
@@ -85,18 +138,21 @@ const RunSubmissionForm = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (page === 1) {
-        const data = await fetchTasks();
-        setTasks(data);
-      } else if (page === 2) {
-        const data = await fetchMetrics();
-        setMetrics(data);
-      } else if (page === 3) {
-        const data = await fetchAgents();
-        setAgents(data);
-      } else if (page === 4) {
-        const data = await fetchUserSimulators();
-        setUserSimulators(data);
+      switch (page) {
+        case 1:
+          setTasks(await fetchTasks());
+          break;
+        case 2:
+          setMetrics(await fetchMetrics());
+          break;
+        case 3:
+          setAgents(await fetchAgents());
+          break;
+        case 4:
+          setUserSimulators(await fetchUserSimulators());
+          break;
+        default:
+          break;
       }
     };
 
@@ -131,17 +187,11 @@ const RunSubmissionForm = () => {
             {tasks.length === 0 ? (
               <p>Loading tasks...</p>
             ) : (
-              tasks.map((task) => (
-                <div key={task.id}>
-                  <input
-                    type="radio"
-                    value={task.id}
-                    checked={selectedTask === task.id}
-                    onChange={() => setSelectedTask(task.id)}
-                  />
-                  {task.name}
-                </div>
-              ))
+              <ResourcesRadioList<Task>
+                items={tasks}
+                selectedItem={selectedTask}
+                setSelectedItem={setSelectedTask}
+              />
             )}
           </div>
         );
@@ -151,25 +201,11 @@ const RunSubmissionForm = () => {
             {metrics.length === 0 ? (
               <p>Loading metrics...</p>
             ) : (
-              metrics.map((metric) => (
-                <div key={metric.id}>
-                  <input
-                    type="checkbox"
-                    value={metric.id}
-                    checked={selectedMetrics.includes(metric.id)}
-                    onChange={() => {
-                      if (selectedMetrics.includes(metric.id)) {
-                        setSelectedMetrics(
-                          selectedMetrics.filter((m) => m !== metric.id)
-                        );
-                      } else {
-                        setSelectedMetrics([...selectedMetrics, metric.id]);
-                      }
-                    }}
-                  />
-                  {metric.name}
-                </div>
-              ))
+              <ResourcesCheckBoxList<Metric>
+                items={metrics}
+                selectedItems={selectedMetrics}
+                setSelectedItems={setSelectedMetrics}
+              />
             )}
           </div>
         );
@@ -179,25 +215,11 @@ const RunSubmissionForm = () => {
             {agents.length === 0 ? (
               <p>Loading agents...</p>
             ) : (
-              agents.map((agent) => (
-                <div key={agent.id}>
-                  <input
-                    type="checkbox"
-                    value={agent.id}
-                    checked={selectedAgents.includes(agent.id)}
-                    onChange={() => {
-                      if (selectedAgents.includes(agent.id)) {
-                        setSelectedAgents(
-                          selectedAgents.filter((a) => a !== agent.id)
-                        );
-                      } else {
-                        setSelectedAgents([...selectedAgents, agent.id]);
-                      }
-                    }}
-                  />
-                  {agent.name}
-                </div>
-              ))
+              <ResourcesCheckBoxList
+                items={agents}
+                selectedItems={selectedAgents}
+                setSelectedItems={setSelectedAgents}
+              />
             )}
           </div>
         );
@@ -207,30 +229,11 @@ const RunSubmissionForm = () => {
             {userSimulators.length === 0 ? (
               <p>Loading user simulators...</p>
             ) : (
-              userSimulators.map((simulator) => (
-                <div key={simulator.id}>
-                  <input
-                    type="checkbox"
-                    value={simulator.id}
-                    checked={selectedUserSimulators.includes(simulator.id)}
-                    onChange={() => {
-                      if (selectedUserSimulators.includes(simulator.id)) {
-                        setSelectedUserSimulators(
-                          selectedUserSimulators.filter(
-                            (s) => s !== simulator.id
-                          )
-                        );
-                      } else {
-                        setSelectedUserSimulators([
-                          ...selectedUserSimulators,
-                          simulator.id,
-                        ]);
-                      }
-                    }}
-                  />
-                  {simulator.name}
-                </div>
-              ))
+              <ResourcesCheckBoxList
+                items={userSimulators}
+                selectedItems={selectedUserSimulators}
+                setSelectedItems={setSelectedUserSimulators}
+              />
             )}
           </div>
         );
@@ -239,8 +242,8 @@ const RunSubmissionForm = () => {
           <div>
             <p>Review your run details:</p>
             <p>Run name: {runName}</p>
-            <p>Task: {selectedTask}</p>
-            <p>Metrics: {selectedMetrics.join(", ")}</p>
+            <p>Task: {selectedTask.name}</p>
+            <p>Metrics: {selectedMetrics.map((m) => m.name).join(", ")}</p>
             <p>Agents: {selectedAgents.join(", ")}</p>
             <p>User simulators: {selectedUserSimulators.join(", ")}</p>
 

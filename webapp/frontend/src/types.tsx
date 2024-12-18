@@ -1,23 +1,22 @@
-export type Task = {
+export type Resource = {
   id: string;
   name: string;
   description: string;
 };
 
-export type Metric = {
-  id: string;
+export type Argument = {
   name: string;
-  description: string;
+  type: string;
 };
 
-export type Agent = {
-  id: string;
-  name: string;
-  description: string;
+export type Task = Resource & {
+  arguments: Array<Argument>;
 };
 
-export type Simulator = {
-  id: string;
-  name: string;
-  description: string;
+export type Metric = Resource & {
+  arguments: Array<Argument>;
 };
+
+export type Agent = Resource;
+
+export type Simulator = Resource;
