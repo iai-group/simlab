@@ -5,12 +5,9 @@ from typing import Dict, List
 from bson import ObjectId
 
 from connectors.mongo.mongo_connector import MongoDBConnector
-from connectors.mongo.utils import find_records, insert_records
+from connectors.mongo.utils import find_records
 from dialoguekit.core.dialogue import Dialogue
-from simlab.core.information_need import (
-    InformationNeed,
-    generate_random_information_needs,
-)
+from simlab.core.information_need import InformationNeed
 from simlab.core.simulation_domain import SimulationDomain
 from simlab.metrics.metric import Metric
 
@@ -103,36 +100,3 @@ class Task:
             metric.name: metric.evaluate_dialogues(dialogues)
             for metric in self.metrics
         }
-
-    def save_information_need_batch(
-        self, information_needs: List[InformationNeed]
-    ) -> str:
-        """Saves a batch of information needs to the database.
-
-        Args:
-            information_needs: List of information needs.
-
-        Returns:
-            Batch identifier.
-        """
-        mongo_connector = MongoDBConnector()
-        mongo_connector.set_default_db(self.db_name)
-
-        records = []
-        for information_need in information_needs:
-            record = information_need.to_dict()
-            records.append(record)
-
-        ids = insert_records(
-            mongo_connector,
-            "information_needs",
-            [{"information_needs": records}],
-        )
-
-        assert (
-            len(ids) == 1
-        ), "Error saving information needs. More than one batch id is saved."
-
-        mongo_connector.close_connection()
-
-        return str(ids[0])

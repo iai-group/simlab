@@ -10,8 +10,8 @@
                     "config_file": "tests/simlab/data/domain.yaml"
                 }
             },
-            "db_name": "simlab",
-            "num_simulation": 5
+            "db_name": "simlab_test",
+            "batch_id": "675380fa0f51790295720dac"
         }
     },
     "agents": [

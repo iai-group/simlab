@@ -24,7 +24,8 @@ class SimulationPlatform(Platform):
     def start(self) -> None:
         """Starts the simulation platform.
 
-        This method is not required for the simulation platform."""
+        This method is not required for the simulation platform.
+        """
         pass
 
     def connect(

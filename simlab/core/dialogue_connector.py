@@ -1,12 +1,17 @@
 """Adapted dialogue connector from DialogueKit."""
 
+from __future__ import annotations
+
 import json
 import os
+from typing import TYPE_CHECKING
 
 from dialoguekit.connector.dialogue_connector import DialogueConnector
 from dialoguekit.participant.agent import Agent
 from dialoguekit.participant.user import User
-from simlab.simualtion_platform import SimulationPlatform
+
+if TYPE_CHECKING:
+    from simlab.simulation_platform import SimulationPlatform
 
 
 class SimulationDialogueConnector(DialogueConnector):

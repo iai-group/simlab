@@ -25,7 +25,7 @@ from dialoguekit.participant.participant import Participant
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
 from simlab.core.run_configuration import RunConfiguration
-from simlab.simualtion_platform import SimulationPlatform
+from simlab.simulation_platform import SimulationPlatform
 from simlab.utils.configuration_readers.base_configuration_reader import (
     BaseConfigurationReader,
 )
@@ -94,7 +94,7 @@ def generate_synthetic_dialogues(
 def filter_existing_participant_pairs(
     output_dir: str, participant_pairs: List[Tuple[Participant, Participant]]
 ) -> List[Tuple[Participant, Participant]]:
-    """Filters the agent-user simulator pairs which have already been evaluated.
+    """Filters out the agent-user simulator pairs which have been evaluated.
 
     Args:
         output_dir: Path to the output directory for the task.
