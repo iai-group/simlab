@@ -1,6 +1,6 @@
 """Class to represent a task."""
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 from bson import ObjectId
 
@@ -22,8 +22,7 @@ class Task:
         domain: SimulationDomain,
         metrics: List[Metric],
         db_name: str,
-        num_simulation: Optional[int] = None,
-        batch_id: Optional[str] = None,
+        batch_id: str,
     ) -> None:
         """Initializes a task.
 
@@ -35,51 +34,28 @@ class Task:
             domain: Domain knowledge.
             metrics: Metrics to evaluate the dialogue.
             db_name: Name of the MongoDB database.
-            num_simulation: Number of simulations to run. Defaults to None.
-            batch_id: Information need batch identifier. Defaults to None.
+            batch_id: Information need batch identifier.
         """
         self.name = name
         self.domain = domain
         self.metrics = metrics
         self.db_name = db_name
-        self.num_simulation = num_simulation
-        self.batch_id, self.information_needs = self.get_information_needs(
-            num_simulation, batch_id
-        )
+        self.batch_id = batch_id
+        self.information_needs = self.get_information_needs(batch_id)
 
-    def get_information_needs(
-        self, n: Optional[int] = None, batch_id: Optional[str] = None
-    ) -> Tuple[str, List[InformationNeed]]:
+    def get_information_needs(self, batch_id: str) -> List[InformationNeed]:
         """Gets the information needs used for the task.
 
-        If batch_id is provided, n is ignored and the information needs are
-        retrieved from a previous batch.
-
         Args:
-            n: Number of information needs to generate. Defaults to None.
-            batch_id: Information need batch identifier. Defaults to None.
-
-        Raises:
-            ValueError: If both parameters are None.
+            batch_id: Information need batch identifier.
 
         Returns:
-            Batch identifier and list of information needs.
+            List of information needs.
         """
-        if not n and not batch_id:
-            raise ValueError("Either n or batch_id must be provided.")
-
-        if batch_id:
-            return batch_id, self._retrieve_information_needs(batch_id)
-
-        # Generate new batch of information needs
-        information_needs: List[
-            InformationNeed
-        ] = generate_random_information_needs(self.domain, n)
-        # Save new batch of information needs to MongoDB
-        batch_id = self.save_information_need_batch(information_needs)
+        information_needs = self._retrieve_information_needs(batch_id)
         self.num_simulation = len(information_needs)
 
-        return batch_id, information_needs
+        return information_needs
 
     def _retrieve_information_needs(
         self, batch_id: str

@@ -1,94 +1,60 @@
 """Simulation platform facilitating interaction between agent and simulator."""
 
-import logging
-from copy import deepcopy
-from typing import Any, Dict, Type
+from typing import Dict, Tuple, Type
 
-from dialoguekit.connector import DialogueConnector
 from dialoguekit.core.utterance import Utterance
-from dialoguekit.participant import Agent, User
+from dialoguekit.participant.agent import Agent
+from dialoguekit.participant.user import User
 from dialoguekit.platforms import Platform
+from simlab.core.dialogue_connector import SimulationDialogueConnector
 
 
 class SimulationPlatform(Platform):
-    def __init__(
-        self, agent_class: Type[Agent], user_class: Type[User]
-    ) -> None:
+    def __init__(self, agent_class: Type[Agent]) -> None:
         """Initializes the simulation platform.
 
         Args:
             agent_class: Class of the agent.
-            user_class: Class of the user.
         """
         super().__init__(agent_class)
-        self._user_class = user_class
+        self._active_agent_user_pairs: Dict[
+            Tuple[str, str], Tuple[Agent, User]
+        ] = {}
 
-    def start(
-        self,
-        agent_config: Dict[str, Any],
-        user_config: Dict[str, Any],
-        agent_class: Type[Agent] = None,
-        user_class: Type[User] = None,
-    ) -> None:
+    def start(self) -> None:
         """Starts the simulation platform.
 
-        Sets the configuration for the agent and the user. Optionally, changes
-        the classes of the agent and the user.
+        This method is not required for the simulation platform."""
+        pass
+
+    def connect(
+        self, user_id: str, user_simulator: User, agent: Agent, output_dir: str
+    ) -> None:
+        """Connects a user simulator and an agent.
 
         Args:
-            agent_config: Configuration for the agent.
-            user_config: Configuration for the user.
-            agent_class: Class of the agent. Defaults to None.
-            user_class: Class of the user. Defaults to None
+            user_id: User simulator ID.
+            user_simulator: User simulator.
+            agent: Agent.
+            output_dir: Output directory to save the dialogues.
+
+        Raises:
+            ValueError: If the agent is already connected to the user.
         """
-        self._agent_config = agent_config
-        self._user_config = user_config
+        if (agent.id, user_id) in self._active_agent_user_pairs:
+            raise ValueError(
+                f"Agent {agent.id} is already connected to user {user_id}"
+            )
 
-        if agent_class:
-            self._agent_class = agent_class
-        if user_class:
-            self._user_class = user_class
-
-    def get_new_agent(self) -> Agent:
-        """Returns a new instance of the agent.
-
-        Returns:
-            Agent.
-        """
-        try:
-            return self._agent_class(**self._agent_config)
-        except Exception as e:
-            logging.error(f"Error while creating agent: {e}")
-        return None
-
-    def get_new_user(self, config: Dict[str, Any]) -> User:
-        """Returns a new instance of the user.
-
-        Args:
-            config: Configuration for the user.
-
-        Returns:
-            User.
-        """
-        try:
-            return self._user_class(**config)
-        except Exception as e:
-            logging.error(f"Error while creating user: {e}")
-        return None
-
-    def connect(self, user_id: str) -> None:
-        """Connects a user to an agent.
-
-        Args:
-            user_id: User ID.
-        """
-        user_config = deepcopy(self._user_config)
-        user_config["id"] = user_id
-        self._active_users[user_id] = self.get_new_user(user_config)
-        dialogue_connector = DialogueConnector(
-            agent=self.get_new_agent(),
-            user=self._active_users[user_id],
+        self._active_agent_user_pairs[(agent.id, user_id)] = (
+            agent,
+            user_simulator,
+        )
+        dialogue_connector = SimulationDialogueConnector(
+            agent=agent,
+            user=user_simulator,
             platform=self,
+            output_dir=output_dir,
         )
         dialogue_connector.start()
 
@@ -97,20 +63,25 @@ class SimulationPlatform(Platform):
     ) -> None:
         """Displays an agent utterance.
 
-        Args:
-            utterance: An instance of Utterance.
-            agent_id: Agent ID.
-            user_id: User ID of the recipient. Defaults to None.
+        This is method is not required for the simulation platform.
         """
-        print(f"{agent_id}: {utterance.text}")
+        pass
 
     def display_user_utterance(
         self, utterance: Utterance, user_id: str
     ) -> None:
         """Displays a user utterance.
 
-        Args:
-            utterance: An instance of Utterance.
-            user_id: User ID.
+        This is method is not required for the simulation platform.
         """
-        print(f"{user_id}: {utterance.text}")
+        pass
+
+    def disconnect(self, user_id: str, agent_id: str) -> None:
+        """Disconnects a user simulator from an agent.
+
+        Args:
+            user_id: User simulator ID.
+            agent_id: Agent ID.
+        """
+        agent, _ = self._active_agent_user_pairs.pop((agent_id, user_id))
+        agent.dialogue_connector.close()
