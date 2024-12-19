@@ -85,9 +85,7 @@ def test_generate_random_information_needs(
     simulation_domain: SimulationDomain,
 ) -> None:
     """Tests generate_random_information_needs."""
-    information_needs = generate_random_information_needs(
-        simulation_domain, 10
-    )
+    information_needs = generate_random_information_needs(simulation_domain, 10)
     assert len(information_needs) == 10
 
 
@@ -95,9 +93,7 @@ def test_save_information_need_batch(
     simulation_domain: SimulationDomain,
 ) -> None:
     """Tests save_information_need_batch."""
-    information_needs = generate_random_information_needs(
-        simulation_domain, 10
-    )
+    information_needs = generate_random_information_needs(simulation_domain, 10)
     batch_id = save_information_need_batch(information_needs, "simlab_test")
 
     assert batch_id is not None
