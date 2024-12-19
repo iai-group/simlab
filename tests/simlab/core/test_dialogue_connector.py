@@ -31,9 +31,7 @@ def dialogue_connector() -> SimulationDialogueConnector:
         output_dir="tests/simlab/data/dialogue_export",
     )
 
-    assert (
-        dialogue_connector._output_dir == "tests/simlab/data/dialogue_export"
-    )
+    assert dialogue_connector._output_dir == "tests/simlab/data/dialogue_export"
     return dialogue_connector
 
 

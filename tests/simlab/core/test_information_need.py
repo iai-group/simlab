@@ -10,15 +10,6 @@ from simlab.utils.utils_information_needs import (
 )
 
 
-@pytest.fixture
-def information_need() -> InformationNeed:
-    """Fixture for information need."""
-    return InformationNeed(
-        constraints={"title": "title", "year": 2024},
-        requests=["rating"],
-    )
-
-
 def test_get_constraint_value(information_need: InformationNeed) -> None:
     """Tests get_constraint_value.
 

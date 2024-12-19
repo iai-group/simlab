@@ -2,23 +2,10 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from simlab.core.dialogue_connector import SimulationDialogueConnector
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 from simlab.simulation_platform import SimulationPlatform
-
-
-@pytest.fixture
-def sim_platform() -> SimulationPlatform:
-    """Returns a simulation platform instance for testing."""
-    agent_class = WrapperAgent
-
-    platform = SimulationPlatform(agent_class)
-    assert platform._agent_class == agent_class
-
-    return platform
 
 
 def test_connect(sim_platform: SimulationPlatform, monkeypatch) -> None:

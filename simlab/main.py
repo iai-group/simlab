@@ -20,11 +20,12 @@ import numpy as np
 
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.utils import insert_record
-from dialoguekit.participant.agent import Agent
 from dialoguekit.participant.participant import Participant
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
 from simlab.core.run_configuration import RunConfiguration
+from simlab.participant.wrapper_agent import WrapperAgent
+from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 from simlab.simulation_platform import SimulationPlatform
 from simlab.utils.configuration_readers.base_configuration_reader import (
     BaseConfigurationReader,
@@ -41,20 +42,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "config_file",
         type=str,
-        required=True,
         help="Path to the simulation configuration file.",
     )
     parser.add_argument(
         "mongo_uri",
         type=str,
-        required=True,
         help="MongoDB URI.",
     )
     parser.add_argument(
         "mongo_db",
         type=str,
-        required=True,
         help="MongoDB database name.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        type=str,
+        default="data/dialogue_export",
+        help="Path to the output directory for the task.",
     )
     return parser.parse_args()
 
@@ -73,9 +78,10 @@ def load_configuration(config_file: str) -> RunConfiguration:
 
 def generate_synthetic_dialogues(
     simulation_platform: SimulationPlatform,
-    user_simulator: Participant,
-    agent: Agent,
+    user_simulator: WrapperUserSimulator,
+    agent: WrapperAgent,
     information_needs: List[InformationNeed],
+    output_dir: str,
 ):
     """Generates synthetic dialogues for the given agent-user simulator pair.
 
@@ -84,10 +90,13 @@ def generate_synthetic_dialogues(
         user_simulator: User simulator.
         agent: Agent.
         information_needs: List of information needs.
+        output_dir: Path to the output directory for the task.
     """
     for information_need in information_needs:
         user_simulator.set_information_need(information_need)
-        simulation_platform.connect(user_simulator.id, user_simulator, agent)
+        simulation_platform.connect(
+            user_simulator.id, user_simulator, agent, output_dir
+        )
         simulation_platform.disconnect(user_simulator.id, agent.id)
 
 
@@ -115,7 +124,10 @@ def filter_existing_participant_pairs(
 
 
 def main(
-    configuration: RunConfiguration, mongo_uri: str, mongo_db: str
+    configuration: RunConfiguration,
+    mongo_uri: str,
+    mongo_db: str,
+    output_dir: str,
 ) -> None:
     """Runs the simulation-based evaluation given a configuration.
 
@@ -123,11 +135,12 @@ def main(
         configuration: Simulation configuration object.
         mongo_uri: MongoDB URI.
         mongo_db: MongoDB database name.
+        output_dir: Path to the output directory for the task.
     """
     mongo_connector = MongoDBConnector(mongo_uri, mongo_db)
     output_dir = os.path.join(
-        "data",
-        f"dialogue_export_{configuration.task.name}",
+        output_dir,
+        configuration.task.name,
         configuration.task.batch_id,
     )
     # Generate all possible agent-user simulator pairs
@@ -135,7 +148,7 @@ def main(
         configuration.agents, configuration.user_simulators
     )
 
-    simulation_platform = SimulationPlatform(Agent)
+    simulation_platform = SimulationPlatform(WrapperAgent)
 
     # Remove pairs that have already been evaluated
     participant_pairs = filter_existing_participant_pairs(
@@ -149,6 +162,7 @@ def main(
             user_simulator,
             agent,
             configuration.task.information_needs,
+            output_dir,
         )
 
         # Evaluate the performance of the agent
@@ -187,4 +201,4 @@ def main(
 if __name__ == "__main__":
     args = parse_args()
     configuration = load_configuration(args.config_file)
-    main(configuration, args.mongo_uri, args.mongo_db)
+    main(configuration, args.mongo_uri, args.mongo_db, args.output_dir)
