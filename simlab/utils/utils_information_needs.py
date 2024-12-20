@@ -31,9 +31,6 @@ def save_information_need_batch(
         "information_needs",
         {"information_needs": records},
     )
-
-    mongo_connector.close_connection()
-
     return str(id)
 
 
