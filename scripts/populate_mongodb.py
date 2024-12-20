@@ -189,6 +189,8 @@ def main(args: argparse.Namespace) -> None:
     ids = upsert_records(db_connector, "metrics", metrics)
     logging.info(f"Inserted {len(ids)} metrics in MongoDB.")
 
+    db_connector.close_connection()
+
 
 if __name__ == "__main__":
     args = parse_args()
