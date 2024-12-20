@@ -117,13 +117,13 @@ def load_metrics_descriptions(metrics_dir: str) -> List[Dict[str, Any]]:
 
 
 def create_information_needs_batch(
-    task_description: Dict[str, Any], db_name: str
+    task_description: Dict[str, Any], mongo_connector: MongoDBConnector
 ) -> str:
     """Creates an information need batch for a task.
 
     Args:
         task_description: Task description.
-        db_name: Database name.
+        mongo_connector: MongoDB connector.
 
     Raises:
         ValueError: If the simulation domain is not provided in the task
@@ -150,7 +150,7 @@ def create_information_needs_batch(
     information_needs = generate_random_information_needs(
         simulation_domain, DEFAULT_NUM_INFORMATION_NEEDS
     )
-    batch_id = save_information_need_batch(information_needs, db_name)
+    batch_id = save_information_need_batch(information_needs, mongo_connector)
     return batch_id
 
 
