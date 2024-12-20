@@ -1,0 +1,15 @@
+# This document is a template for creating new tasks. Please copy this file and define new tasks.
+name: "Template Task"
+description: "This is a template task. It is used to create new tasks."
+class_name: Task
+
+# Describe the arguments of the task and which can be configured by the user.
+arguments:
+  domain:
+    type: domain
+    class_name: "SimulationDomain"
+    arguments:
+      config_file: "data/simlab/domains/template_domain.yaml"
+  db_name:
+    type: str
+    value: "simlab"
