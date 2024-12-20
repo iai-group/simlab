@@ -2,7 +2,6 @@ import "./App.css";
 
 import { Route, Routes } from "react-router-dom";
 
-import Documentation from "./components/docs/Documentation";
 import HomeLayout from "./components/home/HomeLayout";
 import Layout from "./components/layout/Layout";
 import Leaderboard from "./components/Leaderboard";
@@ -20,7 +19,6 @@ function App() {
           <Route index element={<HomeLayout />} />
           <Route path="/experiment" element={<RunHome />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/documentation" element={<Documentation />} />
           <Route path="/auth" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/reset-password" element={<ResetPasswordForm />} />

@@ -54,7 +54,9 @@ const DynamicNavBar = () => {
               </MDBNavbarItem>
             ) : null}
             <MDBNavbarItem>
-              <MDBNavbarLink href="/documentation">Documentation</MDBNavbarLink>
+              <MDBNavbarLink href="https://localhost/docs" target="_blank">
+                Documentation
+              </MDBNavbarLink>
             </MDBNavbarItem>
             <MDBNavbarItem>
               <MDBNavbarLink href="/leaderboard">Leaderboard</MDBNavbarLink>
