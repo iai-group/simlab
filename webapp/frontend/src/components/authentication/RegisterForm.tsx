@@ -32,7 +32,9 @@ const RegisterForm = () => {
       })
       .catch((error) => {
         console.error(error);
-        setErrorMessage(error.message || "An unknown error occurred.");
+        setErrorMessage(
+          error.response.data.message || "An unknown error occurred."
+        );
       });
   };
 

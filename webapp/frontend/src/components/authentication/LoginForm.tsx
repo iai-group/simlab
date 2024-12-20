@@ -27,7 +27,9 @@ const LoginForm = () => {
         navigate("/");
       })
       .catch((error) => {
-        setErrorMessage(error.message || "An unknown error occurred.");
+        setErrorMessage(
+          error.response.data.message || "An unknown error occurred."
+        );
       });
   };
 
