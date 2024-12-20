@@ -77,6 +77,31 @@ def insert_records(
     return []
 
 
+def upsert_records(
+    connector: MongoDBConnector, collection: str, records: List[Dict[str, Any]]
+) -> List[str]:
+    """Inserts or updates multiple records into a collection.
+
+    Args:
+        connector: MongoDB connector.
+        collection: Collection name.
+        records: Records to insert or update.
+
+    Returns:
+        List of IDs of the inserted or updated records.
+    """
+    db = connector.get_database()
+    ids = []
+    try:
+        for record in records:
+            query = {key: record[key] for key in record if key != "_id"}
+            r = db[collection].update_one(query, {"$set": record}, upsert=True)
+            ids.append(r.upserted_id or record.get("_id"))
+    except Exception as e:
+        logging.error(f"Error upserting records: {e}")
+    return ids
+
+
 def delete_records(
     connector: MongoDBConnector, collection: str, query: Dict[str, Any]
 ) -> bool:

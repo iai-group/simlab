@@ -20,7 +20,6 @@ import numpy as np
 
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.utils import insert_record
-from dialoguekit.participant.participant import Participant
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
 from simlab.core.run_configuration import RunConfiguration
@@ -101,8 +100,9 @@ def generate_synthetic_dialogues(
 
 
 def filter_existing_participant_pairs(
-    output_dir: str, participant_pairs: List[Tuple[Participant, Participant]]
-) -> List[Tuple[Participant, Participant]]:
+    output_dir: str,
+    participant_pairs: List[Tuple[WrapperAgent, WrapperUserSimulator]],
+) -> List[Tuple[WrapperAgent, WrapperUserSimulator]]:
     """Filters out the agent-user simulator pairs which have been evaluated.
 
     Args:
@@ -144,8 +144,8 @@ def main(
         configuration.task.batch_id,
     )
     # Generate all possible agent-user simulator pairs
-    participant_pairs = itertools.product(
-        configuration.agents, configuration.user_simulators
+    participant_pairs = list(
+        itertools.product(configuration.agents, configuration.user_simulators)
     )
 
     simulation_platform = SimulationPlatform(WrapperAgent)

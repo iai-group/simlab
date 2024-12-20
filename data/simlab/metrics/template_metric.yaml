@@ -1,0 +1,11 @@
+# This is a template for creating new metrics. Please copy this file and define new metrics.
+name: "Template Metric"
+description: "This is a template metric. It is used to create new metrics."
+class_name: Metric
+
+# Describe the arguments of the metric and which can be configured by the user.
+arguments:
+  random_seed:
+    configurable: true
+    type: int
+    default: 0
