@@ -8,4 +8,4 @@ arguments:
   random_seed:
     configurable: true
     type: int
-    default: 0
+    value: 0

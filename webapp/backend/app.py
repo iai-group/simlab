@@ -9,6 +9,8 @@ from connectors.docker.docker_registry_connector import DockerRegistryConnector
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 
+DATA_FOLDER = "data/simlab"
+
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
 docker_registry_connector = DockerRegistryConnector()
@@ -62,14 +64,14 @@ def create_app(testing: bool = False) -> Flask:
 
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config[
-        "SESSION_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    app.config["SESSION_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    )
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SECURE"] = True
-    app.config[
-        "REMEMBER_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site remember cookies
+    app.config["REMEMBER_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site remember cookies
+    )
 
     app.config["UPLOAD_FOLDER"] = "data/uploads"
     app.config["ALLOWED_EXTENSIONS"] = {"json"}

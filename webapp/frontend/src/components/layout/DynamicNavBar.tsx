@@ -54,21 +54,22 @@ const DynamicNavBar = () => {
               </MDBNavbarItem>
             ) : null}
             <MDBNavbarItem>
-              <MDBNavbarLink href="https://localhost/docs" target="_blank">
-                Documentation
-              </MDBNavbarLink>
-            </MDBNavbarItem>
-            <MDBNavbarItem>
               <MDBNavbarLink href="/leaderboard">Leaderboard</MDBNavbarLink>
             </MDBNavbarItem>
-
+            <MDBNavbarItem>
+              <MDBNavbarLink href="https://localhost/docs" target="_blank">
+                Documentation <MDBIcon fas icon="external-link-alt" />
+              </MDBNavbarLink>
+            </MDBNavbarItem>
+          </MDBNavbarNav>
+          <div className="d-flex w-auto">
             {user ? (
               <MDBBtn rounded onClick={handleSignOut}>
                 Sign Out
               </MDBBtn>
             ) : (
               <>
-                <MDBBtn rounded href="/auth">
+                <MDBBtn rounded href="/auth" className="me-2">
                   Log In
                 </MDBBtn>
                 <MDBBtn rounded href="/register">
@@ -76,7 +77,7 @@ const DynamicNavBar = () => {
                 </MDBBtn>
               </>
             )}
-          </MDBNavbarNav>
+          </div>
         </MDBCollapse>
       </MDBContainer>
     </MDBNavbar>
