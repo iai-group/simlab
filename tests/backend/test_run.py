@@ -6,19 +6,7 @@ from flask_login import FlaskLoginClient
 
 from connectors.mongo.utils import find_records
 from tests.backend.conftest import mongo_connector
-from webapp.backend.routes.run import (
-    parse_metrics,
-    parse_task,
-    validate_configuration_file_extension,
-)
-
-
-def test_validate_configuration_file_extension():
-    """Tests validate_configuration_file_extension."""
-    assert validate_configuration_file_extension("file.json")
-    assert not validate_configuration_file_extension("file.txt")
-    assert not validate_configuration_file_extension("file")
-    assert not validate_configuration_file_extension("file.json.txt")
+from webapp.backend.routes.run import parse_metrics, parse_task
 
 
 def test_parse_task() -> None:
