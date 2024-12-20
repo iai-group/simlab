@@ -1,4 +1,5 @@
 {
+    "name": "test_run",
     "task": {
         "class_name": "Task",
         "arguments": {
