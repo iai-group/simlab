@@ -9,4 +9,7 @@ A task represents the simulation-based evaluation of conversational agents, such
 - A list of metrics that are used to evaluate the performance of the agents on the task. See metric documentation for more information.
 - A list of information needs that are used to generate synthetic conversations for each agent to evaluate. See information need documentation for more information.
 
-The task class, :py:class:`simlab.tasks.task.Task`, is designed to be generic and flexible to support a wide range of evaluation scenarios. New tasks may be added to SimLab by inheriting from this class and implementing the additional functionality required for the specific evaluation scenario.
+The task class, :py:class:`simlab.tasks.task.Task`, is designed to be generic and flexible to support a wide range of evaluation scenarios. New tasks may be added to SimLab by inheriting from this class and implementing the additional functionalities required for the specific evaluation scenario.
+
+.. TODO: Update link to production URL
+A list of tasks that are currently supported by SimLab can be found at: `<https://localhost/api/tasks>`_.
