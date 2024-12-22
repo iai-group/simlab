@@ -6,3 +6,4 @@ Web application
    :caption: Web application
 
    backend
+   frontend

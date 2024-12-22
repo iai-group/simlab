@@ -1,750 +1,569 @@
-openapi: "3.0.0"
-
+swagger: "2.0"
 info:
-    title: "SimLab Backend API"
-    version: "1.0.0"
-    description: "API documentation for SimLab backend."
+  title: "SimLab Backend API"
+  version: "1.0.0"
+  description: "API documentation for SimLab backend."
+
+host: localhost
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
 
 paths:
-    # Authenticated routes
-    /register:
-        post:
-            summary: "Register a new user."
-            description: "Register a new user with the provided email, username, and password."
-            tags:
-                - "Authentication"
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                email:
-                                    type: string
-                                username:
-                                    type: string
-                                password:
-                                    type: string
-                        example:
-                            email: "test@example.com"
-                            username: "testuser"
-                            password: "testpassword"
-            responses:
-                201:
-                    description: "User registered successfully."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "User registered successfully."
-                400:
-                    description: "Invalid request body or user already exists."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                            examples:
-                                user_exists:
-                                    value: "User already exists."
-                                invalid_request:
-                                    value: "Invalid request body."
-    /login:
-        post:
-            summary: "Login a user."
-            description: "Login a user with the provided username and password."
-            tags:
-                - "Authentication"
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                username:
-                                    type: string
-                                password:
-                                    type: string
-                        example:
-                            username: "testuser"
-                            password: "testpassword"
-            responses:
-                200:
-                    description: "User logged in successfully."
-                    headers:
-                        Set-Cookie:
-                            description: "Session token cookie."
-                            schema:
-                                type: string
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Login successful."
-                400:
-                    description: "Invalid request body or user does not exist."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                            examples:
-                                user_not_found:
-                                    value: "User not found."
-                                invalid_request:
-                                    value: "Invalid request body."
-                401:
-                    description: "Invalid credentials."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Login failed. Please check your credentials."
-    /logout:
-        post:
-            summary: "Logout a user."
-            description: "Logout a user by invalidating the user's session token."
-            tags:
-                - "Authentication"
-            responses:
-                200:
-                    description: "User logged out successfully."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Logout successful."
-                401:
-                    description: "Unauthorized access."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Unauthorized access."
-    /reset-password:
-        post:
-            summary: "Reset user password."
-            description: "Reset the password for a user with the provided username."
-            tags:
-                - "Authentication"
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                username:
-                                    type: string
-                                password:
-                                    type: string
-                        example:
-                            username: "testuser"
-                            password: "newpassword"
-            responses:
-                200:
-                    description: "Password reset successful."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Password reset successful."
-                400:
-                    description: "Invalid request body or user does not exist."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                            examples:
-                                user_not_found:
-                                    value: "User not found."
-                                invalid_request:
-                                    value: "Invalid request body."
+  /register:
+    post:
+      summary: "Register a new user."
+      description: "Register a new user with the provided email, username, and password."
+      tags:
+        - "Authentication"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              username:
+                type: string
+              password:
+                type: string
+            example:
+              email: "test@example.com"
+              username: "testuser"
+              password: "testpassword"
+      responses:
+        201:
+          description: "User registered successfully."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "User registered successfully."
+        400:
+          description: "Invalid request body or user already exists."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            user_exists:
+              value:
+                message: "User already exists."
+            invalid_request:
+              value:
+                message: "Invalid request body."
 
-    # Documentation routes
-    /template-agent-api:
-        get:
-            summary: "Get Template Agent API documentation."
-            description: "Get the API documentation for the Template Agent service."
-            tags:
-                - "Documentation"
-                - "Template API"
-            responses:
-                200:
-                    description: "Template Agent API documentation."
-                    content:
-                        multipart/form-data:
-                            schema:
-                                type: object
-                                properties:
-                                    file:
-                                        type: string
-                                        format: binary
-    /template-simulator-api:
-        get:
-            summary: "Get Template Simulator API documentation."
-            description: "Get the API documentation for the Template Simulator service."
-            tags:
-                - "Documentation"
-                - "Template API"
-            responses:
-                200:
-                    description: "Template Simulator API documentation."
-                    content:
-                        multipart/form-data:
-                            schema:
-                                type: object
-                                properties:
-                                    file:
-                                        type: string
-                                        format: binary
-    /tasks:
-        get:
-            summary: "Get supported tasks"
-            description: "Get a list of supported tasks from the database."
-            tags:
-                - "Documentation"
-                - "Tasks"
-            responses:
-                200:
-                    description: "List of supported tasks."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    tasks:
-                                        type: array
-                                        items:
-                                            type: object
-                                            properties:
-                                                _id:
-                                                    type: string
-                                                name:
-                                                    type: string
-                                                description:
-                                                    type: string
-                            example:
-                                tasks:
-                                    - _id: "1"
-                                      name: "Task 1"
-                                      description: "Description of Task 1"
-                                    - _id: "2"
-                                      name: "Task 2"
-                                      description: "Description of Task 2"
-                400:
-                    description: "No tasks found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "No tasks found."
-    /tasks/{task_id}:
-        get:
-            summary: "Get task details"
-            description: "Get details of a specific task by task ID."
-            tags:
-                - "Documentation"
-                - "Tasks"
-            parameters:
-                - name: task_id
-                  in: path
-                  required: true
-                  description: "ID of the task to retrieve."
-                  schema:
+  /login:
+    post:
+      summary: "Login a user."
+      description: "Login a user with the provided username and password."
+      tags:
+        - "Authentication"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+            example:
+              username: "testuser"
+              password: "testpassword"
+      responses:
+        200:
+          description: "User logged in successfully."
+          headers:
+            Set-Cookie:
+              description: "Session token cookie."
+              type: string
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+  # Documentation routes
+  /template-agent-api:
+    get:
+      summary: "Get Template Agent API documentation."
+      description: "Get the API documentation for the Template Agent service."
+      tags:
+        - "Template APIs"
+      responses:
+        200:
+          description: "Template Agent API documentation."
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+
+  /template-simulator-api:
+    get:
+      summary: "Get Template Simulator API documentation."
+      description: "Get the API documentation for the Template Simulator service."
+      tags:
+        - "Template APIs"
+      responses:
+        200:
+          description: "Template Simulator API documentation."
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+
+  /tasks:
+    get:
+      summary: "Get supported tasks."
+      description: "Get a list of supported tasks from the database."
+      tags:
+        - "Tasks"
+      responses:
+        200:
+          description: "List of supported tasks."
+          schema:
+            type: object
+            properties:
+              tasks:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
                       type: string
-            responses:
-                200:
-                    description: "Task details."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    _id:
-                                        type: string
-                                    name:
-                                        type: string
-                                    description:
-                                        type: string
-                            example:
-                                _id: "1"
-                                name: "Task 1"
-                                description: "Description of Task 1"
-                400:
-                    description: "Task not found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Task not found."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Multiple tasks found with the same ID."
-    /metrics:
-        get:
-            summary: "Get all evaluation metrics."
-            description: "Get a list of all evaluation metrics from the database."
-            tags:
-                - "Documentation"
-                - "Metrics"
-            responses:
-                200:
-                    description: "List of evaluation metrics."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    metrics:
-                                        type: array
-                                        items:
-                                            type: object
-                                            properties:
-                                                _id:
-                                                    type: string
-                                                name:
-                                                    type: string
-                                                description:
-                                                    type: string
-                            example:
-                                metrics:
-                                    - _id: "1"
-                                      name: "Metric 1"
-                                      description: "Description of Metric 1"
-                                    - _id: "2"
-                                      name: "Metric 2"
-                                      description: "Description of Metric 2"
-                400:
-                    description: "No metrics found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "No metrics found."
-    /metrics/{metric_id}:
-        get:
-            summary: "Get metric details."
-            description: "Get details of a specific metric by metric ID."
-            tags:
-                - "Documentation"
-                - "Metrics"
-            parameters:
-                - name: metric_id
-                  in: path
-                  required: true
-                  description: "ID of the metric to retrieve."
-                  schema:
+                    name:
                       type: string
-            responses:
-                200:
-                    description: "Metric details."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    _id:
-                                        type: string
-                                    name:
-                                        type: string
-                                    description:
-                                        type: string
-                            example:
-                                _id: "1"
-                                name: "Metric 1"
-                                description: "Description of Metric 1"
-                400:
-                    description: "Metric not found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Metric not found."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Multiple metrics found with the same ID."
-    /agents:
-        get:
-            summary: "Get all available agents."
-            description: "Get a list of all available agents from SimLab docker registry."
-            tags:
-                - "Documentation"
-                - "Conversational agents"
-            responses:
-                200:
-                    description: "List of available agents."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    agents:
-                                        type: array
-                                        items:
-                                            type: object
-                                            properties:
-                                                id:
-                                                    type: string
-                                                tags:
-                                                    type: object
-                                                labels:
-                                                    type: object
-                400:
-                    description: "No agents found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "No agents found."
-    /agents/{agent_id}:
-        get:
-            summary: "Get agent details."
-            description: "Get details of a specific agent by agent ID."
-            tags:
-                - "Documentation"
-                - "Conversational agents"
-            parameters:
-                - name: agent_id
-                  in: path
-                  required: true
-                  description: "ID of the agent to retrieve."
-                  schema:
+                    description:
                       type: string
-            responses:
-                200:
-                    description: "Agent details."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    id:
-                                        type: string
-                                    tags:
-                                        type: object
-                                    labels:
-                                        type: object
-                400:
-                    description: "Agent not found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Agent not found."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Multiple agents found with the same ID."
-    /simulators:
-        get:
-            summary: "Get all available simulators."
-            description: "Get a list of all available simulators from SimLab docker registry."
-            tags:
-                - "Documentation"
-                - "User simulators"
-            responses:
-                200:
-                    description: "List of available simulators."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    simulators:
-                                        type: array
-                                        items:
-                                            type: object
-                                            properties:
-                                                id:
-                                                    type: string
-                                                tags:
-                                                    type: object
-                                                labels:
-                                                    type: object
-                400:
-                    description: "No simulators found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "No simulators found."
-    /simulators/{simulator_id}:
-        get:
-            summary: "Get simulator details."
-            description: "Get details of a specific simulator by simulator ID."
-            tags:
-                - "Documentation"
-                - "User simulators"
-            parameters:
-                - name: simulator_id
-                  in: path
-                  required: true
-                  description: "ID of the simulator to retrieve."
-                  schema:
+          examples:
+            application/json:
+              tasks:
+                - _id: "1"
+                  name: "Task 1"
+                  description: "Description of Task 1"
+                - _id: "2"
+                  name: "Task 2"
+                  description: "Description of Task 2"
+        400:
+          description: "No tasks found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No tasks found."
+
+  /tasks/{task_id}:
+    get:
+      summary: "Get task details."
+      description: "Get details of a specific task by task ID."
+      tags:
+        - "Tasks"
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          description: "ID of the task to retrieve."
+          type: string
+      responses:
+        200:
+          description: "Task details."
+          schema:
+            type: object
+            properties:
+              _id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+          examples:
+            application/json:
+              _id: "1"
+              name: "Task 1"
+              description: "Description of Task 1"
+        400:
+          description: "Task not found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Task not found."
+        500:
+          description: "Internal server error."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Multiple tasks found with the same ID."
+
+  /metrics:
+    get:
+      summary: "Get all evaluation metrics."
+      description: "Get a list of all evaluation metrics from the database."
+      tags:
+        - "Metrics"
+      responses:
+        200:
+          description: "List of evaluation metrics."
+          schema:
+            type: object
+            properties:
+              metrics:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
                       type: string
-            responses:
-                200:
-                    description: "Simulator details."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    id:
-                                        type: string
-                                    tags:
-                                        type: object
-                                    labels:
-                                        type: object
-                400:
-                    description: "Simulator not found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Simulator not found."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Multiple simulators found with the same ID."
-    # Run routes
-    /run-request:
-        post:
-            summary: "Submit a run request."
-            description: "Submit a run request with a run name and configuration details."
-            tags:
-                - "Runs"
-            requestBody:
-                required: true
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                run_name:
-                                    type: string
-                                run_configuration_file:
-                                    type: string
-                                    format: binary
-                        example:
-                            run_name: "Run 1"
-                            run_configuration_file: "config.json"
-            responses:
-                200:
-                    description: "Run request submitted successfully."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Run request submitted successfully."
-                400:
-                    description: "Invalid request body or configuration file."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Invalid request body or configuration file."
-                                    run_id:
-                                        type: string
-                                        example: "6758ab1ed758f93bddbedaca"
-                401:
-                    description: "Unauthorized access."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Unauthorized access. User not logged in."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Error submitting run request." 
-    /run-info/{run_id}:
-        get:
-            summary: "Get run information."
-            description: "Get information about a specific run by run ID."
-            tags:
-                - "Runs"
-            parameters:
-                - name: run_id
-                  in: path
-                  required: true
-                  description: "ID of the run to retrieve."
-                  schema:
+                    name:
                       type: string
-            responses:
-                200:
-                    description: "Run information."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    run_info:
-                                        type: object
-                400:
-                    description: "Run not found."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Run not found."
-                401:
-                    description: "Unauthorized access."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Unauthorized access."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Multiple runs found with the same ID."
-    /delete-run/{run_id}:
-        delete:
-            summary: "Delete a run."
-            description: "Delete a specific run by run ID."
-            tags:
-                - "Runs"
-            parameters:
-                - name: run_id
-                  in: path
-                  required: true
-                  description: "ID of the run to delete."
-                  schema:
+                    description:
                       type: string
-            responses:
-                200:
-                    description: "Run deleted successfully."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Run deleted successfully."
-                401:
-                    description: "Unauthorized access."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Unauthorized access."
-                500:
-                    description: "Internal server error."
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: "Error deleting run."
+          examples:
+            application/json:
+              metrics:
+                - _id: "1"
+                  name: "Metric 1"
+                  description: "Description of Metric 1"
+                - _id: "2"
+                  name: "Metric 2"
+                  description: "Description of Metric 2"
+        400:
+          description: "No metrics found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No metrics found."
+
+  /metrics/{metric_id}:
+    get:
+      summary: "Get metric details."
+      description: "Get details of a specific metric by metric ID."
+      tags:
+        - "Metrics"
+      parameters:
+        - name: metric_id
+          in: path
+          required: true
+          description: "ID of the metric to retrieve."
+          type: string
+      responses:
+        200:
+          description: "Metric details."
+          schema:
+            type: object
+            properties:
+              _id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+          examples:
+            application/json:
+              _id: "1"
+              name: "Metric 1"
+              description: "Description of Metric 1"
+        400:
+          description: "Metric not found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Metric not found."
+        500:
+          description: "Internal server error."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Multiple metrics found with the same ID."
+
+  /agents:
+    get:
+      summary: "Get all available agents."
+      description: "Get a list of all available agents from SimLab docker registry."
+      tags:
+        - "Conversational agents"
+      responses:
+        200:
+          description: "List of available agents."
+          schema:
+            type: object
+            properties:
+              agents:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    tags:
+                      type: object
+                    labels:
+                      type: object
+        400:
+          description: "No agents found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No agents found."
+
+  /agents/{agent_id}:
+    get:
+      summary: "Get agent details."
+      description: "Get details of a specific agent by agent ID."
+      tags:
+        - "Conversational agents"
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          description: "ID of the agent to retrieve."
+          type: string
+      responses:
+        200:
+          description: "Agent details."
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              tags:
+                type: object
+              labels:
+                type: object
+        400:
+          description: "Agent not found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Agent not found."
+        500:
+          description: "Internal server error."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Multiple agents found with the same ID."
+
+  /simulators:
+    get:
+      summary: "Get all available simulators."
+      description: "Get a list of all available simulators from SimLab docker registry."
+      tags:
+        - "User simulators"
+      responses:
+        200:
+          description: "List of available simulators."
+          schema:
+            type: object
+            properties:
+              simulators:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    tags:
+                      type: object
+                    labels:
+                      type: object
+        400:
+          description: "No simulators found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No simulators found."
+
+  /simulators/{simulator_id}:
+    get:
+      summary: "Get simulator details."
+      description: "Get details of a specific simulator by simulator ID."
+      tags:
+        - "User simulators"
+      parameters:
+        - name: simulator_id
+          in: path
+          required: true
+          description: "ID of the simulator to retrieve."
+          type: string
+      responses:
+        200:
+          description: "Simulator details."
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              tags:
+                type: object
+              labels:
+                type: object
+        400:
+          description: "Simulator not found."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Simulator not found."
+        500:
+          description: "Internal server error."
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Multiple simulators found with the same ID."
+  # Run routes
+  /run-info/{run_id}:
+    get:
+      summary: "Get run information."
+      description: "Get information about a specific run by run ID."
+      tags:
+        - "Runs"
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          description: "ID of the run to retrieve."
+          type: string
+      responses:
+        200:
+          description: "Run information."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_info:
+                    type: object
+        400:
+          description: "Run not found."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Run not found."
+        401:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized access."
+        500:
+          description: "Internal server error."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Multiple runs found with the same ID."
+  /delete-run/{run_id}:
+    delete:
+      summary: "Delete a run."
+      description: "Delete a specific run by run ID."
+      tags:
+        - "Runs"
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          description: "ID of the run to delete."
+          type: string
+      responses:
+        200:
+          description: "Run deleted successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Run deleted successfully."
+        401:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized access."
+        500:
+          description: "Internal server error."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error deleting run."

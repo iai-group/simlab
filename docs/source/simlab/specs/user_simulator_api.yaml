@@ -1,0 +1,143 @@
+swagger: "2.0"
+info:
+  title: User Simulator API
+  description: API facilitating interaction with a user simulator
+  version: "1.0.0"
+
+host: localhost
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /receive_utterance:
+    post:
+      summary: Receive an utterance from a conversational agent
+      description: Receive an utterance from a conversational agent and return the simulator's response
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              context:
+                type: array
+                items:
+                  type: string
+              agent_id:
+                type: string
+              message:
+                type: string
+            example:
+              context:
+                - "Hello, how can I help you today?"
+                - "I am looking an action movie"
+                - "Do you a favorite actor?"
+                - "I like Tom Cruise"
+              agent_id: "CRS1"
+              message: "I suggest you watch Top Gun"
+      responses:
+        200:
+          description: Object containing the user's response and optionally dialogue acts, annotations, and metadata
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              dialogue_acts:
+                type: array
+                items:
+                  $ref: "#/definitions/DialogueAct"
+              annotations:
+                type: array
+                items:
+                  $ref: "#/definitions/Annotation"
+              metadata:
+                type: object
+                additionalProperties:
+                  type: string
+          examples:
+            application/json:
+              message: "I have seen Top Gun before"
+              dialogue_acts: []
+              annotations: []
+              metadata: {}
+
+  /configure:
+    post:
+      summary: Configure the user simulator
+      description: Configure the user simulator with the desired parameters
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              parameters:
+                type: object
+                additionalProperties:
+                  type: string
+            example:
+              parameters:
+                key: "value"
+      responses:
+        200:
+          description: Acknowledgement of successful configuration
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "User simulator configured successfully"
+        400:
+          description: Error in configuration
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Error in configuration"
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Internal server error"
+
+definitions:
+  DialogueAct:
+    type: object
+    properties:
+      intent:
+        type: string
+      annotations:
+        type: array
+        items:
+          type: object
+          properties:
+            slot:
+              type: string
+            value:
+              type: string
+
+  Annotation:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
