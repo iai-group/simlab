@@ -39,6 +39,7 @@ The repository is structured as follows:
   * Docker
   * Docker Compose
   * SSL certificate and private key should be placed in the folder `nginx/ssl/` with the names `cert.pem` and `privkey.pem` respectively.
+  * Build Sphinx documentation with the command `sphinx-build -M html docs/source/ build/`.
 
 **Running SimLab**
 
