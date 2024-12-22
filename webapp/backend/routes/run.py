@@ -75,7 +75,7 @@ def parse_metrics(configuration: Dict[str, Any]) -> Dict[str, ObjectId]:
     metrics_records = find_records(
         mongo_connector,
         "metrics",
-        {"name": {"$in": [metric["name"] for metric in metrics]}},
+        {"name": {"$in": [metric for metric in metrics]}},
     )
 
     if not metrics_records:
@@ -86,8 +86,8 @@ def parse_metrics(configuration: Dict[str, Any]) -> Dict[str, ObjectId]:
     for metric in metrics_records:
         id = ObjectId(metric.get("_id"))
         if not id:
-            raise ValueError(f"Metric ID not found for {metric['name']}.")
-        metrics_dict[metric["name"]] = metric["_id"]
+            raise ValueError(f"Metric ID not found for {metric.get('name')}.")
+        metrics_dict[metric.get("name")] = metric.get("_id")
 
     return metrics_dict
 
@@ -147,6 +147,8 @@ def run_request() -> Response:
             metric["_id"] = metric_ids[metric["name"]]
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+
+    print(f"DEBUG - run_configuration: {run_configuration}", flush=True)
 
     # Save run configuration to MongoDB
     run_id = insert_record(

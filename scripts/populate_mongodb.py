@@ -5,14 +5,23 @@ module.
 """
 
 import argparse
-import importlib
-import inspect
 import logging
-from typing import Dict, List
+import os
+from typing import Any, Dict, List
+
+import yaml
 
 from connectors.mongo.mongo_connector import MongoDBConnector
-from connectors.mongo.utils import insert_records
-from simlab.metrics.metric import Metric
+from connectors.mongo.utils import insert_records, upsert_records
+from simlab.utils.configuration_readers.component_generators.base_component_generator import (  # noqa: E501
+    BaseComponentGenerator,
+)
+from simlab.utils.utils_information_needs import (
+    generate_random_information_needs,
+    save_information_need_batch,
+)
+
+DEFAULT_NUM_INFORMATION_NEEDS = 1000
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,12 +29,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="populate_mongodb.py")
 
     parser.add_argument(
-        "--mongo-uri",
+        "resource_dir",
+        type=str,
+        help=(
+            "Path to the resource directory. It should include the folders "
+            "'metrics' and 'tasks'."
+        ),
+    )
+    parser.add_argument(
+        "--mongo_uri",
         type=str,
         help="MongoDB URI to connect to the database.",
     )
     parser.add_argument(
-        "--mongo-db",
+        "--mongo_db",
         type=str,
         help="MongoDB database name.",
     )
@@ -33,31 +50,108 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_module(module_name: str, base_class) -> List[Dict[str, str]]:
-    """Parses a module to extract classes that inherit from a base class.
+def load_new_tasks(tasks_dir: str, db_name: str) -> List[Dict[str, Any]]:
+    """Loads new task descriptions from the tasks directory.
+
+    The task descriptions are stored in YAML files. For each new task, a batch
+    of information needs is created.
 
     Args:
-        module_name: Module name.
-        base_class: Base class to filter classes.
+        tasks_dir: Path to the tasks directory.
+        db_name: Database name.
+
+    Raises:
+        FileNotFoundError: If the tasks directory does not exist.
 
     Returns:
-        List of names and descriptions of the extracted classes.
+        List of task descriptions that are not already in the database.
     """
-    classes = []
-    try:
-        module = importlib.import_module(module_name)
-        for name, cls in inspect.getmembers(module, inspect.isclass):
-            if issubclass(cls, base_class) and cls != base_class:
-                description = (
-                    cls.description
-                    if hasattr(cls, "description")
-                    else cls.__doc__
-                )
-                classes.append({"name": name, "description": description})
-    except Exception as e:
-        logging.error(f"Error parsing module {module_name}: {e}")
+    if not os.path.exists(tasks_dir):
+        raise FileNotFoundError(f"Tasks directory not found: {tasks_dir}")
 
-    return classes
+    task_descriptions = []
+    for file in os.listdir(tasks_dir):
+        if file.endswith(".yaml") or file.endswith(".yml"):
+            description = yaml.safe_load(open(os.path.join(tasks_dir, file)))
+
+            if not description.get("arguments", {}).get("batch_id"):
+                # Generate information needs for the new task
+                batch_id = create_information_needs_batch(description, db_name)
+                description.get("arguments", {})["batch_id"] = {
+                    "type": "str",
+                    "value": batch_id,
+                }
+                # Save the updated task description
+                yaml.safe_dump(
+                    description, open(os.path.join(tasks_dir, file), "w")
+                )
+
+                task_descriptions.append(description)
+    return task_descriptions
+
+
+def load_metrics_descriptions(metrics_dir: str) -> List[Dict[str, Any]]:
+    """Loads metrics descriptions from the metrics directory.
+
+    The metrics descriptions are stored in YAML files.
+
+    Args:
+        metrics_dir: Path to the metrics directory.
+
+    Raises:
+        FileNotFoundError: If the metrics directory does not exist.
+
+    Returns:
+        List of metrics descriptions.
+    """
+    if not os.path.exists(metrics_dir):
+        raise FileNotFoundError(f"Metrics directory not found: {metrics_dir}")
+
+    metrics_descriptions = []
+    for file in os.listdir(metrics_dir):
+        if file.endswith(".yaml") or file.endswith(".yml"):
+            description = yaml.safe_load(open(os.path.join(metrics_dir, file)))
+            metrics_descriptions.append(description)
+
+    return metrics_descriptions
+
+
+def create_information_needs_batch(
+    task_description: Dict[str, Any], db_name: str
+) -> str:
+    """Creates an information need batch for a task.
+
+    Args:
+        task_description: Task description.
+        db_name: Database name.
+
+    Raises:
+        ValueError: If the simulation domain is not provided in the task
+          description.
+
+    Returns:
+        Batch identifier.
+    """
+    simulation_domain_description = task_description.get("arguments", {}).get(
+        "domain", {}
+    )
+
+    if not simulation_domain_description:
+        raise ValueError(
+            "Simulation domain is required to create an information need batch."
+        )
+
+    component_generator = BaseComponentGenerator()
+    simulation_domain = component_generator.generate_component(
+        "domain",
+        simulation_domain_description.get("class_name"),
+        simulation_domain_description,
+    )
+    information_needs = generate_random_information_needs(
+        simulation_domain, DEFAULT_NUM_INFORMATION_NEEDS
+    )
+    batch_id = save_information_need_batch(information_needs, db_name)
+    return batch_id
 
 
 def main(args: argparse.Namespace) -> None:
@@ -74,12 +168,22 @@ def main(args: argparse.Namespace) -> None:
     if args.mongo_db:
         db_connector.set_default_db(args.mongo_db)
 
-    # Parse all metrics inheriting from Metric class
-    metrics = parse_module("simlab.metrics", Metric)
-    ids = insert_records(db_connector, "metrics", metrics)
+    # Populate tasks
+    tasks = load_new_tasks(
+        os.path.join(args.resource_dir, "tasks"), db_connector.default_db
+    )
+    if len(tasks) > 0:
+        ids = insert_records(db_connector, "tasks", tasks)
+        logging.info(f"Inserted {len(ids)} new tasks in MongoDB.")
+    else:
+        logging.info("No new tasks to insert in MongoDB.")
 
-    logging.info(f"Inserted {len(ids)} metrics")
-    db_connector.close_connection()
+    # Populate metrics
+    metrics = load_metrics_descriptions(
+        os.path.join(args.resource_dir, "metrics")
+    )
+    ids = upsert_records(db_connector, "metrics", metrics)
+    logging.info(f"Inserted {len(ids)} metrics in MongoDB.")
 
 
 if __name__ == "__main__":

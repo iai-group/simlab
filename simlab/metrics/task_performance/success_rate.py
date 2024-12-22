@@ -5,9 +5,6 @@ from simlab.metrics.metric import Metric
 
 
 class SuccessRate(Metric):
-
-    description = "Success rate metric."
-
     def __init__(self, name: str = "success_rate") -> None:
         """Initializes the success rate metric.
 

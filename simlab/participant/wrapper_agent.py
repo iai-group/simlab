@@ -63,13 +63,13 @@ class WrapperAgent(Agent):
                 "user_id": self._dialogue_connector._user.id,
             },
         )
-        r = r.json()
+        data = r.json()
         (
             utterance_text,
             utterance_dialogue_acts,
             utterance_annotations,
             metadata,
-        ) = parse_API_response(r)
+        ) = parse_API_response(data)
 
         response = AnnotatedUtterance(
             text=utterance_text,

@@ -5,6 +5,7 @@ import requests
 from dialoguekit.core import AnnotatedUtterance, Utterance
 from dialoguekit.participant import User
 from dialoguekit.participant.user import UserType
+from simlab.core.information_need import InformationNeed
 from simlab.utils.utils_response_parsing import parse_API_response
 
 
@@ -21,6 +22,34 @@ class WrapperUserSimulator(User):
         """
         super().__init__(id, user_type)
         self._uri = uri
+
+    def set_information_need(self, information_need: InformationNeed) -> None:
+        """Sets the information need for the user simulator.
+
+        Args:
+            information_need: Information need.
+
+        Raises:
+            RuntimeError: If the request fails.
+        """
+        r = requests.post(
+            f"{self._uri}/set_information_need",
+            json={
+                "information_need": information_need.to_dict(),
+                "user_id": self.id,
+            },
+        )
+        status_code = r.status_code
+        if status_code != 200:
+            raise RuntimeError(
+                f"Failed to set information need. Status code: {status_code}\n"
+                f"Response: {r.text}"
+            )
+
+        # Add information need as dialogue metadata.
+        self._dialogue_connector.dialogue_history.metadata.update(
+            {"information_need": information_need.to_dict()}
+        )
 
     def receive_utterance(self, utterance: Utterance) -> None:
         """Gets called every time there is a new agent utterance.
@@ -42,13 +71,13 @@ class WrapperUserSimulator(User):
                 "agent_id": self._dialogue_connector._agent.id,
             },
         )
-        r = r.json()
+        data = r.json()
         (
             utterance_text,
             utterance_dialogue_acts,
             utterance_annotations,
             metadata,
-        ) = parse_API_response(r)
+        ) = parse_API_response(data)
 
         response = AnnotatedUtterance(
             text=utterance_text,

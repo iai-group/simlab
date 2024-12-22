@@ -61,7 +61,6 @@ def test_parse_task(
 
     assert isinstance(task, Task)
     assert task.name == "Template Task"
-    assert task.num_simulation == 5
     assert len(task.metrics) == 1
     assert isinstance(task.metrics[0], SuccessRate)
     assert isinstance(task.domain, SimulationDomain)

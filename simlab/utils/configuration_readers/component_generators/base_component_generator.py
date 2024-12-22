@@ -85,7 +85,7 @@ class BaseComponentGenerator:
 
     def generate_component(
         self, type: str, class_name: str, component_config: Dict[str, Any]
-    ) -> object:
+    ) -> Any:
         """Generates a component from a configuration.
 
         It recursively generates components if the arguments contain components.
