@@ -126,13 +126,13 @@ def run_request() -> Response:
     # Get metrics configuration and update it with metrics arguments
     metrics = []
     for metric in data.get("metrics", []):
-        metric_config = find_records(
+        metric_configs = find_records(
             mongo_connector, "metrics", {"_id": ObjectId(metric.get("id"))}
         )
-        if not metric_config or len(metric_config) != 1:
+        if not metric_configs or len(metric_configs) != 1:
             return jsonify({"message": "Error while retrieving metrics."}), 500
 
-        metric_config = metric_config[0]
+        metric_config = metric_configs[0]
         metric_config.update(
             {"name": metric.get("name", metric_config.get("name"))}
         )
