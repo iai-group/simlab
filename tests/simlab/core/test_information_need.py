@@ -77,9 +77,7 @@ def test_generate_random_information_needs(
     simulation_domain: SimulationDomain,
 ) -> None:
     """Tests generate_random_information_needs."""
-    information_needs = generate_random_information_needs(
-        simulation_domain, 10
-    )
+    information_needs = generate_random_information_needs(simulation_domain, 10)
     assert len(information_needs) == 10
 
 
@@ -87,9 +85,7 @@ def test_save_information_need_batch(
     simulation_domain: SimulationDomain,
 ) -> None:
     """Tests save_information_need_batch."""
-    information_needs = generate_random_information_needs(
-        simulation_domain, 10
-    )
+    information_needs = generate_random_information_needs(simulation_domain, 10)
     mongo_connector = MongoDBConnector()
     mongo_connector.set_default_db("simlab_test")
     batch_id = save_information_need_batch(information_needs, mongo_connector)
