@@ -31,10 +31,12 @@ const AddResourcesList = ({
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
     null
   );
+  const [resourceName, setResourceName] = useState<string>("");
   const [argumentValues, setArgumentValues] = useState<Argument[] | null>(null);
 
   const handleAddResource = (resource: Resource) => {
     setSelectedResource(resource);
+    setResourceName(resource.name);
     // Initialize arguments with empty values
     setArgumentValues(
       resource.arguments.map((arg) => ({
@@ -61,7 +63,22 @@ const AddResourcesList = ({
       const updatedResource = {
         ...selectedResource,
         arguments: argumentValues,
+        name: resourceName,
       };
+
+      // Check if a resource with the same name and id already exists
+      const isDuplicate = selectedItems.some(
+        (item) =>
+          item.id === updatedResource.id && item.name === updatedResource.name
+      );
+      if (isDuplicate) {
+        // If a duplicate is found, show an alert or handle it accordingly
+        alert(
+          `A resource with the name "${updatedResource.name}" already exists.`
+        );
+        return;
+      }
+
       const updatedSelectedItems = [
         ...selectedItems,
         updatedResource as Resource,
@@ -69,6 +86,7 @@ const AddResourcesList = ({
 
       setSelectedItems(updatedSelectedItems);
       setShowModal(false);
+      setResourceName(""); // Reset resource name after saving
       setArgumentValues(null); // Reset argument values after saving
     }
   };
@@ -159,6 +177,15 @@ const AddResourcesList = ({
                 ></MDBBtn>
               </MDBModalHeader>
               <MDBModalBody>
+                <div key="name" style={{ marginBottom: "1rem" }}>
+                  <label htmlFor="name">Name</label>
+                  <MDBInput
+                    id="name"
+                    type="text"
+                    value={resourceName}
+                    onChange={(e) => setResourceName(e.target.value)}
+                  />
+                </div>
                 {selectedResource.arguments.map((arg) => (
                   <div key={arg.name} style={{ marginBottom: "1rem" }}>
                     <label htmlFor={arg.name}>
