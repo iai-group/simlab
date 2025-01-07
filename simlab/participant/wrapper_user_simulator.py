@@ -51,6 +51,28 @@ class WrapperUserSimulator(User):
             {"information_need": information_need.to_dict()}
         )
 
+    def update_information_need(self) -> None:
+        """Updates information need metadata in the dialogue.
+
+        Raises:
+            RuntimeError: If the request fails.
+        """
+        r = requests.get(
+            f"{self._uri}/get_information_need",
+            params={"user_id": self.id},
+        )
+        status_code = r.status_code
+        if status_code != 200:
+            raise RuntimeError(
+                f"Failed to get information need. Status code: {status_code}\n"
+                f"Response: {r.text}"
+            )
+        data = r.json()
+        if data.get("information_need"):
+            self._dialogue_connector.dialogue_history.metadata.update(
+                {"information_need": data.get("information_need")}
+            )
+
     def receive_utterance(self, utterance: Utterance) -> None:
         """Gets called every time there is a new agent utterance.
 
