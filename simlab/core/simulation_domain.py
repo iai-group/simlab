@@ -9,7 +9,7 @@ requestable and informable.
 
 import logging
 from collections import defaultdict
-from typing import Dict, List
+from typing import DefaultDict, Dict, List
 
 from dialoguekit.core.domain import Domain
 from simlab.core.item_collection import ItemCollection
@@ -51,7 +51,7 @@ class SimulationDomain(Domain):
                 "The domain configuration should contain the field "
                 "'item_collections'."
             )
-        item_collections = defaultdict(ItemCollection)
+        item_collections: DefaultDict[str, ItemCollection] = defaultdict()
         for collection in self._config["item_collections"]:
             try:
                 name = collection.get("collection_name")

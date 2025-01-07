@@ -7,9 +7,6 @@ from dialoguekit.core.dialogue import Dialogue
 
 
 class Metric(ABC):
-
-    description = "Abstract representation of a metric."
-
     def __init__(self, name: str) -> None:
         """Initializes a metric.
 

@@ -1,0 +1,19 @@
+name: "Domain Template"
+description: "This is a template domain. It is used to create new domains."
+
+# Define the slots that the domain will use. slot_names is a dictionary where
+# the key is the slot name.
+slot_names:
+
+# Define the slots that the user simulator can request. requestable_slots is a
+# list of slot names.
+requestable_slots:
+
+# Define the slots that the user simulator can inform. informable_slots is a
+# list of slot names.
+informable_slots:
+
+# Define the item collections that the domain will use. item_collections is a
+# list of dictionaries including collection_name and optionally the name of
+# the database where the collection is stored.
+item_collections:
