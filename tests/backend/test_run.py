@@ -25,13 +25,24 @@ def test_run_request_invalid_form(
 ) -> None:
     """Tests run_request route with invalid form."""
     response = flask_logged_client.post(
-        "/run-request", data={"run_name": "test_run"}
+        "/run-request", json={"name": "invalid_test_run"}
     )
     assert response.status_code == 400
-    assert (
-        response.json["message"]
-        == "Invalid request. Please provide run name and configuration file."
+    assert response.json["message"] == "Run name not provided."
+
+
+def test_run_request_duplicate_name(
+    flask_logged_client: FlaskLoginClient,
+) -> None:
+    """Tests run_request route with duplicate run name."""
+    response = flask_logged_client.post(
+        "/run-request",
+        json={
+            "run_name": "test_run",
+        },
     )
+    assert response.status_code == 400
+    assert response.json["message"] == "Run name already exists."
 
 
 def test_run_request(flask_logged_client: FlaskLoginClient) -> None:

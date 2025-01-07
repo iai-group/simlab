@@ -174,7 +174,6 @@ const RunSubmissionForm = () => {
       agents: selectedAgents,
       userSimulators: selectedUserSimulators,
     };
-    console.log(formData);
 
     APIAuth.post(`${baseURL}/run-request`, formData)
       .then((response) => {

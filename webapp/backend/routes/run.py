@@ -26,9 +26,9 @@ def run_request() -> Response:
 
     # Check that run name is unique for user
     run_name = data.get("run_name")
-    run_name = run_name.strip().replace(" ", "_")
     if not run_name:
         return jsonify({"message": "Run name not provided."}), 400
+    run_name = run_name.strip().replace(" ", "_")
 
     runs = find_records(
         mongo_connector, "runs", {"username": username, "run_name": run_name}
