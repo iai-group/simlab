@@ -73,5 +73,23 @@ redoc = [
         "opts": {
             "hide-hostname": True,
         },
-    }
+    },
+    {
+        "name": "Conversational Agent API",
+        "page": "simlab/conversational_agent_api",
+        "spec": "simlab/specs/conv_agent_api.yaml",
+        "embed": True,
+        "opts": {
+            "hide-hostname": True,
+        },
+    },
+    {
+        "name": "User Simulator API",
+        "page": "simlab/user_simulator_api",
+        "spec": "simlab/specs/user_simulator_api.yaml",
+        "embed": True,
+        "opts": {
+            "hide-hostname": True,
+        },
+    },
 ]

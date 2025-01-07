@@ -27,10 +27,10 @@ def find_records(
     db = connector.get_database()
     try:
         for record in db[collection].find(query):
-            records.append(parse_object_id_to_str(record))  # type: ignore
+            records.append(parse_object_id_to_str(record))
     except Exception as e:
         logging.error(f"Error finding records: {e}")
-    return records
+    return records  # type: ignore
 
 
 def insert_record(
