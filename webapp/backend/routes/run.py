@@ -102,6 +102,7 @@ def run_request() -> Response:
 
     # Check that run name is unique for user
     run_name = data.get("run_name")
+    run_name = run_name.strip().replace(" ", "_")
     if not run_name:
         return jsonify({"message": "Run name not provided."}), 400
 
@@ -132,6 +133,9 @@ def run_request() -> Response:
             return jsonify({"message": "Error while retrieving metrics."}), 500
 
         metric_config = metric_config[0]
+        metric_config.update(
+            {"name": metric.get("name", metric_config.get("name"))}
+        )
         for arg in metric.get("arguments", []):
             arg_name = arg.get("name")
             # It is assume that arguments with custom types are not supported

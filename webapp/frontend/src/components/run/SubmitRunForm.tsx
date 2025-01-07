@@ -169,7 +169,7 @@ const RunSubmissionForm = () => {
       run_name: runName,
       task_id: selectedTask.id,
       metrics: selectedMetrics.map((m) => {
-        return { id: m.id, arguments: m.arguments };
+        return { id: m.id, arguments: m.arguments, name: m.name };
       }),
       agents: selectedAgents,
       userSimulators: selectedUserSimulators,
