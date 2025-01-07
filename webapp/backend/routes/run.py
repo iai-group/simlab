@@ -2,7 +2,6 @@
 
 import ast
 import os
-from typing import Any, Dict
 
 from bson import ObjectId
 from flask import Blueprint, Response, json, jsonify, request
@@ -12,81 +11,6 @@ from connectors.mongo.utils import delete_records, find_records, insert_record
 from webapp.backend.app import DATA_FOLDER, mongo_connector
 
 run = Blueprint("run", __name__)
-
-
-def parse_task(configuration: Dict[str, Any]) -> ObjectId:
-    """Parses task from configuration.
-
-    Args:
-        configuration: Configuration.
-
-    Raises:
-        KeyError: If task is not defined in configuration.
-        ValueError: If task or task ID is not found.
-        RuntimeError: If multiple tasks are found.
-
-    Returns:
-        Task ID from MongoDB.
-    """
-    task_name = configuration.get("task", {}).get("name", None)
-
-    if not task_name:
-        raise KeyError("Task name not found in configuration.")
-
-    tasks = find_records(mongo_connector, "tasks", {"name": task_name})
-
-    if not tasks:
-        raise ValueError(f"Task {task_name} not found.")
-    elif len(tasks) > 1:
-        raise RuntimeError(f"Multiple tasks found for {task_name}.")
-
-    task_id = ObjectId(tasks[0].get("_id"))
-
-    if not task_id:
-        raise ValueError(f"Task ID not found for {task_name}.")
-
-    return task_id
-
-
-def parse_metrics(configuration: Dict[str, Any]) -> Dict[str, ObjectId]:
-    """Parses metrics from configuration.
-
-    Args:
-        configuration: Configuration.
-
-    Raises:
-        KeyError: If metrics are not defined in configuration.
-        ValueError: If metric or metric ID is not found.
-        RuntimeError: If multiple metrics are found.
-
-    Returns:
-        Dictionary of metric names and IDs from MongoDB.
-    """
-    metrics = configuration.get("metrics", [])
-
-    if not metrics:
-        raise KeyError("Metrics not found in configuration.")
-
-    metrics_dict = {}
-
-    metrics_records = find_records(
-        mongo_connector,
-        "metrics",
-        {"name": {"$in": [metric for metric in metrics]}},
-    )
-
-    if not metrics_records:
-        raise ValueError("Metrics not found.")
-    elif len(metrics_records) != len(metrics):
-        raise RuntimeError("Multiple metrics found.")
-
-    for metric in metrics_records:
-        id = ObjectId(metric.get("_id"))
-        if not id:
-            raise ValueError(f"Metric ID not found for {metric.get('name')}.")
-        metrics_dict[metric.get("name")] = metric.get("_id")
-
-    return metrics_dict
 
 
 @run.route("/run-request", methods=["POST"])

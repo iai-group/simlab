@@ -1,91 +1,9 @@
 """Tests for run related routes."""
 
-import pytest
-from bson import ObjectId
 from flask_login import FlaskLoginClient
 
 from connectors.mongo.utils import find_records
 from tests.backend.conftest import mongo_connector
-from webapp.backend.routes.run import parse_metrics, parse_task
-
-
-def test_parse_task() -> None:
-    """Tests parse_task."""
-    configuration = {
-        "task": {
-            "name": "crs",
-        }
-    }
-
-    task_id = parse_task(configuration)
-    assert task_id is not None
-
-    mongo_task_id = find_records(mongo_connector, "tasks", {"name": "crs"})[
-        0
-    ].get("_id")
-    assert task_id == ObjectId(mongo_task_id)
-
-
-def test_parse_task_no_task_name() -> None:
-    """Tests parse_task with no task name."""
-    configuration = {}
-
-    with pytest.raises(KeyError):
-        parse_task(configuration)
-
-
-def test_parse_task_task_not_found() -> None:
-    """Tests parse_task with task not found."""
-    configuration = {
-        "task": {
-            "name": "unknown",
-        }
-    }
-
-    with pytest.raises(ValueError):
-        parse_task(configuration)
-
-
-def test_parse_metrics() -> None:
-    """Tests parse_metrics."""
-    configuration = {
-        "metrics": [
-            {
-                "name": "success_rate",
-            }
-        ]
-    }
-
-    metrics = parse_metrics(configuration)
-    assert metrics is not None
-
-    mongo_metric_id = find_records(
-        mongo_connector, "metrics", {"name": "success_rate"}
-    )[0].get("_id")
-
-    assert metrics["success_rate"] == mongo_metric_id
-
-
-def test_parse_metrics_no_metrics() -> None:
-    """Tests parse_metrics with no metrics."""
-    configuration = {}
-
-    with pytest.raises(KeyError):
-        parse_metrics(configuration)
-
-
-def test_parse_metrics_metric_not_found() -> None:
-    """Tests parse_metrics with metric not found."""
-    configuration = {
-        "metrics": [
-            {
-                "name": "unknown",
-            }
-        ]
-    }
-
-    with pytest.raises(ValueError):
-        parse_metrics(configuration)
 
 
 def test_run_request_unauthorized(flask_client: FlaskLoginClient) -> None:
