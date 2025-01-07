@@ -14,7 +14,7 @@ import {
   MDBModalHeader,
 } from "mdb-react-ui-kit";
 
-interface ResourcesCheckBoxListProps<Resource> {
+interface AddResourcesListProps<Resource> {
   resourceType: string;
   items: Resource[];
   selectedItems: Resource[];
@@ -26,7 +26,7 @@ const AddResourcesList = ({
   items,
   selectedItems,
   setSelectedItems,
-}: ResourcesCheckBoxListProps<Resource>) => {
+}: AddResourcesListProps<Resource>) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
     null
