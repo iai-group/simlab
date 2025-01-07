@@ -18,7 +18,6 @@ const RunHome = () => {
   };
 
   /* TODO
-    - Create a new component for the run submission form (multi-page form)
     - Create a new component to display a list of experiments
       - Link to the experiment detail page
       - Add a button to delete the experiment
