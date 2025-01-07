@@ -1,5 +1,6 @@
 // Run submission form
 
+import { APIAuth, baseURL } from "../API";
 import { Agent, Metric, Simulator, Task } from "../../types";
 import { Container, Toast, ToastContainer } from "react-bootstrap";
 import {
@@ -13,7 +14,6 @@ import { useEffect, useState } from "react";
 import AddResourcesList from "./AddResourcesList";
 import TaskRadioList from "./TaskRadioList";
 import axios from "axios";
-import { baseURL } from "../API";
 
 const RunSubmissionForm = () => {
   const [page, setPage] = useState(1);
@@ -166,15 +166,23 @@ const RunSubmissionForm = () => {
 
   const handleSubmit = () => {
     const formData = {
-      run: runName,
-      task: selectedTask,
-      metrics: selectedMetrics,
+      run_name: runName,
+      task_id: selectedTask.id,
+      metrics: selectedMetrics.map((m) => {
+        return { id: m.id, arguments: m.arguments, name: m.name };
+      }),
       agents: selectedAgents,
       userSimulators: selectedUserSimulators,
     };
-    console.log(formData);
 
-    // TODO: Call the API to submit the run
+    APIAuth.post(`${baseURL}/run-request`, formData)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        setToastMessage("Error submitting run. Please reach out to the admin.");
+        console.error(error);
+      });
   };
 
   const renderPage = () => {

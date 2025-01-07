@@ -50,7 +50,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_new_tasks(tasks_dir: str, db_name: str) -> List[Dict[str, Any]]:
+def load_new_tasks(
+    tasks_dir: str, mongo_connector: MongoDBConnector
+) -> List[Dict[str, Any]]:
     """Loads new task descriptions from the tasks directory.
 
     The task descriptions are stored in YAML files. For each new task, a batch
@@ -58,7 +60,7 @@ def load_new_tasks(tasks_dir: str, db_name: str) -> List[Dict[str, Any]]:
 
     Args:
         tasks_dir: Path to the tasks directory.
-        db_name: Database name.
+        mongo_connector: MongoDB connector.
 
     Raises:
         FileNotFoundError: If the tasks directory does not exist.
@@ -76,11 +78,10 @@ def load_new_tasks(tasks_dir: str, db_name: str) -> List[Dict[str, Any]]:
 
             if not description.get("arguments", {}).get("batch_id"):
                 # Generate information needs for the new task
-                batch_id = create_information_needs_batch(description, db_name)
-                description.get("arguments", {})["batch_id"] = {
-                    "type": "str",
-                    "value": batch_id,
-                }
+                batch_id = create_information_needs_batch(
+                    description, mongo_connector
+                )
+                description.get("arguments", {})["batch_id"] = batch_id
                 # Save the updated task description
                 yaml.safe_dump(
                     description, open(os.path.join(tasks_dir, file), "w")
@@ -117,13 +118,13 @@ def load_metrics_descriptions(metrics_dir: str) -> List[Dict[str, Any]]:
 
 
 def create_information_needs_batch(
-    task_description: Dict[str, Any], db_name: str
+    task_description: Dict[str, Any], mongo_connector: MongoDBConnector
 ) -> str:
     """Creates an information need batch for a task.
 
     Args:
         task_description: Task description.
-        db_name: Database name.
+        mongo_connector: MongoDB connector.
 
     Raises:
         ValueError: If the simulation domain is not provided in the task
@@ -150,7 +151,7 @@ def create_information_needs_batch(
     information_needs = generate_random_information_needs(
         simulation_domain, DEFAULT_NUM_INFORMATION_NEEDS
     )
-    batch_id = save_information_need_batch(information_needs, db_name)
+    batch_id = save_information_need_batch(information_needs, mongo_connector)
     return batch_id
 
 
@@ -170,7 +171,7 @@ def main(args: argparse.Namespace) -> None:
 
     # Populate tasks
     tasks = load_new_tasks(
-        os.path.join(args.resource_dir, "tasks"), db_connector.default_db
+        os.path.join(args.resource_dir, "tasks"), db_connector
     )
     if len(tasks) > 0:
         ids = insert_records(db_connector, "tasks", tasks)
@@ -184,6 +185,8 @@ def main(args: argparse.Namespace) -> None:
     )
     ids = upsert_records(db_connector, "metrics", metrics)
     logging.info(f"Inserted {len(ids)} metrics in MongoDB.")
+
+    db_connector.close_connection()
 
 
 if __name__ == "__main__":

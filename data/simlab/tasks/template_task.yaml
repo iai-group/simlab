@@ -10,6 +10,4 @@ arguments:
     class_name: "SimulationDomain"
     arguments:
       config_file: "data/simlab/domains/template_domain.yaml"
-  db_name:
-    type: str
-    value: "simlab"
+  db_name: "simlab"
