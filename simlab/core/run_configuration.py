@@ -12,6 +12,7 @@ from simlab.tasks.task import Task
 class RunConfiguration:
     """Run configuration with task and participants."""
 
+    name: str
     task: Task
     agents: List[WrapperAgent]
     user_simulators: List[WrapperUserSimulator]

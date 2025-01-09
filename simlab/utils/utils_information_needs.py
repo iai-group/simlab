@@ -10,20 +10,17 @@ from simlab.core.simulation_domain import SimulationDomain
 
 
 def save_information_need_batch(
-    information_needs: List[InformationNeed], db_name: str
+    information_needs: List[InformationNeed], mongo_connector: MongoDBConnector
 ) -> str:
     """Saves a batch of information needs to the database.
 
     Args:
         information_needs: List of information needs.
-        db_name: Database name.
+        mongo_connector: MongoDB connector.
 
     Returns:
         Batch identifier.
     """
-    mongo_connector = MongoDBConnector()
-    mongo_connector.set_default_db(db_name)
-
     records = []
     for information_need in information_needs:
         record = information_need.to_dict()
@@ -34,9 +31,6 @@ def save_information_need_batch(
         "information_needs",
         {"information_needs": records},
     )
-
-    mongo_connector.close_connection()
-
     return str(id)
 
 

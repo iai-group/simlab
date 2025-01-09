@@ -85,11 +85,8 @@ paths:
             properties:
               parameters:
                 type: object
-                additionalProperties:
-                  type: string
             example:
               parameters:
-                genre: "Action"
                 language: "English"
       responses:
         201:

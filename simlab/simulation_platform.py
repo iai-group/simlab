@@ -7,6 +7,7 @@ from dialoguekit.participant.agent import Agent
 from dialoguekit.participant.user import User
 from dialoguekit.platforms import Platform
 from simlab.core.dialogue_connector import SimulationDialogueConnector
+from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 
 
 class SimulationPlatform(Platform):
@@ -84,5 +85,9 @@ class SimulationPlatform(Platform):
             user_id: User simulator ID.
             agent_id: Agent ID.
         """
-        agent, _ = self._active_agent_user_pairs.pop((agent_id, user_id))
+        agent, simulator = self._active_agent_user_pairs.pop(
+            (agent_id, user_id)
+        )
+        if isinstance(simulator, WrapperUserSimulator):
+            simulator.update_information_need()
         agent.dialogue_connector.close()

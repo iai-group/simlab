@@ -10,6 +10,8 @@ from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 from connectors.jenkins.jenkins_vm_manager import JenkinsVMManager
 
+DATA_FOLDER = "data/simlab"
+
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
 docker_registry_connector = DockerRegistryConnector()
