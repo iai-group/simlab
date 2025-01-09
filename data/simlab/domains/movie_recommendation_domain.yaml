@@ -3,18 +3,31 @@ description: "A domain for movie recommendation, the items are movies from the M
 
 slot_names:
   genres:
-  tag:
+  keywords:
   title:
+  actors:
+  directors:
+  rating:
+  year:
+  plot:
+  duration:
 
 requestable_slots:
   - genres
-  - tag
+  - keywords
+  - actors
+  - directors
+  - rating
+  - year
   - title
+  - plot
+  - duration
 
 informable_slots:
   - genres
-  - tag
+  - keywords
+  - year
 
 item_collections:
-  - collection_name: movielens_32m
+  - collection_name: movielens
     db_name: datasets

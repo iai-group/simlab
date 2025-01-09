@@ -12,3 +12,5 @@ types-PyYAML
 types-requests
 pymongo
 docker
+wget
+pandas
