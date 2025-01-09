@@ -15,6 +15,9 @@ services:
       - DOCKER_REGISTRY_URI=https://localhost
       - DOCKER_REGISTRY_USER=admin
       - DOCKER_REGISTRY_PASSWORD=admin
+      - JENKINS_URI=http://localhost:8080
+      - JENKINS_USER=admin
+      - JENKINS_PASSWORD=admin
     ports:
       - "5005:5005"
     volumes:
