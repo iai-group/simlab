@@ -7,19 +7,21 @@ All systems (agents and simulators) in SimLab are stored in a Docker registry. T
 1. Implement communication interface for your system
 
 In SimLab, the communication between a conversational agent and user simulator is done over a REST API. This API need to implement the endpoints defined in the template API. 
-.. Include link to the template APIs
+
+.. TODO: Include link to the template APIs
 
 2. Create a Docker image for your system
 
 Your system should be packaged as a Docker image. The image should include all the necessary dependencies to run the system. For more information on how to create a Docker image, check the `Docker documentation <https://docs.docker.com/get-started/docker-concepts/building-images/writing-a-dockerfile/>`_.
        
-The docker image should include labels to specify the type of system, the system's name, and the tasks supported. Other labels to further describe the system are optional. The labels should be added to the Dockerfile as follows:
+The docker image should include labels to specify the type of system, the system's name, and the tasks supported. Other labels to further describe the system are optional. The following labels should be added to the Dockerfile:
 
 .. code-block:: Dockerfile
 
-    LABEL type=[agent/simulator]
-    LABEL name=[system-name]
-    LABEL tasks=[task1,task2, ...]
+    LABEL type=[agent/simulator]    # Specify the type of the system
+    LABEL name=[system-name]        # Specify the name of the system
+    LABEL tasks=[task1,task2, ...]  # Specify the tasks supported by the system
+    LABEL port=[port-number]        # Specify the port number on which the API is running
 
 3. Push the Docker image to the registry
 
