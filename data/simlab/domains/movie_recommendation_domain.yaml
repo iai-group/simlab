@@ -1,0 +1,20 @@
+name: movie_recommendation_domain
+description: "A domain for movie recommendation, the items are movies from the MovieLens dataset."
+
+slot_names:
+  genres:
+  tag:
+  title:
+
+requestable_slots:
+  - genres
+  - tag
+  - title
+
+informable_slots:
+  - genres
+  - tag
+
+item_collections:
+  - collection_name: movielens_32m
+    db_name: datasets
