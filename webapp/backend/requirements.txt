@@ -8,4 +8,3 @@ cryptography
 pymongo
 docker
 python-jenkins
-google-cloud-compute
