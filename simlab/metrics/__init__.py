@@ -1,6 +1,6 @@
 """Module level init for the metric classes."""
 
 from .metric import Metric
-from .task_performance.success_rate import SuccessRate
+from .utility.recommendation_success_ratio import RecommendationSuccessRatio
 
-__all__ = ["Metric", "SuccessRate"]
+__all__ = ["Metric", "RecommendationSuccessRatio"]
