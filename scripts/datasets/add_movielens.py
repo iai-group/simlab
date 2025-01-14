@@ -26,6 +26,7 @@ from simlab.core.item_collection import DEFAULT_ITEM_DB
 MOVIELENS_DATA_URL = (
     "https://files.grouplens.org/datasets/movielens/ml-32m.zip"
 )
+DATASET_FOLDER = "data/datasets/"
 
 
 def parse_args() -> argparse.Namespace:
@@ -48,23 +49,35 @@ def parse_args() -> argparse.Namespace:
         help="MongoDB database name.",
         default=DEFAULT_ITEM_DB,
     )
-
+    parser.add_argument(
+        "--dataset_folder",
+        type=str,
+        help="Folder to store the dataset.",
+        default=DATASET_FOLDER,
+    )
     return parser.parse_args()
 
 
-def download_movielens(movielens_url: str) -> str:
+def download_movielens(movielens_url: str, dataset_folder: str) -> str:
     """Downloads the MovieLens dataset.
+
+    Args:
+        movielens_url: URL to download the MovieLens dataset.
+        dataset_folder: Folder to store the dataset.
 
     Returns:
         Path to the extracted folder.
     """
+    if not os.path.exists(dataset_folder):
+        os.makedirs(dataset_folder, exist_ok=True)
+
     movies_zip = wget.download(movielens_url)
     with zipfile.ZipFile(movies_zip, "r") as zip_ref:
-        zip_ref.extractall("temp")
+        zip_ref.extractall(dataset_folder)
     os.remove(movies_zip)
 
     folder_name = movies_zip.split(".zip")[0]
-    return f"temp/{folder_name}"
+    return os.path.join(dataset_folder, folder_name)
 
 
 def prepare_movie_records(folder_name: str) -> List[Dict[str, Any]]:
@@ -123,5 +136,3 @@ if __name__ == "__main__":
     movies = prepare_movie_records(movies_folder)
     ids = insert_records(mongo_connector, "movielens", movies)
     print(f"Inserted {len(ids)} movies.")
-
-    os.system(f"rm -rf {movies_folder}")
