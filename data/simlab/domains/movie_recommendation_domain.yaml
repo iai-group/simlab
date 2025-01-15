@@ -1,0 +1,33 @@
+name: movie_recommendation_domain
+description: "A domain for movie recommendation, the items are movies from the MovieLens dataset."
+
+slot_names:
+  genres:
+  keywords:
+  title:
+  actors:
+  directors:
+  rating:
+  year:
+  plot:
+  duration:
+
+requestable_slots:
+  - genres
+  - keywords
+  - actors
+  - directors
+  - rating
+  - year
+  - title
+  - plot
+  - duration
+
+informable_slots:
+  - genres
+  - keywords
+  - year
+
+item_collections:
+  - collection_name: movielens
+    db_name: datasets
