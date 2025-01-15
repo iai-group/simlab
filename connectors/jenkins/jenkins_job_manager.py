@@ -31,6 +31,7 @@ class JenkinsJobManager:
         super().__init__()
         self.server = jenkins.Jenkins(jenkins_uri, username=username, password=password)
 
+
     def check_jenkins_connection(self) -> None:
         """Checks the connection to the Jenkins server."""
         try:
@@ -39,6 +40,7 @@ class JenkinsJobManager:
             print(f"Connected to Jenkins {version} as {user['fullName']}")
         except Exception as e:
             print(f"Failed to connect to Jenkins: {str(e)}")
+
 
     def submit_job(
         self,
@@ -63,6 +65,7 @@ class JenkinsJobManager:
         except Exception as e:
             print(f"Failed to submit job: {str(e)}")
 
+    
     def _generate_job_config(self, git_url: str) -> str:
         """Generates a Jenkins job configuration.
 
@@ -72,6 +75,8 @@ class JenkinsJobManager:
         Returns:
             A string representing the Jenkins job configuration XML.
         """
+        # TODO: Update this shell script to do the necessary setup & evaluation for simlab
+        
         return f"""
 <project>
     <builders>
@@ -86,6 +91,7 @@ class JenkinsJobManager:
     </builders>
 </project>
 """
+
 
     def get_job_logs(self, job_name: str) -> str | None:
         """Fetches the logs of a Jenkins job.
