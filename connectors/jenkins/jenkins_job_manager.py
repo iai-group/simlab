@@ -1,9 +1,10 @@
 """Jenkins Job Manager Module.
 
-Manages Jenkins server connections and job submissions.
+Manages Jenkins server interactions, including job submission and log retrieval.
 """
 
 import os
+
 import jenkins
 
 # Environment variables for Jenkins configuration
@@ -13,8 +14,6 @@ JENKINS_PASSWORD = os.environ.get("JENKINS_PASSWORD", "")
 
 
 class JenkinsJobManager:
-    """Manages Jenkins server interactions, including job submission and log retrieval."""
-
     def __init__(
         self,
         jenkins_uri: str = JENKINS_URI,
@@ -29,8 +28,9 @@ class JenkinsJobManager:
             password: Jenkins admin password. Defaults to JENKINS_PASSWORD.
         """
         super().__init__()
-        self.server = jenkins.Jenkins(jenkins_uri, username=username, password=password)
-
+        self.server = jenkins.Jenkins(
+            jenkins_uri, username=username, password=password
+        )
 
     def check_jenkins_connection(self) -> None:
         """Checks the connection to the Jenkins server."""
@@ -41,12 +41,7 @@ class JenkinsJobManager:
         except Exception as e:
             print(f"Failed to connect to Jenkins: {str(e)}")
 
-
-    def submit_job(
-        self,
-        job_name: str,
-        git_url: str
-    ) -> None:
+    def submit_job(self, job_name: str, git_url: str) -> None:
         """Submits a Jenkins job after ensuring it does not exist.
 
         Args:
@@ -55,7 +50,7 @@ class JenkinsJobManager:
         """
         try:
             job_config = self._generate_job_config(git_url)
-            
+
             # Check if the job exists; create it if not
             if not self.server.job_exists(job_name):
                 self.server.create_job(job_name, job_config)
@@ -65,7 +60,6 @@ class JenkinsJobManager:
         except Exception as e:
             print(f"Failed to submit job: {str(e)}")
 
-    
     def _generate_job_config(self, git_url: str) -> str:
         """Generates a Jenkins job configuration.
 
@@ -76,7 +70,7 @@ class JenkinsJobManager:
             A string representing the Jenkins job configuration XML.
         """
         # TODO: Update this shell script to do the necessary setup & evaluation for simlab
-        
+
         return f"""
 <project>
     <builders>
@@ -92,7 +86,6 @@ class JenkinsJobManager:
 </project>
 """
 
-
     def get_job_logs(self, job_name: str) -> str | None:
         """Fetches the logs of a Jenkins job.
 
@@ -103,7 +96,9 @@ class JenkinsJobManager:
             Logs of the last build of the job, or None if an error occurs.
         """
         try:
-            build_number = self.server.get_job_info(job_name)["lastBuild"]["number"]
+            build_number = self.server.get_job_info(job_name)["lastBuild"][
+                "number"
+            ]
             logs = self.server.get_build_console_output(job_name, build_number)
             return logs
         except Exception as e:
