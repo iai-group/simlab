@@ -5,7 +5,9 @@ from typing import Any, Dict
 import pytest
 
 from simlab.metrics.metric import Metric
-from simlab.metrics.task_performance.success_rate import SuccessRate
+from simlab.metrics.utility.recommendation_success_ratio import (
+    RecommendationSuccessRatio,
+)
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.utils.configuration_readers.component_generators.base_component_generator import (  # noqa: E501
     BaseComponentGenerator,
@@ -33,7 +35,13 @@ def test_base_component_generator_custom_type_mapping() -> None:
     "module_name, expected",
     [
         ("simlab.participant.wrapper_agent", {"WrapperAgent": WrapperAgent}),
-        ("simlab.metrics", {"Metric": Metric, "SuccessRate": SuccessRate}),
+        (
+            "simlab.metrics",
+            {
+                "Metric": Metric,
+                "RecommendationSuccessRatio": RecommendationSuccessRatio,
+            },
+        ),
     ],
 )
 def test_get_available_classes(
