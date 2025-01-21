@@ -11,7 +11,9 @@ export type Argument = {
   value: any;
 };
 
-export type Task = Resource;
+export type Task = Resource & {
+  metrics: Array<Metric>;
+};
 
 export type Metric = Resource;
 

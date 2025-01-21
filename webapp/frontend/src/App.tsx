@@ -9,7 +9,7 @@ import LoginForm from "./components/authentication/LoginForm";
 import NotFound from "./components/NotFound";
 import RegisterForm from "./components/authentication/RegisterForm";
 import ResetPasswordForm from "./components/authentication/ResetPasswordForm";
-import RunHome from "./components/run/RunHome";
+import TaskList from "./components/task/TaskList";
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomeLayout />} />
-          <Route path="/experiment" element={<RunHome />} />
+          <Route path="/tasks" element={<TaskList />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/auth" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
