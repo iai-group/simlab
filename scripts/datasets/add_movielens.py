@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     mongo_connector = MongoDBConnector(args.mongo_uri, args.mongo_db)
 
-    movies_folder = download_movielens(args.ml_url)
+    movies_folder = download_movielens(args.ml_url, args.dataset_folder)
 
     movies = prepare_movie_records(movies_folder)
     ids = insert_records(mongo_connector, "movielens", movies)
