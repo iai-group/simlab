@@ -81,7 +81,13 @@ def load_new_tasks(
                 batch_id = create_information_needs_batch(
                     description, mongo_connector
                 )
+                training_batch_id = create_information_needs_batch(
+                    description, mongo_connector
+                )
                 description.get("arguments", {})["batch_id"] = batch_id
+                description.get("arguments", {})[
+                    "training_batch_id"
+                ] = training_batch_id
                 # Save the updated task description
                 yaml.safe_dump(
                     description, open(os.path.join(tasks_dir, file), "w")
