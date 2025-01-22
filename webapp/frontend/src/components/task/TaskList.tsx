@@ -117,7 +117,7 @@ const TaskList = () => {
             navigate("/submit-run", { state: { task: selectedTask } })
           }
         >
-          Submit run
+          Add new system to public leaderboard
         </MDBBtn>
         <TaskDescription task={selectedTask} />
       </Container>
