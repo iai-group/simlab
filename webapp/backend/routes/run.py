@@ -1,4 +1,4 @@
-"""Routes related to a run."""
+"""Routes related to runs."""
 
 import ast
 import os
@@ -93,6 +93,7 @@ def run_request() -> Response:
         record={
             "username": username,
             "run_name": run_configuration["name"],
+            "task_id": run_configuration["task"]["_id"],
             "run_configuration_file": run_configuration_path,
         },
     )
@@ -146,3 +147,39 @@ def delete_run(run_id: str) -> Response:
         return jsonify({"message": "Failed to delete run."}), 500
 
     return jsonify({"message": "Run deleted successfully."}), 200
+
+
+@run.route("/list-runs/<task_id>", methods=["GET"])
+def list_runs(task_id: str) -> Response:
+    """Lists runs for a task.
+
+    Args:
+        task_id: Task ID.
+
+    Returns:
+        All runs associated with the task.
+    """
+    assert request.method == "GET", "Invalid request method"
+
+    records = find_records(
+        mongo_connector, "runs", {"task_id": ObjectId(task_id)}
+    )
+
+    return jsonify({"runs": records}), 200
+
+
+@run.route("/list-runs-user", methods=["GET"])
+@login_required
+def list_runs_user() -> Response:
+    """Lists runs for the current user.
+
+    Returns:
+        All runs associated with the current user.
+    """
+    assert request.method == "GET", "Invalid request method"
+
+    username = current_user.username
+
+    records = find_records(mongo_connector, "runs", {"username": username})
+
+    return jsonify({"runs": records}), 200
