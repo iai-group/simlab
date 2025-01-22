@@ -174,6 +174,8 @@ def main(
         )
         # Aggregate and save the evaluation results
         agent_evaluation_summary = {
+            "run_name": configuration.name,
+            "public": configuration.public,
             "agent_id": agent.id,
             "user_simulator_id": user_simulator.id,
             "task_id": configuration.task.name,

@@ -13,6 +13,7 @@ class RunConfiguration:
     """Run configuration with task and participants."""
 
     name: str
+    public: bool
     task: Task
     agents: List[WrapperAgent]
     user_simulators: List[WrapperUserSimulator]

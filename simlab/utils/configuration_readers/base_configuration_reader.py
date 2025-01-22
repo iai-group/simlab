@@ -57,11 +57,12 @@ class BaseConfigurationReader:
         if "name" not in self.configuration_dict:
             raise ValueError("Configuration file must have a name.")
         name = self.configuration_dict.pop("name")
+        public = self.configuration_dict.pop("public", False)
         task = self._parse_task()
         agents = self._parse_agents()
         user_simulators = self._parse_user_simulators()
 
-        return RunConfiguration(name, task, agents, user_simulators)
+        return RunConfiguration(name, public, task, agents, user_simulators)
 
     def _parse_task(self) -> Task:
         """Parses the task configuration.
