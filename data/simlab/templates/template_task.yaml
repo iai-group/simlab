@@ -11,3 +11,8 @@ arguments:
     arguments:
       config_file: "data/simlab/domains/template_domain.yaml"
   db_name: "simlab"
+  metrics:
+    - class_name: "Metric"
+      type: metric
+      arguments:
+        name: "Template Metric"

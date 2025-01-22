@@ -50,7 +50,7 @@ const DynamicNavBar = () => {
           <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
             {user ? (
               <MDBNavbarItem>
-                <MDBNavbarLink href="/experiment">Experiment</MDBNavbarLink>
+                <MDBNavbarLink href="/tasks">Tasks</MDBNavbarLink>
               </MDBNavbarItem>
             ) : null}
             <MDBNavbarItem>
