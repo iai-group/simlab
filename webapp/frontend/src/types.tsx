@@ -20,3 +20,11 @@ export type Metric = Resource;
 export type Agent = Resource;
 
 export type Simulator = Resource;
+
+export type System = {
+  type: string;
+  id: string;
+  image: string;
+  port: number;
+  config: Array<Argument>;
+};

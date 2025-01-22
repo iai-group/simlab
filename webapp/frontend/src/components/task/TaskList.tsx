@@ -15,8 +15,10 @@ import { Task } from "../../types";
 import TaskDescription from "./TaskDescription";
 import axios from "axios";
 import { baseURL } from "../API";
+import { useNavigate } from "react-router-dom";
 
 const TaskList = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -109,7 +111,14 @@ const TaskList = () => {
         <MDBBtn onClick={() => setSelectedTask(null)} className="m-3">
           Back to Task List
         </MDBBtn>
-        <MDBBtn className="m-3">Submit run</MDBBtn>
+        <MDBBtn
+          className="m-3"
+          onClick={() =>
+            navigate("/submit-run", { state: { task: selectedTask } })
+          }
+        >
+          Submit run
+        </MDBBtn>
         <TaskDescription task={selectedTask} />
       </Container>
     );
