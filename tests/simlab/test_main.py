@@ -3,10 +3,14 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from docker.models.containers import Container
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.core.information_need import InformationNeed
-from simlab.core.run_configuration import RunConfiguration
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.main import (
     filter_existing_participant_pairs,
     generate_synthetic_dialogues,
@@ -122,21 +126,34 @@ def test_main(task: Task) -> None:
     """Tests the main function."""
     # Mock dependencies
     mocked_configuration = MagicMock(spec=RunConfiguration)
+    mocked_configuration.name = "test_run"
+    mocked_configuration.public = True
     mocked_configuration.task = task
     mocked_configuration.agents = [
-        MagicMock(spec=WrapperAgent, id="test_agent")
+        MagicMock(
+            spec=ParticipantConfiguration,
+            image_name="template_agent",
+            participant=MagicMock(spec=WrapperAgent, id="test_agent"),
+        )
     ]
     mocked_configuration.user_simulators = [
-        MagicMock(spec=WrapperUserSimulator, id="test_user_simulator")
+        MagicMock(
+            spec=ParticipantConfiguration,
+            image_name="template_user_simulator",
+            participant=MagicMock(
+                spec=WrapperUserSimulator, id="test_user_simulator"
+            ),
+        )
     ]
-
     with (
         patch("simlab.main.MongoDBConnector") as mocked_mongo_connector,
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,
+        patch("simlab.main.start_participant") as mocked_start_participant,
     ):
 
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
+        mocked_start_participant.return_value = MagicMock(spec=Container)
 
         main(
             mocked_configuration,

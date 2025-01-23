@@ -82,10 +82,12 @@ def create_app(testing: bool = False) -> Flask:
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
     from webapp.backend.routes.docs import docs as docs_blueprint
+    from webapp.backend.routes.results import results as results_blueprint
     from webapp.backend.routes.run import run as run_blueprint
 
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(docs_blueprint)
     app.register_blueprint(run_blueprint)
+    app.register_blueprint(results_blueprint)
 
     return app

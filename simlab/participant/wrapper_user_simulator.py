@@ -2,16 +2,19 @@
 
 import requests
 
-from dialoguekit.core import AnnotatedUtterance, Utterance
+from dialoguekit.core import Utterance
 from dialoguekit.participant import User
 from dialoguekit.participant.user import UserType
 from simlab.core.information_need import InformationNeed
-from simlab.utils.utils_response_parsing import parse_API_response
+from simlab.utils.participant_api.utils_api_calls import get_utterance_response
 
 
 class WrapperUserSimulator(User):
     def __init__(
-        self, id: str, uri: str, user_type: UserType = UserType.SIMULATOR
+        self,
+        id: str,
+        uri: str = "http://localhost:7001",
+        user_type: UserType = UserType.SIMULATOR,
     ) -> None:
         """Initializes the user simulator.
 
@@ -79,33 +82,14 @@ class WrapperUserSimulator(User):
         Args:
             utterance: Agent utterance.
         """
-        # TODO: Extract common code with WrapperAgent.receive_utterance to a
-        # utility function.
         context = [
             utterance.text
             for utterance in self._dialogue_connector.dialogue_history.utterances  # noqa
         ]
-        r = requests.post(
-            f"{self._uri}/receive_utterance",
-            json={
-                "context": context,
-                "message": utterance.text,
-                "agent_id": self._dialogue_connector._agent.id,
-            },
-        )
-        data = r.json()
-        (
-            utterance_text,
-            utterance_dialogue_acts,
-            utterance_annotations,
-            metadata,
-        ) = parse_API_response(data)
-
-        response = AnnotatedUtterance(
-            text=utterance_text,
-            participant=self._type,
-            dialogue_acts=utterance_dialogue_acts,
-            annotations=utterance_annotations,
-            metadata=metadata,
-        )
+        request_data = {
+            "context": context,
+            "message": utterance.text,
+            "agent_id": self._dialogue_connector._agent.id,
+        }
+        response = get_utterance_response(self._uri, request_data, self._type)
         self._dialogue_connector.register_user_utterance(response)

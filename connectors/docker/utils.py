@@ -3,6 +3,7 @@
 import logging
 from typing import Any, Dict, List
 
+from docker.models.containers import Container
 from docker.models.images import Image
 
 from connectors.docker.docker_registry_connector import DockerRegistryConnector
@@ -27,30 +28,57 @@ def find_images(
     return []
 
 
-def run_image(connector: DockerRegistryConnector, image_id: str) -> None:
+def get_image(connector: DockerRegistryConnector, image_id: str) -> Image:
+    """Gets an image by ID.
+
+    Args:
+        connector: Docker registry connector.
+        image_id: Image ID.
+
+    Returns:
+        Image.
+    """
+    try:
+        return connector.client.images.get(image_id)
+    except Exception as e:
+        logging.error(f"Error getting image: {e}")
+    return None
+
+
+def run_image(
+    connector: DockerRegistryConnector,
+    image_id: str,
+    run_args: Dict[str, Any] = {},
+) -> Container:
     """Runs an image.
 
     Args:
         connector: Docker registry connector.
         image_id: Image ID.
+        run_args: Arguments for the run command.
+
+    Returns:
+        Container running the image.
     """
     # Pull the image
     image = connector.client.images.pull(image_id)
 
     # Run the image
-    connector.client.containers.run(image)
+    container = connector.client.containers.run(image, detach=True, **run_args)
+    return container
 
 
-def stop_image(connector: DockerRegistryConnector, image: Image) -> None:
-    """Stops an image.
+def stop_container(
+    connector: DockerRegistryConnector, container_id: str
+) -> None:
+    """Stops a container.
 
     Args:
         connector: Docker registry connector.
-        image: Image.
+        container_id: Container ID.
     """
-    container = connector.client.containers.get(image.id)
+    container = connector.client.containers.get(container_id)
     container.stop()
-    container.remove()
 
 
 def delete_image(connector: DockerRegistryConnector, image_id: str) -> None:

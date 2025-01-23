@@ -22,7 +22,11 @@ def run_request() -> Response:
     username = current_user.username
     data = request.get_json()
 
-    run_configuration = {}
+    print(f"DEBUG: {data}", flush=True)
+
+    run_configuration = {
+        "public": data.get("public", True),
+    }
 
     # Check that run name is unique for user
     run_name = data.get("run_name")
@@ -46,31 +50,6 @@ def run_request() -> Response:
         return jsonify({"message": "Error while retrieving task."}), 500
 
     run_configuration["task"] = task[0]
-
-    # Get metrics configuration and update it with metrics arguments
-    metrics = []
-    for metric in data.get("metrics", []):
-        metric_configs = find_records(
-            mongo_connector, "metrics", {"_id": ObjectId(metric.get("id"))}
-        )
-        if not metric_configs or len(metric_configs) != 1:
-            return jsonify({"message": "Error while retrieving metrics."}), 500
-
-        metric_config = metric_configs[0]
-        metric_config.update(
-            {"name": metric.get("name", metric_config.get("name"))}
-        )
-        for arg in metric.get("arguments", []):
-            arg_name = arg.get("name")
-            # It is assume that arguments with custom types are not supported
-            # in the web interface.
-            metric_config.get("arguments", {}).update(
-                {arg_name: ast.literal_eval(arg.get("value"))}
-            )
-
-        metrics.append(metric_config)
-
-    run_configuration["metrics"] = metrics
 
     run_configuration["agents"] = data.get("agents", [])
     run_configuration["user_simulators"] = data.get("user_simulators", [])

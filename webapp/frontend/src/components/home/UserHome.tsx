@@ -36,7 +36,7 @@ const UserHome = () => {
 
   // Handle search
   const filteredRuns = runs.filter((run: any) =>
-    run.name.toLowerCase().includes(searchTerm.toLowerCase())
+    run.run_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination logic
@@ -86,13 +86,13 @@ const UserHome = () => {
           <MDBListGroup style={{ minWidth: "22rem" }} light>
             {currentRuns.map((run: any) => (
               <MDBListGroupItem
-                key={run.id}
-                onClick={() => console.log("Clicked on run", run.id)} // TODO: Implement function that display run details
+                key={run._id}
+                onClick={() => console.log("Clicked on run", run._id)} // TODO: Implement function that display run details
                 tag="button"
                 action
                 type="button"
               >
-                {run.name}
+                {run.run_name}
               </MDBListGroupItem>
             ))}
           </MDBListGroup>

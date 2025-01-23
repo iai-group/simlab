@@ -8,7 +8,7 @@ const TaskDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const task = location.state?.task;
-  const [runs, setRuns] = useState([]);
+  const [resultRecords, setResultRecords] = useState<any[]>([]);
 
   if (!task) {
     return (
@@ -30,11 +30,11 @@ const TaskDashboard = () => {
     );
   }
 
-  const fetchRuns = async () => {
-    APIAuth.get(`/list-runs/${task.id}`)
+  const fetchResultRecords = async () => {
+    APIAuth.get(`/results/${task.id}`)
       .then((response) => {
-        console.log(response.data.runs);
-        setRuns(response.data.runs);
+        console.log(response.data.results);
+        setResultRecords(response.data.results);
       })
       .catch((error) => {
         console.error(error);
@@ -42,13 +42,17 @@ const TaskDashboard = () => {
   };
 
   useEffect(() => {
-    fetchRuns();
+    fetchResultRecords();
   }, []);
 
   const downloadResults = () => {
-    // TODO: Implement download results
-    // The CSV file should contain the following columns:
-    // Conversational agent id, user simulation id, [metric name 1], [metric name 2], ...
+    const data = JSON.stringify(resultRecords, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${task.name}_results.json`;
+    a.click();
   };
 
   return (
@@ -56,12 +60,41 @@ const TaskDashboard = () => {
       <h2>{task.name}</h2>
       <p>{task.description}</p>
 
-      {/* Add option to download all results in a CSV file */}
+      {/* Add option to download all results in a JSON file */}
       <Button variant="primary" className="mb-3" onClick={downloadResults}>
-        Download all results as CSV
+        Download detailed results as JSON
       </Button>
 
       {/* Select metric to build result matrix */}
+      <h3>Results</h3>
+      {resultRecords.length > 0 ? (
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>Conversational Agent ID</th>
+              <th>User Simulation ID</th>
+              {Object.keys(resultRecords[0]?.metrics || {}).map(
+                (metricName) => (
+                  <th key={metricName}>{metricName}</th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {resultRecords.map((record: any) => (
+              <tr key={record.run_name}>
+                <td>{record.agent_id}</td>
+                <td>{record.user_simulator_id}</td>
+                {Object.values(record.metrics || {}).map((metric: any, idx) => (
+                  <td key={idx}>{metric.mean.toFixed(2)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No results available</p>
+      )}
     </Container>
   );
 };

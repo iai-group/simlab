@@ -25,6 +25,5 @@ export type System = {
   type: string;
   id: string;
   image: string;
-  port: number;
-  config: Array<Argument>;
+  parameters: Object;
 };

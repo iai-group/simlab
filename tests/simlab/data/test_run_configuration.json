@@ -12,7 +12,16 @@
                 }
             },
             "db_name": "simlab_test",
-            "batch_id": "675380fa0f51790295720dac"
+            "batch_id": "675380fa0f51790295720dac",
+            "metrics": [
+                {
+                    "class_name": "SuccessRate",
+                    "type": "metric",
+                    "arguments": {
+                        "name": "Success Rate"
+                    }
+                }
+            ]
         }
     },
     "agents": [
@@ -21,7 +30,8 @@
             "arguments": {
                 "id": "template_wrapper_agent",
                 "uri": "http://localhost:6000"
-            }
+            },
+            "image_name": "template_agent"
         }
     ],
     "user_simulators": [
@@ -30,15 +40,10 @@
             "arguments": {
                 "id": "template_wrapper_user_simulator",
                 "uri": "http://localhost:6001"
-            }
-        }
-    ],
-    "metrics": [
-        {
-            "class_name": "SuccessRate",
-            "type": "metric",
-            "arguments": {
-                "name": "Success Rate"
+            },
+            "image_name": "template_user_simulator",
+            "parameters": {
+                "language": "en"
             }
         }
     ]

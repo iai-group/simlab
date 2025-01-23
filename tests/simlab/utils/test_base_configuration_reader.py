@@ -70,20 +70,27 @@ def test_parse_agents(
     base_configuration_reader: BaseConfigurationReader,
 ) -> None:
     """Tests parse agents."""
-    agents = base_configuration_reader._parse_agents()
+    agents = base_configuration_reader._parse_agent_configurations()
 
     assert len(agents) == 1
-    assert agents[0].id == "template_wrapper_agent"
-    assert isinstance(agents[0], WrapperAgent)
+    assert agents[0].participant.id == "template_wrapper_agent"
+    assert agents[0].custom_parameters == {}
+    assert isinstance(agents[0].participant, WrapperAgent)
 
 
 def test_parse_user_simulators(
     base_configuration_reader: BaseConfigurationReader,
 ) -> None:
     """Tests parse user simulators."""
-    user_simulators = base_configuration_reader._parse_user_simulators()
+    user_simulators = (
+        base_configuration_reader._parse_user_simulator_configurations()
+    )
 
     assert len(user_simulators) == 1
-    assert user_simulators[0].id == "template_wrapper_user_simulator"
-    assert user_simulators[0]._uri == "http://localhost:6001"
-    assert isinstance(user_simulators[0], WrapperUserSimulator)
+    assert user_simulators[0].image_name == "template_user_simulator"
+    assert user_simulators[0].custom_parameters == {"language": "en"}
+    assert (
+        user_simulators[0].participant.id == "template_wrapper_user_simulator"
+    )
+    assert user_simulators[0].participant._uri == "http://localhost:6001"
+    assert isinstance(user_simulators[0].participant, WrapperUserSimulator)

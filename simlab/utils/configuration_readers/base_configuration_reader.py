@@ -4,9 +4,10 @@ import json
 import os
 from typing import List
 
-from simlab.core.run_configuration import RunConfiguration
-from simlab.participant.wrapper_agent import WrapperAgent
-from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.tasks.task import Task
 from simlab.utils.configuration_readers.component_generators.base_component_generator import (  # noqa: E501
     BaseComponentGenerator,
@@ -59,10 +60,18 @@ class BaseConfigurationReader:
         name = self.configuration_dict.pop("name")
         public = self.configuration_dict.pop("public", False)
         task = self._parse_task()
-        agents = self._parse_agents()
-        user_simulators = self._parse_user_simulators()
+        agent_configurations = self._parse_agent_configurations()
+        user_simulator_configurations = (
+            self._parse_user_simulator_configurations()
+        )
 
-        return RunConfiguration(name, public, task, agents, user_simulators)
+        return RunConfiguration(
+            name,
+            public,
+            task,
+            agent_configurations,
+            user_simulator_configurations,
+        )
 
     def _parse_task(self) -> Task:
         """Parses the task configuration.
@@ -70,61 +79,90 @@ class BaseConfigurationReader:
         Returns:
             Task object.
         """
-        task_class_name = self.configuration_dict.get("task", {}).get(
-            "class_name", "Task"
-        )
+        task_config_dict = self.configuration_dict.get("task", {})
+        task_class_name = task_config_dict.get("class_name", "Task")
 
         # Parse metrics
         metrics = [
             self._component_generator.generate_component(
                 "metric", metric.get("class_name"), metric
             )
-            for metric in self.configuration_dict.get("metrics", [])
+            for metric in task_config_dict.get("arguments", {}).get(
+                "metrics", []
+            )
         ]
 
         # Include parsed metrics in the task configuration
-        self.configuration_dict.get("task", {}).get("arguments", {}).update(
-            {"metrics": metrics}
-        )
+        task_config_dict.get("arguments", {}).update({"metrics": metrics})
+
         task = self._component_generator.generate_component(
             "task",
             task_class_name,
-            self.configuration_dict.get("task"),
+            task_config_dict,
         )
         return task
 
-    def _parse_agents(self) -> List[WrapperAgent]:
+    def _parse_agent_configurations(
+        self,
+    ) -> List[ParticipantConfiguration]:
         """Parses the agents configuration.
 
         Returns:
-            List of agents.
+            List of agents with their associated image and custom parameters.
         """
         agents = []
-        for agent in self.configuration_dict.get("agents", []):
-            agent_class_name = agent.get("class_name", "WrapperAgent")
+        for agent_config_dict in self.configuration_dict.get("agents", []):
+            agent_class_name = agent_config_dict.get(
+                "class_name", "WrapperAgent"
+            )
+            agent = self._component_generator.generate_component(
+                "agent",
+                agent_class_name,
+                agent_config_dict,
+            )
+
+            agent_image_name = agent_config_dict.get("image_name", None)
+            agent_custom_parameters = agent_config_dict.get("parameters", {})
             agents.append(
-                self._component_generator.generate_component(
-                    "agent", agent_class_name, agent
+                ParticipantConfiguration(
+                    agent_image_name, agent, agent_custom_parameters
                 )
             )
         return agents
 
-    def _parse_user_simulators(self) -> List[WrapperUserSimulator]:
+    def _parse_user_simulator_configurations(
+        self,
+    ) -> List[ParticipantConfiguration]:
         """Parses the user simulators configuration.
 
         Returns:
-            List of user simulators.
+            List of user simulators with their associated image and custom
+              parameters.
         """
         user_simulators = []
-        for user_simulator in self.configuration_dict.get(
+        for user_simulator_config in self.configuration_dict.get(
             "user_simulators", []
         ):
-            user_simulator_class_name = user_simulator.get(
+            user_simulator_class_name = user_simulator_config.get(
                 "class_name", "WrapperUserSimulator"
             )
+            user_simulator = self._component_generator.generate_component(
+                "user_simulator",
+                user_simulator_class_name,
+                user_simulator_config,
+            )
+
+            user_simulator_image_name = user_simulator_config.get(
+                "image_name", None
+            )
+            user_simulator_custom_parameters = user_simulator_config.get(
+                "parameters", {}
+            )
             user_simulators.append(
-                self._component_generator.generate_component(
-                    "user_simulator", user_simulator_class_name, user_simulator
+                ParticipantConfiguration(
+                    user_simulator_image_name,
+                    user_simulator,
+                    user_simulator_custom_parameters,
                 )
             )
         return user_simulators

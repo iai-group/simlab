@@ -23,9 +23,7 @@ from connectors.mongo.utils import insert_records
 from simlab.core.item_collection import DEFAULT_ITEM_DB
 
 # By default, download the 32M version of the dataset
-MOVIELENS_DATA_URL = (
-    "https://files.grouplens.org/datasets/movielens/ml-32m.zip"
-)
+MOVIELENS_DATA_URL = "https://files.grouplens.org/datasets/movielens/ml-32m.zip"
 DATASET_FOLDER = "data/datasets/"
 
 

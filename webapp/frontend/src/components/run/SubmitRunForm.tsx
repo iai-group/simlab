@@ -1,4 +1,4 @@
-// Run submission form
+// Run submission form to add new system to public leaderboard
 
 import { APIAuth, baseURL } from "../API";
 import {
@@ -21,7 +21,7 @@ const RunSubmissionForm = () => {
   const [runName, setRunName] = useState("");
   const [agentEvaluated, setAgentEvaluated] = useState<boolean | null>(null);
   const [system, setSystem] = useState<System>({} as System);
-  const [config, setConfig] = useState<string | null>(null);
+  const [parameters, setParameters] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // If no task are provided, redirect to the tasks page
@@ -47,10 +47,10 @@ const RunSubmissionForm = () => {
       return;
     }
 
-    if (config) {
+    if (parameters) {
       try {
-        const parsedConfig = JSON.parse(config);
-        setSystem({ ...system, config: parsedConfig });
+        const parsedParameters = JSON.parse(parameters);
+        setSystem({ ...system, parameters: parsedParameters });
       } catch (e) {
         setToastMessage("Invalid JSON configuration.");
         return;
@@ -59,6 +59,7 @@ const RunSubmissionForm = () => {
 
     const formData = {
       run_name: runName,
+      public: true,
       task_id: task.id,
       system: system,
     };
@@ -77,8 +78,10 @@ const RunSubmissionForm = () => {
     const value = e.target.id;
     if (value === "agent") {
       setAgentEvaluated(true);
+      setSystem({ ...system, type: "agent" });
     } else if (value === "simulator") {
       setAgentEvaluated(false);
+      setSystem({ ...system, type: "simulator" });
     }
   };
 
@@ -155,7 +158,7 @@ const RunSubmissionForm = () => {
             label="Configuration (JSON format)"
             id="formSystemConfig"
             onChange={(e) => {
-              setConfig(e.target.value);
+              setParameters(e.target.value);
             }}
             rows={5}
           />

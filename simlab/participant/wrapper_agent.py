@@ -1,19 +1,17 @@
 """Wrapper for conversational agent served with an API."""
 
-import requests
-
 from dialoguekit.core import AnnotatedUtterance, Intent, Utterance
 from dialoguekit.core.dialogue_act import DialogueAct
 from dialoguekit.participant import Agent
 from dialoguekit.participant.agent import AgentType
-from simlab.utils.utils_response_parsing import parse_API_response
+from simlab.utils.participant_api.utils_api_calls import get_utterance_response
 
 
 class WrapperAgent(Agent):
     def __init__(
         self,
         id: str,
-        uri: str,
+        uri: str = "http://localhost:7000",
         agent_type: AgentType = AgentType.BOT,
         stop_intent: Intent = Intent("EXIT"),
     ) -> None:
@@ -55,27 +53,10 @@ class WrapperAgent(Agent):
             utterance.text
             for utterance in self._dialogue_connector.dialogue_history.utterances  # noqa
         ]
-        r = requests.post(
-            f"{self._uri}/receive_utterance",
-            json={
-                "context": context,
-                "message": utterance.text,
-                "user_id": self._dialogue_connector._user.id,
-            },
-        )
-        data = r.json()
-        (
-            utterance_text,
-            utterance_dialogue_acts,
-            utterance_annotations,
-            metadata,
-        ) = parse_API_response(data)
-
-        response = AnnotatedUtterance(
-            text=utterance_text,
-            participant=self._type,
-            dialogue_acts=utterance_dialogue_acts,
-            annotations=utterance_annotations,
-            metadata=metadata,
-        )
+        request_data = {
+            "context": context,
+            "message": utterance.text,
+            "user_id": self._dialogue_connector._user.id,
+        }
+        response = get_utterance_response(self._uri, request_data, self._type)
         self._dialogue_connector.register_agent_utterance(response)
