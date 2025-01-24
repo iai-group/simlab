@@ -15,7 +15,7 @@ import argparse
 import itertools
 import os
 from statistics import mean, median, stdev
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 from docker.models.containers import Container
@@ -23,7 +23,7 @@ from docker.models.containers import Container
 from connectors.docker.docker_registry_connector import DockerRegistryConnector
 from connectors.docker.utils import get_image, run_image
 from connectors.mongo.mongo_connector import MongoDBConnector
-from connectors.mongo.utils import insert_record
+from connectors.mongo.utils import insert_record, update_record
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
 from simlab.core.run_configuration import (
@@ -54,6 +54,7 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="Path to the simulation configuration file.",
     )
+    # MongoDB arguments
     parser.add_argument(
         "mongo_uri",
         type=str,
@@ -64,6 +65,23 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="MongoDB database name.",
     )
+    # Docker registry arguments
+    parser.add_argument(
+        "registry_uri",
+        type=str,
+        help="Docker registry URI.",
+    )
+    parser.add_argument(
+        "registry_username",
+        type=str,
+        help="Docker registry username.",
+    )
+    parser.add_argument(
+        "registry_password",
+        type=str,
+        help="Docker registry password.",
+    )
+
     parser.add_argument(
         "-o",
         "--output_dir",
@@ -108,40 +126,6 @@ def generate_synthetic_dialogues(
             user_simulator.id, user_simulator, agent, output_dir
         )
         simulation_platform.disconnect(user_simulator.id, agent.id)
-
-
-def filter_existing_participant_pairs(
-    output_dir: str,
-    participant_pairs: List[
-        Tuple[ParticipantConfiguration, ParticipantConfiguration]
-    ],
-) -> List[Tuple[ParticipantConfiguration, ParticipantConfiguration]]:
-    """Filters out the agent-user simulator pairs which have been evaluated.
-
-    Args:
-        output_dir: Path to the output directory for the task.
-        participant_pairs: List of agent-user simulator pairs.
-
-    Returns:
-        List of agent-user simulator pairs which have not been evaluated.
-    """
-    # TODO: Refactor to check run configuration and evaluation results in MongoDB
-    filtered_pairs = []
-
-    for agent_configuration, user_simulator_configuration in participant_pairs:
-        agent_id = agent_configuration.participant.id
-        user_simulator_id = user_simulator_configuration.participant.id
-        if not os.path.exists(
-            os.path.join(
-                output_dir,
-                f"{agent_id}_{user_simulator_id}.json",
-            )
-        ):
-            filtered_pairs.append(
-                (agent_configuration, user_simulator_configuration)
-            )
-
-    return filtered_pairs
 
 
 def start_participant(
@@ -289,28 +273,18 @@ def _dialogues_evaluation(dialogues_dir: str, task: Task) -> Dict[str, Any]:
 
 def main(
     configuration: RunConfiguration,
-    mongo_uri: str,
-    mongo_db: str,
+    mongo_connector: MongoDBConnector,
+    registry_connector: DockerRegistryConnector,
     output_dir: str,
 ) -> None:
     """Runs the simulation-based evaluation given a configuration.
 
     Args:
         configuration: Simulation configuration object.
-        mongo_uri: MongoDB URI.
-        mongo_db: MongoDB database name.
+        mongo_connector: MongoDB connector.
+        registry_connector: Docker registry connector.
         output_dir: Path to the output directory for the task.
     """
-    # Docker registry connector
-    registry_connector = DockerRegistryConnector()
-
-    # MongoDB connector
-    mongo_connector = MongoDBConnector(mongo_uri, mongo_db)
-    output_dir = os.path.join(
-        output_dir,
-        configuration.task.name,
-        configuration.task.batch_id,
-    )
 
     # Generate all possible agent-user simulator pairs
     participant_pairs = list(
@@ -318,11 +292,6 @@ def main(
     )
 
     simulation_platform = SimulationPlatform(WrapperAgent)
-
-    # Remove pairs that have already been evaluated
-    participant_pairs = filter_existing_participant_pairs(
-        output_dir, participant_pairs
-    )
 
     for agent, user_simulator in participant_pairs:
         agent_evaluation_summary = evaluate_participant_pair(
@@ -342,5 +311,36 @@ def main(
 
 if __name__ == "__main__":
     args = parse_args()
-    configuration = load_configuration(args.config_file)
-    main(configuration, args.mongo_uri, args.mongo_db, args.output_dir)
+    try:
+        configuration = load_configuration(args.config_file)
+
+        # Docker registry connector
+        registry_connector = DockerRegistryConnector(
+            registry_uri=args.registry_uri,
+            username=args.registry_username,
+            password=args.registry_password,
+        )
+
+        # MongoDB connector
+        mongo_connector = MongoDBConnector(args.mongo_uri, args.mongo_db)
+        output_dir = os.path.join(
+            args.output_dir,
+            configuration.task.name,
+            configuration.task.batch_id,
+        )
+
+        main(configuration, mongo_connector, registry_connector, output_dir)
+        update_record(
+            mongo_connector,
+            "runs",
+            {"name": configuration.name},
+            {"status": "completed"},
+        )
+    except Exception as e:
+        print(f"Error during simulation: {e}")
+        update_record(
+            mongo_connector,
+            "runs",
+            {"name": configuration.name},
+            {"status": "failed", "error": str(e)},
+        )

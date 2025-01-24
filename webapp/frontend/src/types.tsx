@@ -23,7 +23,6 @@ export type Simulator = Resource;
 
 export type System = {
   type: string;
-  id: string;
   image: string;
   parameters: Object;
 };

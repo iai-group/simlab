@@ -1,7 +1,7 @@
 """Routes related to runs."""
 
-import ast
 import os
+from typing import Any, Dict, List
 
 from bson import ObjectId
 from flask import Blueprint, Response, json, jsonify, request
@@ -13,6 +13,38 @@ from webapp.backend.app import DATA_FOLDER, mongo_connector
 run = Blueprint("run", __name__)
 
 
+def _get_previous_task_participants(
+    task_id: str, participant_type: str
+) -> List[Dict[str, Any]]:
+    """Gets configuration task participants of a specific type.
+
+    Args:
+        task_id: Task ID.
+        participant_type: Participant type.
+
+    Returns:
+        List of participants configuration.
+    """
+    participants = []
+    previous_runs = find_records(
+        mongo_connector, "runs", {"task_id": ObjectId(task_id)}
+    )
+
+    for run in previous_runs:
+        if run.get("status") == "successful":
+            run_configuration = json.load(open(run["run_configuration_file"]))
+            run_participants = (
+                run_configuration.get("agents", [])
+                if participant_type == "agent"
+                else run_configuration.get("user_simulators", [])
+            )
+            for participant in run_participants:
+                if participant not in participants:
+                    participants.append(participant)
+
+    return participants
+
+
 @run.route("/run-request", methods=["POST"])
 @login_required
 def run_request() -> Response:
@@ -21,8 +53,6 @@ def run_request() -> Response:
 
     username = current_user.username
     data = request.get_json()
-
-    print(f"DEBUG: {data}", flush=True)
 
     run_configuration = {
         "public": data.get("public", True),
@@ -51,13 +81,24 @@ def run_request() -> Response:
 
     run_configuration["task"] = task[0]
 
-    run_configuration["agents"] = data.get("agents", [])
-    run_configuration["user_simulators"] = data.get("user_simulators", [])
+    system = data.get("system", {})
+    system_type = system.pop("type")
+    if system_type == "agent":
+        run_configuration["agents"] = [system]
+        run_configuration["user_simulators"] = _get_previous_task_participants(
+            task[0]["_id"], "user_simulator"
+        )
+    elif system_type == "user_simulator":
+        run_configuration["user_simulators"] = [system]
+        run_configuration["agents"] = _get_previous_task_participants(
+            task[0]["_id"], "agent"
+        )
 
     # Save run configuration to file
     run_configuration_path = os.path.join(
         DATA_FOLDER,
         "configs",
+        run_configuration["task"]["_id"],
         f"{username}_{run_configuration['name']}.json",
     )
     if not os.path.exists(os.path.dirname(run_configuration_path)):
@@ -72,6 +113,7 @@ def run_request() -> Response:
         record={
             "username": username,
             "run_name": run_configuration["name"],
+            "status": "pending",
             "task_id": run_configuration["task"]["_id"],
             "run_configuration_file": run_configuration_path,
         },

@@ -140,13 +140,6 @@ const RunSubmissionForm = () => {
           <p>
             {agentEvaluated ? "Conversational Agent" : "User Simulator"} ID*
           </p>
-          <MDBInput
-            wrapperClass="m-4"
-            label="ID"
-            id="formSystemID"
-            type="text"
-            onChange={(e) => setSystem({ ...system, id: e.target.value })}
-          />
 
           {/* Additional configuration as a JSON file (optional) */}
           <p>

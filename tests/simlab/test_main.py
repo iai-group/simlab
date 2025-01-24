@@ -12,7 +12,6 @@ from simlab.core.run_configuration import (
     RunConfiguration,
 )
 from simlab.main import (
-    filter_existing_participant_pairs,
     generate_synthetic_dialogues,
     load_configuration,
     main,
@@ -101,25 +100,6 @@ def test_generate_synthetic_dialogues(
     mocked_simulation_platform.disconnect.assert_called_once_with(
         "test_simulator", "test_agent"
     )
-
-
-def test_filter_existing_participant_pairs() -> None:
-    """Tests the filter_existing_participant_pairs function."""
-    mocked_agent = MagicMock(id="test_agent_1")
-    mocker_simulator_1 = MagicMock(id="test_user_1")
-    mocker_simulator_2 = MagicMock(id="test_user_2")
-    participant_pairs = [
-        (mocked_agent, mocker_simulator_1),
-        (mocked_agent, mocker_simulator_2),
-    ]
-
-    # Mock os.path.exists to return True for the first pair and False for the
-    # second.
-    with patch("os.path.exists", side_effect=[True, False]):
-        filtered_pairs = filter_existing_participant_pairs(
-            "output_dir", participant_pairs
-        )
-        assert filtered_pairs == [(mocked_agent, mocker_simulator_2)]
 
 
 def test_main(task: Task) -> None:

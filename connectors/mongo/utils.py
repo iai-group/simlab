@@ -77,6 +77,32 @@ def insert_records(
     return []
 
 
+def update_record(
+    connector: MongoDBConnector,
+    collection: str,
+    query: Dict[str, Any],
+    update: Dict[str, Any],
+) -> bool:
+    """Updates a record in a collection.
+
+    Args:
+        connector: MongoDB connector.
+        collection: Collection name.
+        query: Query to match the record to update.
+        update: Update to apply.
+
+    Returns:
+        True if the record was updated successfully, False otherwise.
+    """
+    db = connector.get_database()
+    try:
+        db[collection].update_one(query, {"$set": update})
+    except Exception as e:
+        logging.error(f"Error updating record: {e}")
+        return False
+    return True
+
+
 def upsert_records(
     connector: MongoDBConnector, collection: str, records: List[Dict[str, Any]]
 ) -> List[str]:

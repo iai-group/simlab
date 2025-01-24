@@ -2,6 +2,7 @@
 
 import json
 import os
+from copy import deepcopy
 from typing import List
 
 from simlab.core.run_configuration import (
@@ -15,8 +16,24 @@ from simlab.utils.configuration_readers.component_generators.base_component_gene
 
 
 class BaseConfigurationReader:
-    def __init__(self, configuration_path: str) -> None:
+    def __init__(self, configuration_path: str = None) -> None:
         """Initializes a configuration reader.
+
+        Args:
+            configuration_path: Path to the configuration file. Defaults to
+              None.
+        """
+        self.configuration_dict = None
+        self._component_generator = None
+
+        if configuration_path:
+            self.load_configuration_dict(configuration_path)
+            self.configuration = self.configuration_parser()
+        else:
+            self.configuration = None
+
+    def load_configuration_dict(self, configuration_path: str) -> None:
+        """Loads the configuration dictionary from a file.
 
         Args:
             configuration_path: Path to the configuration file.
@@ -33,30 +50,29 @@ class BaseConfigurationReader:
         if not configuration_path.endswith(".json"):
             raise RuntimeError("Configuration file must be a JSON file.")
 
-        self.configuration_path = configuration_path
         self.configuration_dict = json.load(open(configuration_path, "r"))
         self._component_generator = self._get_component_generator()
 
-    @property
-    def configuration(self) -> RunConfiguration:
-        """Returns the configuration object.
+    def configuration_parser(
+        self, configuration_path: str = None
+    ) -> RunConfiguration:
+        """Parses the configuration dictionary.
 
-        Returns:
-            Run configuration object.
-        """
-        return self._configuration_parser()
-
-    def _configuration_parser(self) -> RunConfiguration:
-        """Parses the configuration file.
+        Args:
+            configuration_path: Path to the configuration file. Defaults to
+              None.
 
         Raises:
-            ValueError: If the configuration file is invalid.
+            ValueError: If the configuration dictionary is invalid.
 
         Returns:
             RunConfiguration object.
         """
+        if configuration_path:
+            self.load_configuration_dict(configuration_path)
+
         if "name" not in self.configuration_dict:
-            raise ValueError("Configuration file must have a name.")
+            raise ValueError("Configuration must have a name.")
         name = self.configuration_dict.pop("name")
         public = self.configuration_dict.pop("public", False)
         task = self._parse_task()
@@ -65,13 +81,14 @@ class BaseConfigurationReader:
             self._parse_user_simulator_configurations()
         )
 
-        return RunConfiguration(
+        self.configuration = RunConfiguration(
             name,
             public,
             task,
             agent_configurations,
             user_simulator_configurations,
         )
+        return self.configuration
 
     def _parse_task(self) -> Task:
         """Parses the task configuration.
@@ -79,7 +96,7 @@ class BaseConfigurationReader:
         Returns:
             Task object.
         """
-        task_config_dict = self.configuration_dict.get("task", {})
+        task_config_dict = deepcopy(self.configuration_dict.get("task", {}))
         task_class_name = task_config_dict.get("class_name", "Task")
 
         # Parse metrics
@@ -93,7 +110,7 @@ class BaseConfigurationReader:
         ]
 
         # Include parsed metrics in the task configuration
-        task_config_dict.get("arguments", {}).update({"metrics": metrics})
+        task_config_dict.get("arguments", {})["metrics"] = metrics
 
         task = self._component_generator.generate_component(
             "task",
