@@ -7,3 +7,4 @@ PyYAML
 cryptography
 pymongo
 docker
+python-jenkins

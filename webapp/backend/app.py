@@ -8,12 +8,14 @@ from flask_login import LoginManager
 from connectors.docker.docker_registry_connector import DockerRegistryConnector
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
+from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 
 DATA_FOLDER = "data/simlab"
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
 docker_registry_connector = DockerRegistryConnector()
+jenkins_job = JenkinsJobManager()
 
 
 @login_manager.user_loader
@@ -78,6 +80,8 @@ def create_app(testing: bool = False) -> Flask:
 
     if testing:
         mongo_connector.set_default_db("simlab_test")
+    
+    jenkins_job.check_jenkins_connection()
 
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
