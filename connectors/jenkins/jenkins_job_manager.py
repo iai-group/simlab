@@ -8,6 +8,7 @@ import os
 import jenkins
 
 import xml.etree.ElementTree as ET
+from typing import Union
 
 
 CONFIG_FILE_PATH = "data/jenkins/run_execution/config.xml"
@@ -54,26 +55,27 @@ class JenkinsJobManager:
 
         Args:
             job_name: Name of the Jenkins job.
-            git_url: URL of the Git repository to clone.
+            run_configuration_path: Path of the run configuration file.
+        
+        Raises:
+            RuntimeError: If the job creation or building fails.
         """
         try:
-            job_config = self._generate_job_config(run_configuration_path)
-
             # Check if the job exists; create it if not
             if not self.server.job_exists(job_name):
+                job_config = self._generate_job_config(run_configuration_path)
                 self.server.create_job(job_name, job_config)
             # Trigger the job
             self.server.build_job(job_name)
             print(f"Job '{job_name}' submitted successfully.")
         except Exception as e:
-            print(f"Failed to submit job: {str(e)}")
             raise RuntimeError(f"Failed to submit job: {e}")
 
     def _generate_job_config(self, run_configuration_path: str) -> str:
         """Generates a Jenkins job configuration.
 
         Args:
-            run_configuration_path: URL of the run configuration.
+            run_configuration_path: Path of the run configuration file.
 
         Returns:
             A string representing the Jenkins job configuration XML.
@@ -108,7 +110,7 @@ class JenkinsJobManager:
         except Exception as e:
             raise RuntimeError(f"Failed to load or modify config.xml: {e}")
 
-    def get_job_logs(self, job_name: str) -> str | None:
+    def get_job_logs(self, job_name: str) -> Union[str, None]:
         """Fetches the logs of a Jenkins job.
 
         Args:

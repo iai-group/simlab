@@ -20,6 +20,8 @@ SimLab is a platform to perform simulation-based evaluation of conversational ag
 
    guides/add_system_to_registry
    guides/submit_run_request
+   guides/jenkins_docker_setup
+   guides/jenkins_customization
 
 .. toctree::
    :maxdepth: 1

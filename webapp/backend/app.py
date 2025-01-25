@@ -15,7 +15,7 @@ DATA_FOLDER = "data/simlab"
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
 docker_registry_connector = DockerRegistryConnector()
-jenkins_job = JenkinsJobManager()
+jenkins_job_manager = JenkinsJobManager()
 
 
 @login_manager.user_loader
@@ -81,7 +81,7 @@ def create_app(testing: bool = False) -> Flask:
     if testing:
         mongo_connector.set_default_db("simlab_test")
     
-    jenkins_job.check_jenkins_connection()
+    jenkins_job_manager.check_jenkins_connection()
 
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint

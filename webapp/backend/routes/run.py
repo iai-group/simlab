@@ -8,8 +8,7 @@ from flask import Blueprint, Response, json, jsonify, request
 from flask_login import current_user, login_required
 
 from connectors.mongo.utils import delete_records, find_records, insert_record
-from webapp.backend.app import DATA_FOLDER, mongo_connector
-from connectors.jenkins.jenkins_job_manager import submit_job 
+from webapp.backend.app import DATA_FOLDER, mongo_connector, jenkins_job_manager
 
 run = Blueprint("run", __name__)
 
@@ -102,11 +101,11 @@ def run_request() -> Response:
     # TODO: Implement Jenkins server integration
     # See: https://github.com/iai-group/simlab/issues/5
     try:
-        submit_job(run_name,run_configuration_path)
+        jenkins_job_manager.submit_job(run_name,run_configuration_path)
     except Exception as e:
         error_message = f"Error submitting job: {str(e)}"
         print(error_message)
-        return jsonify({"message": "Job submission failed. : {error_message}"}), 500
+        return jsonify({"message": f"Job submission failed. : {error_message}"}), 500
 
     return jsonify({"message": "Run request created."}), 201
 
