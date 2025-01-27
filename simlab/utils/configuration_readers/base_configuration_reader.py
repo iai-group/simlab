@@ -138,7 +138,7 @@ class BaseConfigurationReader:
                 agent_config_dict,
             )
 
-            agent_image_name = agent_config_dict.get("image_name", None)
+            agent_image_name = agent_config_dict.get("image", None)
             agent_custom_parameters = agent_config_dict.get("parameters", {})
             agents.append(
                 ParticipantConfiguration(
@@ -170,7 +170,7 @@ class BaseConfigurationReader:
             )
 
             user_simulator_image_name = user_simulator_config.get(
-                "image_name", None
+                "image", None
             )
             user_simulator_custom_parameters = user_simulator_config.get(
                 "parameters", {}

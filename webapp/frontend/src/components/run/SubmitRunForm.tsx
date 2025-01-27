@@ -9,10 +9,11 @@ import {
   ToastContainer,
 } from "react-bootstrap";
 import { MDBInput, MDBRadio, MDBTextArea } from "mdb-react-ui-kit";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Form } from "react-bootstrap";
 import { System } from "../../types";
-import { useState } from "react";
 
 const RunSubmissionForm = () => {
   const location = useLocation();
@@ -23,6 +24,7 @@ const RunSubmissionForm = () => {
   const [system, setSystem] = useState<System>({} as System);
   const [parameters, setParameters] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<string[] | null>(null);
 
   // If no task are provided, redirect to the tasks page
   if (!task) {
@@ -42,7 +44,7 @@ const RunSubmissionForm = () => {
   }
 
   const handleSubmit = () => {
-    if (!runName || !system.id || !system.image) {
+    if (!runName || !system || !system.image) {
       setToastMessage("Please fill in all required fields.");
       return;
     }
@@ -50,7 +52,7 @@ const RunSubmissionForm = () => {
     if (parameters) {
       try {
         const parsedParameters = JSON.parse(parameters);
-        setSystem({ ...system, parameters: parsedParameters });
+        system.parameters = parsedParameters;
       } catch (e) {
         setToastMessage("Invalid JSON configuration.");
         return;
@@ -66,7 +68,8 @@ const RunSubmissionForm = () => {
 
     APIAuth.post(`${baseURL}/run-request`, formData)
       .then((response) => {
-        console.log(response);
+        console.log(response.data);
+        setToastMessage("Run submitted successfully!");
       })
       .catch((error) => {
         setToastMessage("Error submitting run. Please reach out to the admin.");
@@ -84,6 +87,41 @@ const RunSubmissionForm = () => {
       setSystem({ ...system, type: "simulator" });
     }
   };
+
+  const fetchSystemImage = async (systemImageName: string) => {
+    const response = await APIAuth.post(`${baseURL}/image`, {
+      image: systemImageName,
+    }).then((response) => response.data);
+    return response;
+  };
+
+  const fetchAgents = async () => {
+    const response = await fetch(`${baseURL}/agents`).then((response) =>
+      response.json()
+    );
+    return response;
+  };
+
+  const fetchSimulators = async () => {
+    const response = await fetch(`${baseURL}/simulators`).then((response) =>
+      response.json()
+    );
+    return response;
+  };
+
+  useEffect(() => {
+    if (agentEvaluated !== null) {
+      if (agentEvaluated) {
+        fetchAgents().then((response) => {
+          setParticipants(response.map((agent: any) => agent.tags[0]));
+        });
+      } else {
+        fetchSimulators().then((response) => {
+          setParticipants(response.map((simulator: any) => simulator.tags[0]));
+        });
+      }
+    }
+  }, [agentEvaluated]);
 
   return (
     <Container>
@@ -130,16 +168,28 @@ const RunSubmissionForm = () => {
           <p className="mt-4">
             {agentEvaluated ? "Conversational Agent" : "User Simulator"} image*
           </p>
-          <MDBInput
-            wrapperClass="m-4"
-            label="Image"
-            id="formSystemImage"
-            type="text"
-            onChange={(e) => setSystem({ ...system, image: e.target.value })}
-          />
-          <p>
-            {agentEvaluated ? "Conversational Agent" : "User Simulator"} ID*
-          </p>
+          <Form.Select
+            className="m-4"
+            aria-label="Default select example"
+            onChange={(e) => {
+              const systemImageName = e.target.value;
+              fetchSystemImage(systemImageName).then((response) => {
+                setSystem({
+                  ...system,
+                  image: response.image,
+                  arguments: response.arguments ? response.arguments : [],
+                  class_name: response.class_name,
+                });
+              });
+            }}
+          >
+            <option>Select an image</option>
+            {participants?.map((participant) => (
+              <option key={participant} value={participant}>
+                {participant}
+              </option>
+            ))}
+          </Form.Select>
 
           {/* Additional configuration as a JSON file (optional) */}
           <p>

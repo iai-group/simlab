@@ -144,14 +144,12 @@ def start_participant(
         Container running the participant.
     """
     try:
-        image = get_image(
-            registry_connector, participant_configuration.image_name
-        )
+        image = get_image(registry_connector, participant_configuration.image)
         exposed_port = image.labels.get("exposed_port")
         run_args = {"ports": {port: exposed_port}}
         container = run_image(
             registry_connector,
-            participant_configuration.image_name,
+            participant_configuration.image,
             run_args=run_args,
         )
 

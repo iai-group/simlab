@@ -87,7 +87,7 @@ def test_parse_user_simulators(
     )
 
     assert len(user_simulators) == 1
-    assert user_simulators[0].image_name == "template_user_simulator"
+    assert user_simulators[0].image == "template_user_simulator"
     assert user_simulators[0].custom_parameters == {"language": "en"}
     assert (
         user_simulators[0].participant.id == "template_wrapper_user_simulator"

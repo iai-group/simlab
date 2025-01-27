@@ -12,7 +12,7 @@ from simlab.tasks.task import Task
 class ParticipantConfiguration:
     """Participant configuration with image name and custom parameters."""
 
-    image_name: str
+    image: str
     participant: Union[WrapperAgent, WrapperUserSimulator]
     custom_parameters: Dict[str, Any] = field(default_factory=dict)
 

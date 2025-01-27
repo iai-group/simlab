@@ -112,14 +112,14 @@ def test_main(task: Task) -> None:
     mocked_configuration.agents = [
         MagicMock(
             spec=ParticipantConfiguration,
-            image_name="template_agent",
+            image="template_agent",
             participant=MagicMock(spec=WrapperAgent, id="test_agent"),
         )
     ]
     mocked_configuration.user_simulators = [
         MagicMock(
             spec=ParticipantConfiguration,
-            image_name="template_user_simulator",
+            image="template_user_simulator",
             participant=MagicMock(
                 spec=WrapperUserSimulator, id="test_user_simulator"
             ),

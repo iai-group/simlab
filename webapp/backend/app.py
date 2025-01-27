@@ -6,16 +6,16 @@ from flask_cors import CORS
 from flask_login import LoginManager
 
 from connectors.docker.docker_registry_connector import DockerRegistryConnector
+from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
-from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 
 DATA_FOLDER = "data/simlab"
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
 docker_registry_connector = DockerRegistryConnector()
-jenkins_job = JenkinsJobManager()
+jenkins_job_manager = JenkinsJobManager()
 
 
 @login_manager.user_loader
@@ -66,22 +66,22 @@ def create_app(testing: bool = False) -> Flask:
 
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config[
-        "SESSION_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    app.config["SESSION_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    )
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SECURE"] = True
-    app.config[
-        "REMEMBER_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site remember cookies
+    app.config["REMEMBER_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site remember cookies
+    )
 
     app.config["UPLOAD_FOLDER"] = "data/uploads"
     app.config["ALLOWED_EXTENSIONS"] = {"json"}
 
     if testing:
         mongo_connector.set_default_db("simlab_test")
-    
-    jenkins_job.check_jenkins_connection()
+
+    jenkins_job_manager.check_jenkins_connection()
 
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint

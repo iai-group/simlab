@@ -4,21 +4,14 @@ Manages Jenkins server interactions, including job submission and log retrieval.
 """
 
 import os
+from typing import Optional
 
 import jenkins
 
-import xml.etree.ElementTree as ET
-
-
-CONFIG_FILE_PATH = "data/jenkins/run_execution/config.xml"
 # Environment variables for Jenkins configuration
 JENKINS_URI = os.environ.get("JENKINS_URI", "http://localhost:8080")
 JENKINS_USERNAME = os.environ.get("JENKINS_USERNAME", "")
 JENKINS_PASSWORD = os.environ.get("JENKINS_PASSWORD", "")
-# Environment variables for Docker Registry
-DOCKER_REGISTRY_URI = os.environ.get("DOCKER_REGISTRY_URI", "")
-DOCKER_REGISTRY_USER = os.environ.get("DOCKER_REGISTRY_USER", "")
-DOCKER_REGISTRY_PASSWORD = os.environ.get("DOCKER_REGISTRY_PASSWORD", "")
 
 
 class JenkinsJobManager:
@@ -49,80 +42,65 @@ class JenkinsJobManager:
         except Exception as e:
             print(f"Failed to connect to Jenkins: {str(e)}")
 
-    def submit_job(self, job_name: str, run_configuration_path: str) -> None:
+    def submit_job(
+        self, run_configuration_path: str, job_name: str = "run_execution"
+    ) -> None:
         """Submits a Jenkins job after ensuring it does not exist.
 
         Args:
-            job_name: Name of the Jenkins job.
-            git_url: URL of the Git repository to clone.
-        """
-        try:
-            job_config = self._generate_job_config(run_configuration_path)
+            run_configuration_path: Path to run configuration file.
+            job_name: Name of the Jenkins job. Defaults to "run_execution".
 
-            # Check if the job exists; create it if not
-            if not self.server.job_exists(job_name):
-                self.server.create_job(job_name, job_config)
+        Raises:
+            RuntimeError: If the job submission fails.
+        """
+        # Check if the job exists
+        if not self.server.job_exists(job_name):
+            raise RuntimeError(f"Job '{job_name}' does not exist.")
+        try:
+            params = {
+                "CONFIG_FILE": run_configuration_path,
+            }
+
             # Trigger the job
-            self.server.build_job(job_name)
+            self.server.build_job(job_name, params)
             print(f"Job '{job_name}' submitted successfully.")
         except Exception as e:
-            print(f"Failed to submit job: {str(e)}")
             raise RuntimeError(f"Failed to submit job: {e}")
 
-    def _generate_job_config(self, run_configuration_path: str) -> str:
-        """Generates a Jenkins job configuration.
-
-        Args:
-            run_configuration_path: URL of the run configuration.
-
-        Returns:
-            A string representing the Jenkins job configuration XML.
-        """
-        # TODO: Update the git credentails needed in the config.xml file
-        try:
-            tree = ET.parse(CONFIG_FILE_PATH)
-            root = tree.getroot()
-
-            # Locate and update variables
-            for parameter in root.findall(".//hudson.model.StringParameterDefinition"):
-                name = parameter.find("name")
-                if name is not None and name.text == "REGISTRY_URL":
-                    default_value = parameter.find("defaultValue")
-                    if default_value is not None:
-                        default_value.text = DOCKER_REGISTRY_URI
-                if name is not None and name.text == "REGISTRY_USERNAME":
-                    default_value = parameter.find("defaultValue")
-                    if default_value is not None:
-                        default_value.text = DOCKER_REGISTRY_USER
-                if name is not None and name.text == "REGISTRY_PASSWORD":
-                    default_value = parameter.find("defaultValue")
-                    if default_value is not None:
-                        default_value.text = DOCKER_REGISTRY_PASSWORD
-                if name is not None and name.text == "CONFIG_FILE":
-                    default_value = parameter.find("defaultValue")
-                    if default_value is not None:
-                        default_value.text = run_configuration_path
-
-            # Convert back to a string and return the modified XML content
-            return ET.tostring(root, encoding="unicode")
-        except Exception as e:
-            raise RuntimeError(f"Failed to load or modify config.xml: {e}")
-
-    def get_job_logs(self, job_name: str) -> str | None:
-        """Fetches the logs of a Jenkins job.
+    def get_build_log(
+        self, job_name: str, run_configuration_path: str
+    ) -> Optional[str]:
+        """Fetches the logs of a Jenkins build.
 
         Args:
             job_name: Name of the Jenkins job.
+            run_configuration_path: Path to run configuration file.
 
         Returns:
-            Logs of the last build of the job, or None if an error occurs.
+            Logs of the last build with matching configuration file.
         """
+        logs = None
         try:
-            build_number = self.server.get_job_info(job_name)["lastBuild"][
-                "number"
-            ]
-            logs = self.server.get_build_console_output(job_name, build_number)
-            return logs
+            builds = self.server.get_job_info(job_name).get("builds", [])
+            if not builds:
+                raise RuntimeError(f"No builds found for job '{job_name}'.")
+
+            for build in builds:
+                build_number = build["number"]
+                build_info = self.server.get_build_info(job_name, build_number)
+                build_params = build_info.get("actions", [{}])[0].get(
+                    "parameters", []
+                )
+                for param in build_params:
+                    if (
+                        param["name"] == "CONFIG_FILE"
+                        and param["value"] == run_configuration_path
+                    ):
+                        logs = self.server.get_build_console_output(
+                            job_name, build_number
+                        )
+                        return logs
         except Exception as e:
             print(f"Failed to fetch logs: {str(e)}")
-            return None
+        return logs

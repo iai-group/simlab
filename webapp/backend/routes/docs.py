@@ -2,7 +2,7 @@
 
 from flask import Blueprint, Response, jsonify, request, send_file
 
-from connectors.docker.utils import find_images
+from connectors.docker.utils import find_images, get_image
 from connectors.mongo.utils import find_records
 from webapp.backend.app import docker_registry_connector, mongo_connector
 
@@ -176,3 +176,34 @@ def simulator(simulator_id: str) -> Response:
         ),
         200,
     )
+
+
+@docs.route("/image", methods=["POST"])
+def find_image() -> Response:
+    """Returns the details of an image given its name."""
+    assert request.method == "POST", "Invalid request method"
+
+    image_name = request.get_json().get("image")
+    image = get_image(docker_registry_connector, image_name)
+
+    if not image:
+        return Response("Image not found", 400)
+
+    participant_id = image.labels.get("name")
+    participant_description = image.labels.get("description", "")
+    if image.labels.get("type") == "agent":
+        participant_class = image.labels.get("class", "WrapperAgent")
+    elif image.labels.get("type") == "simulator":
+        participant_class = image.labels.get("class", "WrapperSimulator")
+
+    if not participant_id:
+        return Response("ID not found in image labels", 500)
+
+    participant_config = {
+        "class_name": participant_class,
+        "arguments": {"id": participant_id},
+        "image": image_name,
+        "description": participant_description,
+    }
+
+    return jsonify(participant_config), 200
