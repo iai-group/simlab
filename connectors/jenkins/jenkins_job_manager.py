@@ -57,11 +57,12 @@ class JenkinsJobManager:
         # Check if the job exists
         if not self.server.job_exists(job_name):
             raise RuntimeError(f"Job '{job_name}' does not exist.")
-        try:
-            params = {
-                "CONFIG_FILE": run_configuration_path,
-            }
 
+        params = {
+            "CONFIG_FILE": run_configuration_path,
+        }
+
+        try:
             # Trigger the job
             self.server.build_job(job_name, params)
             print(f"Job '{job_name}' submitted successfully.")
