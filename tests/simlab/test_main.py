@@ -33,6 +33,9 @@ def test_parse_args(monkeypatch) -> None:
         "run_configuration.json",
         "mongodb://localhost:27017",
         "simlab_test",
+        "http://localhost:5000",
+        "user",
+        "pwd",
         "-o=tests/simlab/data/dialogue_export",
     ]
 
@@ -109,14 +112,14 @@ def test_main(task: Task) -> None:
     mocked_configuration.name = "test_run"
     mocked_configuration.public = True
     mocked_configuration.task = task
-    mocked_configuration.agents = [
+    mocked_configuration.agent_configurations = [
         MagicMock(
             spec=ParticipantConfiguration,
             image="template_agent",
             participant=MagicMock(spec=WrapperAgent, id="test_agent"),
         )
     ]
-    mocked_configuration.user_simulators = [
+    mocked_configuration.user_simulator_configurations = [
         MagicMock(
             spec=ParticipantConfiguration,
             image="template_user_simulator",
@@ -126,6 +129,9 @@ def test_main(task: Task) -> None:
         )
     ]
     with (
+        patch(
+            "simlab.main.DockerRegistryConnector"
+        ) as mocked_docker_connector,
         patch("simlab.main.MongoDBConnector") as mocked_mongo_connector,
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,
@@ -137,14 +143,11 @@ def test_main(task: Task) -> None:
 
         main(
             mocked_configuration,
-            "mongodb://localhost:27017",
-            "simlab_test",
+            mocked_mongo_connector,
+            mocked_docker_connector,
             "tests/simlab/data/dialogue_export",
         )
 
-        mocked_mongo_connector.assert_called_once_with(
-            "mongodb://localhost:27017", "simlab_test"
-        )
         mocked_json_to_dialogues.assert_called_once_with(
             "tests/simlab/data/dialogue_export/task_testing/"
             "675380fa0f51790295720dac/test_agent_test_user_simulator.json"
