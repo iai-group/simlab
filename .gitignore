@@ -133,6 +133,7 @@ dialoguekit/
 nginx/ssl/
 data/mongo/*
 data/datasets/*
+data/simlab/configs/*
 jenkins/*
 
 # Ignore all .DS_Store files
