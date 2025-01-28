@@ -285,7 +285,10 @@ def main(
     """
     # Generate all possible agent-user simulator pairs
     participant_pairs = list(
-        itertools.product(configuration.agents, configuration.user_simulators)
+        itertools.product(
+            configuration.agent_configurations,
+            configuration.user_simulator_configurations,
+        )
     )
 
     simulation_platform = SimulationPlatform(WrapperAgent)

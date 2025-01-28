@@ -11,8 +11,8 @@ DOCKER_BASE_URL = os.environ.get(
     "DOCKER_BASE_URL", "unix://var/run/docker.sock"
 )
 DOCKER_REGISTRY_URI = os.environ.get("DOCKER_REGISTRY_URI", "localhost:5000")
-DOCKER_ADMIN_USERNAME = os.environ.get("DOCKER_ADMIN_USERNAME", "")
-DOCKER_ADMIN_PASSWORD = os.environ.get("DOCKER_ADMIN_PASSWORD", "")
+DOCKER_USERNAME = os.environ.get("DOCKER_USERNAME", "")
+DOCKER_PASSWORD = os.environ.get("DOCKER_PASSWORD", "")
 
 
 class DockerRegistryConnector:
@@ -20,18 +20,16 @@ class DockerRegistryConnector:
         self,
         registry_uri: str = DOCKER_REGISTRY_URI,
         docker_url: str = DOCKER_BASE_URL,
-        admin_username: str = DOCKER_ADMIN_USERNAME,
-        admin_password: str = DOCKER_ADMIN_PASSWORD,
+        username: str = DOCKER_USERNAME,
+        password: str = DOCKER_PASSWORD,
     ) -> None:
         """Initializes the Docker registry connector.
 
         Args:
             registry_uri: Docker registry URI. Defaults to DOCKER_REGISTRY_URI.
             docker_url: Docker URL. Defaults to DOCKER_BASE_URL.
-            admin_username: Docker admin username. Defaults to
-              DOCKER_ADMIN_USERNAME.
-            admin_password: Docker admin password. Defaults to
-              DOCKER_ADMIN_PASSWORD.
+            username: Docker username. Defaults to DOCKER_USERNAME.
+            password: Docker password. Defaults to DOCKER_PASSWORD.
         """
         super().__init__()
         self.registry_uri = registry_uri
@@ -39,8 +37,8 @@ class DockerRegistryConnector:
 
         # Login to the Docker registry
         self.client.login(
-            username=admin_username,
-            password=admin_password,
+            username=username,
+            password=password,
             registry=registry_uri,
         )
 
