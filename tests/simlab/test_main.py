@@ -145,11 +145,11 @@ def test_main(task: Task) -> None:
             mocked_configuration,
             mocked_mongo_connector,
             mocked_docker_connector,
-            "tests/simlab/data/dialogue_export",
+            "tests/simlab/data/dialogue_export/",
         )
 
         mocked_json_to_dialogues.assert_called_once_with(
-            "tests/simlab/data/dialogue_export/task_testing/"
-            "675380fa0f51790295720dac/test_agent_test_user_simulator.json"
+            "tests/simlab/data/dialogue_export/"
+            "test_agent_test_user_simulator.json"
         )
         mocked_insert_record.assert_called_once()
