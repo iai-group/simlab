@@ -283,7 +283,6 @@ def main(
         registry_connector: Docker registry connector.
         output_dir: Path to the output directory for the task.
     """
-
     # Generate all possible agent-user simulator pairs
     participant_pairs = list(
         itertools.product(configuration.agents, configuration.user_simulators)

@@ -1,6 +1,7 @@
 """Jenkins Job Manager Module.
 
-Manages Jenkins server interactions, including job submission and log retrieval.
+Manages Jenkins server interactions, including job submission and log
+retrieval.
 """
 
 import os

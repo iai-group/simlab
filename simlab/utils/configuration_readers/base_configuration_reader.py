@@ -169,9 +169,7 @@ class BaseConfigurationReader:
                 user_simulator_config,
             )
 
-            user_simulator_image_name = user_simulator_config.get(
-                "image", None
-            )
+            user_simulator_image_name = user_simulator_config.get("image", None)
             user_simulator_custom_parameters = user_simulator_config.get(
                 "parameters", {}
             )
