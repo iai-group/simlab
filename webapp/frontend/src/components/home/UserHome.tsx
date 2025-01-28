@@ -13,6 +13,7 @@ import { useContext, useEffect, useState } from "react";
 
 import { APIAuth } from "../API";
 import { AuthContext } from "../../contexts/AuthContext";
+import ToastNotification from "../ToastNotification";
 
 const UserHome = () => {
   const { user } = useContext(AuthContext);
@@ -122,20 +123,11 @@ const UserHome = () => {
         </>
       )}
       {/* Toast Notifications */}
-      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
-        <Toast
-          onClose={() => setToastMessage(null)}
-          show={!!toastMessage}
-          delay={5000}
-          autohide
-          bg="danger"
-        >
-          <Toast.Header>
-            <strong className="me-auto">SimLab Error</strong>
-          </Toast.Header>
-          <Toast.Body>{toastMessage}</Toast.Body>
-        </Toast>
-      </ToastContainer>
+      <ToastNotification
+        message={toastMessage}
+        type="error"
+        setMessage={setToastMessage}
+      />
     </Container>
   );
 };

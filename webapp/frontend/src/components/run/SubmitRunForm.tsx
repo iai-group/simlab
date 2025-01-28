@@ -1,19 +1,14 @@
 // Run submission form to add new system to public leaderboard
 
 import { APIAuth, baseURL } from "../API";
-import {
-  Alert,
-  Button,
-  Container,
-  Toast,
-  ToastContainer,
-} from "react-bootstrap";
+import { Alert, Button, Container } from "react-bootstrap";
 import { MDBInput, MDBRadio, MDBTextArea } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Form } from "react-bootstrap";
 import { System } from "../../types";
+import ToastNotification from "../ToastNotification";
 
 const RunSubmissionForm = () => {
   const location = useLocation();
@@ -23,8 +18,12 @@ const RunSubmissionForm = () => {
   const [agentEvaluated, setAgentEvaluated] = useState<boolean | null>(null);
   const [system, setSystem] = useState<System>({} as System);
   const [parameters, setParameters] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [participants, setParticipants] = useState<string[] | null>(null);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error" | "info">(
+    "info"
+  );
 
   // If no task are provided, redirect to the tasks page
   if (!task) {
@@ -68,12 +67,18 @@ const RunSubmissionForm = () => {
 
     APIAuth.post(`${baseURL}/run-request`, formData)
       .then((response) => {
-        console.log(response.data);
-        setToastMessage("Run submitted successfully!");
+        if (response.status === 201) {
+          setToastMessage("Run submitted successfully!");
+          setToastType("success");
+        } else {
+          setToastMessage("Error submitting run.");
+          setToastType("error");
+        }
       })
       .catch((error) => {
         setToastMessage("Error submitting run. Please reach out to the admin.");
-        console.error(error);
+        setToastType("error");
+        console.error("error", error);
       });
   };
 
@@ -216,20 +221,11 @@ const RunSubmissionForm = () => {
       </Button>
 
       {/* Toast Notifications */}
-      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
-        <Toast
-          onClose={() => setToastMessage(null)}
-          show={!!toastMessage}
-          delay={5000}
-          autohide
-          bg="danger"
-        >
-          <Toast.Header>
-            <strong className="me-auto">SimLab Error</strong>
-          </Toast.Header>
-          <Toast.Body>{toastMessage}</Toast.Body>
-        </Toast>
-      </ToastContainer>
+      <ToastNotification
+        message={toastMessage}
+        type={toastType}
+        setMessage={setToastMessage}
+      />
     </Container>
   );
 };

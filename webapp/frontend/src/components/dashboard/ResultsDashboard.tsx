@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import Form from "react-bootstrap/Form";
 import { Task } from "../../types";
+import ToastNotification from "../ToastNotification";
 import axios from "axios";
 import { baseURL } from "../API";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 const ResultsDashboard = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fetchTasks = async (): Promise<Task[]> => {
@@ -93,20 +95,11 @@ const ResultsDashboard = () => {
       </Form.Select>
 
       {/* Toast Notifications */}
-      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
-        <Toast
-          onClose={() => setToastMessage(null)}
-          show={!!toastMessage}
-          delay={5000}
-          autohide
-          bg="danger"
-        >
-          <Toast.Header>
-            <strong className="me-auto">SimLab Error</strong>
-          </Toast.Header>
-          <Toast.Body>{toastMessage}</Toast.Body>
-        </Toast>
-      </ToastContainer>
+      <ToastNotification
+        message={toastMessage}
+        type="error"
+        setMessage={setToastMessage}
+      />
     </Container>
   );
 };
