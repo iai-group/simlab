@@ -1,5 +1,6 @@
 """Routes related to runs."""
 
+import datetime
 import os
 from typing import Any, Dict, List
 
@@ -49,6 +50,62 @@ def _get_previous_task_participants(
     return participants
 
 
+def _submit_experiment(
+    username: str,
+    experiment_name: str,
+    task_id: str,
+    configuration_path: str,
+    job_name="run_execution",
+) -> None:
+    """Submits an experiment to the Jenkins server.
+
+    Args:
+        username: Username of the user.
+        experiment_name: Name of the experiment.
+        task_id: Task ID.
+        configuration_path: Path to the configuration file.
+        job_name: Name of the Jenkins job.
+    """
+    # Link run configuration file to run in MongoDB
+    insert_record(
+        connector=mongo_connector,
+        collection="runs",
+        record={
+            "username": username,
+            "run_name": experiment_name,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "pending",
+            "task_id": task_id,
+            "run_configuration_file": configuration_path,
+        },
+    )
+
+    jenkins_job_manager.submit_job(configuration_path, job_name=job_name)
+
+
+def _save_configuration(username: str, configuration: Dict[str, Any]) -> str:
+    """Saves the configuration to a file.
+
+    Args:
+        username: Username of the user.
+        configuration: Configuration to save.
+
+    Returns:
+        Path to the saved configuration file.
+    """
+    configuration_path = os.path.join(
+        DATA_FOLDER,
+        "configs",
+        configuration["task"]["_id"],
+        f"{username}_{configuration['name']}.json",
+    )
+    if not os.path.exists(os.path.dirname(configuration_path)):
+        os.makedirs(os.path.dirname(configuration_path))
+    with open(configuration_path, "w") as f:
+        json.dump(configuration, f)
+    return configuration_path
+
+
 @run.route("/run-request", methods=["POST"])
 @login_required
 def run_request() -> Response:
@@ -62,18 +119,10 @@ def run_request() -> Response:
         "public": data.get("public", True),
     }
 
-    # Check that run name is unique for user
     run_name = data.get("run_name")
     if not run_name:
         return jsonify({"message": "Run name not provided."}), 400
     run_name = run_name.strip().replace(" ", "_")
-
-    runs = find_records(
-        mongo_connector, "runs", {"username": username, "run_name": run_name}
-    )
-    if runs:
-        return jsonify({"message": "Run name already exists."}), 400
-
     run_configuration["name"] = run_name
 
     # Get task configuration
@@ -98,46 +147,96 @@ def run_request() -> Response:
             task[0]["_id"], "agent"
         )
 
-    # Save run configuration to file
-    run_configuration_path = os.path.join(
-        DATA_FOLDER,
-        "configs",
-        run_configuration["task"]["_id"],
-        f"{username}_{run_configuration['name']}.json",
-    )
-    if not os.path.exists(os.path.dirname(run_configuration_path)):
-        os.makedirs(os.path.dirname(run_configuration_path))
-    with open(run_configuration_path, "w") as f:
-        json.dump(run_configuration, f)
+    # Save run configuration
+    run_configuration_path = _save_configuration(username, run_configuration)
 
-    # Link run configuration file to run in MongoDB
-    insert_record(
-        connector=mongo_connector,
-        collection="runs",
-        record={
-            "username": username,
-            "run_name": run_configuration["name"],
-            "status": "pending",
-            "task_id": run_configuration["task"]["_id"],
-            "run_configuration_file": run_configuration_path,
-        },
-    )
-
-    # Send run request to Jenkins server with run configuration file
-    # TODO: Implement Jenkins server integration
-    # See: https://github.com/iai-group/simlab/issues/5
     try:
-        jenkins_job_manager.submit_job(
-            run_configuration_path, job_name="run_execution"
+        # Send run request to Jenkins server with run configuration file
+        _submit_experiment(
+            username,
+            run_configuration["name"],
+            run_configuration["task"]["_id"],
+            run_configuration_path,
+            job_name="run_execution",
         )
     except Exception as e:
-        error_message = f"Error submitting job: {str(e)}"
         return (
-            jsonify({"message": f"Job submission failed. : {error_message}"}),
+            jsonify({"message": f"Error while submitting job: {str(e)}"}),
             500,
         )
 
     return jsonify({"message": "Run request created."}), 201
+
+
+@run.route("/run-baseline", methods=["POST"])
+@login_required
+def run_baseline() -> Response:
+    """Submits a baseline run request."""
+    assert request.method == "POST", "Invalid request method"
+
+    username = current_user.username
+
+    # Parse and load baseline configuration file from the request
+    try:
+        if "configuration" not in request.files:
+            return (
+                jsonify({"message": "Configuration file not provided."}),
+                400,
+            )
+
+        file = request.files["configuration"]
+        if file.filename == "":
+            return jsonify({"message": "No file selected."}), 400
+
+        # Read the file and parse JSON
+        baseline_configuration = json.load(file)
+    except Exception as e:
+        return (
+            jsonify({"message": f"Invalid configuration file: {str(e)}"}),
+            400,
+        )
+
+    # Check that run name is unique for user
+    run_name = baseline_configuration.get("name")
+    if not run_name:
+        return jsonify({"message": "Run name not provided."}), 400
+
+    run_name = run_name.strip().replace(" ", "_")
+
+    if not all(
+        key in baseline_configuration.keys()
+        for key in ["task", "agents", "user_simulators"]
+    ):
+        return (
+            jsonify(
+                {
+                    "message": "Configuration file is missing required fields "
+                    "(task, agents, user_simulators)."
+                }
+            ),
+            400,
+        )
+
+    # Save baseline configuration to file
+    baseline_configuration_path = _save_configuration(
+        username, baseline_configuration
+    )
+
+    try:
+        # Submit baseline run request
+        _submit_experiment(
+            username,
+            run_name,
+            baseline_configuration.get("task", {}).get("_id"),
+            baseline_configuration_path,
+        )
+    except Exception as e:
+        return (
+            jsonify({"message": f"Error while submitting job: {str(e)}"}),
+            500,
+        )
+
+    return jsonify({"message": "Baseline run request created."}), 201
 
 
 @run.route("/run-info/<run_id>", methods=["GET"])
