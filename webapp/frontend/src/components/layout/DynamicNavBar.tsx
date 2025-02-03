@@ -49,9 +49,14 @@ const DynamicNavBar = () => {
         <MDBCollapse navbar open={openBasic}>
           <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
             {user ? (
-              <MDBNavbarItem>
-                <MDBNavbarLink href="/experiment">Experiment</MDBNavbarLink>
-              </MDBNavbarItem>
+              <>
+                <MDBNavbarItem>
+                  <MDBNavbarLink href="/experiment">Experiment</MDBNavbarLink>
+                </MDBNavbarItem>
+                <MDBNavbarItem>
+                  <MDBNavbarLink href="/system">Systems</MDBNavbarLink>
+                </MDBNavbarItem>
+              </>
             ) : null}
             <MDBNavbarItem>
               <MDBNavbarLink href="/leaderboard">Leaderboard</MDBNavbarLink>

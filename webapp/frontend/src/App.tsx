@@ -10,6 +10,7 @@ import RegisterForm from "./components/authentication/RegisterForm";
 import ResetPasswordForm from "./components/authentication/ResetPasswordForm";
 import ResultsDashboard from "./components/dashboard/ResultsDashboard";
 import RunSubmissionForm from "./components/run/SubmitRunForm";
+import SystemHome from "./components/system/SystemHome";
 import TaskDashboard from "./components/dashboard/TaskDashboard";
 import TaskList from "./components/task/TaskList";
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomeLayout />} />
           <Route path="/tasks" element={<TaskList />} />
+          <Route path="/system" element={<SystemHome />} />
           <Route path="/submit-run" element={<RunSubmissionForm />} />
           <Route path="/leaderboard" element={<ResultsDashboard />} />
           <Route path="/results" element={<TaskDashboard />} />
