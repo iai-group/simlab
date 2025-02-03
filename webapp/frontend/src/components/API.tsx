@@ -2,7 +2,8 @@
 
 import axios from "axios";
 
-const baseURL = "https://localhost/api"; // TODO: Replace with environment variable
+const host = process.env.REACT_APP_SIMLAB_HOSTNAME || "localhost";
+const baseURL = `https://${host}/api`;
 
 const APIAuth = axios.create({
   baseURL: baseURL,
@@ -10,4 +11,4 @@ const APIAuth = axios.create({
   validateStatus: () => true,
 });
 
-export { APIAuth, baseURL };
+export { APIAuth, baseURL, host };
