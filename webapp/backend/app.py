@@ -66,14 +66,14 @@ def create_app(testing: bool = False) -> Flask:
 
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SECURE"] = True
-    app.config[
-        "SESSION_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    app.config["SESSION_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site cookies (needed for cross-origin requests)
+    )
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SECURE"] = True
-    app.config[
-        "REMEMBER_COOKIE_SAMESITE"
-    ] = "None"  # Allow cross-site remember cookies
+    app.config["REMEMBER_COOKIE_SAMESITE"] = (
+        "None"  # Allow cross-site remember cookies
+    )
 
     app.config["UPLOAD_FOLDER"] = "data/uploads"
     app.config["ALLOWED_EXTENSIONS"] = {"json"}
@@ -86,6 +86,7 @@ def create_app(testing: bool = False) -> Flask:
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
     from webapp.backend.routes.docs import docs as docs_blueprint
+    from webapp.backend.routes.registry import registry as registry_blueprint
     from webapp.backend.routes.results import results as results_blueprint
     from webapp.backend.routes.run import run as run_blueprint
 
@@ -93,5 +94,6 @@ def create_app(testing: bool = False) -> Flask:
     app.register_blueprint(docs_blueprint)
     app.register_blueprint(run_blueprint)
     app.register_blueprint(results_blueprint)
+    app.register_blueprint(registry_blueprint)
 
     return app

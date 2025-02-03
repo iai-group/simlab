@@ -1,3 +1,4 @@
+import { APIAuth, host } from "../API";
 import {
   MDBBtn,
   MDBCollapse,
@@ -12,7 +13,6 @@ import {
 } from "mdb-react-ui-kit";
 import { useContext, useState } from "react";
 
-import { APIAuth } from "../API";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -49,15 +49,20 @@ const DynamicNavBar = () => {
         <MDBCollapse navbar open={openBasic}>
           <MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
             {user ? (
-              <MDBNavbarItem>
-                <MDBNavbarLink href="/tasks">Tasks</MDBNavbarLink>
-              </MDBNavbarItem>
+              <>
+                <MDBNavbarItem>
+                  <MDBNavbarLink href="/experiment">Experiment</MDBNavbarLink>
+                </MDBNavbarItem>
+                <MDBNavbarItem>
+                  <MDBNavbarLink href="/system">Systems</MDBNavbarLink>
+                </MDBNavbarItem>
+              </>
             ) : null}
             <MDBNavbarItem>
               <MDBNavbarLink href="/leaderboard">Leaderboard</MDBNavbarLink>
             </MDBNavbarItem>
             <MDBNavbarItem>
-              <MDBNavbarLink href="https://localhost/docs" target="_blank">
+              <MDBNavbarLink href={`https://${host}/docs`} target="_blank">
                 Documentation <MDBIcon fas icon="external-link-alt" />
               </MDBNavbarLink>
             </MDBNavbarItem>
