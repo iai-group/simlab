@@ -1,6 +1,9 @@
 """Routes interacting with the registry."""
 
-from flask import Blueprint, Response, jsonify, request
+import os
+import tempfile
+
+from flask import Blueprint, Response, jsonify, request, send_file
 from flask_login import login_required
 
 from connectors.docker.utils import find_images, get_image
@@ -145,8 +148,33 @@ def upload_image() -> Response:
     """Uploads an image to the Docker registry."""
     assert request.method == "POST", "Invalid request method"
 
-    # TODO: Implement this route
-    return Response("Not implemented", 501)
+    if "file" not in request.files:
+        return Response("No file submitted", 400)
+    if "image_name" not in request.form:
+        return Response("No image name submitted", 400)
+
+    file = request.files.get("file")
+    image_name = request.form.get("image_name")
+
+    # Temporary save the file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".tar") as temp_file:
+        file.save(temp_file.name)
+        temp_file.close()
+        file_path = temp_file.name
+
+    try:
+        docker_registry_connector.client.images.load(open(file_path, "rb"))
+        docker_registry_connector.push_image(image_name)
+    except Exception as e:
+        return (
+            jsonify({"error": str(e), "message": "Failed to push image"}),
+            500,
+        )
+    finally:
+        # Remove the temporary file
+        os.remove(file_path)
+
+    return Response("Image uploaded", 201)
 
 
 @registry.route("/download-image", methods=["POST"])
@@ -156,13 +184,27 @@ def download_image() -> Response:
     assert request.method == "POST", "Invalid request method"
 
     image_name = request.get_json().get("image")
+
+    if not image_name:
+        return Response("Image name not provided.", 400)
+
     try:
         image = docker_registry_connector.pull_image(image_name)
-        # TODO: Send image to the frontend
 
+        # Save the image to a temp file
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            for chunk in image:
+                temp_file.write(chunk)
+            temp_file.close()
     except Exception as e:
         return (
             jsonify({"error": str(e), "message": "Failed to pull image"}),
             500,
         )
-    return Response("Not implemented", 501)
+
+    response = send_file(
+        temp_file.name, as_attachment=True, download_name=f"{image_name}.tar"
+    )
+
+    os.remove(temp_file.name)
+    return response
