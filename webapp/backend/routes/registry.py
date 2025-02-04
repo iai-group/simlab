@@ -3,11 +3,13 @@
 import os
 import tempfile
 
+from celery.result import AsyncResult
 from flask import Blueprint, Response, jsonify, request, send_file
 from flask_login import login_required
 
 from connectors.docker.utils import find_images, get_image
 from webapp.backend.app import docker_registry_connector
+from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
 
 registry = Blueprint("registry", __name__)
 
@@ -162,19 +164,39 @@ def upload_image() -> Response:
         temp_file.close()
         file_path = temp_file.name
 
-    try:
-        docker_registry_connector.client.images.load(open(file_path, "rb"))
-        docker_registry_connector.push_image(image_name)
-    except Exception as e:
+    task = upload_image_task.apply_async(args=[image_name, file_path])
+    return (
+        jsonify({"message": "Image upload started", "task_id": task.id}),
+        202,
+    )
+
+
+@registry.route("/upload-image-status", methods=["POST"])
+@login_required
+def upload_image_status() -> Response:
+    """Returns the status of an image upload task."""
+    assert request.method == "POST", "Invalid request method"
+
+    task_id = request.get_json().get("task_id")
+    if not task_id:
+        return Response("Task ID not provided", 400)
+
+    task = AsyncResult(task_id, app=celery)
+    if task.state == "SUCCESS":
+        return jsonify({"status": "SUCCESS", "message": "Image uploaded"}), 200
+    if task.state == "FAILURE":
         return (
-            jsonify({"error": str(e), "message": "Failed to push image"}),
+            jsonify(
+                {
+                    "status": "FAILURE",
+                    "message": "Failed to upload image",
+                    "error": str(task.info),
+                }
+            ),
             500,
         )
-    finally:
-        # Remove the temporary file
-        os.remove(file_path)
 
-    return Response("Image uploaded", 201)
+    return jsonify({"status": task.state}), 202
 
 
 @registry.route("/download-image", methods=["POST"])
