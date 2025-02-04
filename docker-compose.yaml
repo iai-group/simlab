@@ -7,17 +7,8 @@ services:
   backend:
     build: ./webapp/backend
     container_name: backend
-    environment:
-      - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=5005
-      - MONGO_URI=mongodb://admin:admin@mongo:27017
-      - DOCKER_BASE_URL=unix:///var/run/docker.sock
-      - DOCKER_REGISTRY_URI=https://localhost/v2/
-      - DOCKER_REGISTRY_USERNAME=admin
-      - DOCKER_REGISTRY_PASSWORD=admin
-      - JENKINS_URI=http://jenkins:8080
-      - JENKINS_USERNAME=admin
-      - JENKINS_PASSWORD=admin
+    env_file:
+      - ./webapp/backend/.env
     ports:
       - "5005:5005"
     volumes:
@@ -38,6 +29,14 @@ services:
       - "3001:3000"
     depends_on:
       - backend
+    networks:
+      - simlab_net
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - simlab_net
 
