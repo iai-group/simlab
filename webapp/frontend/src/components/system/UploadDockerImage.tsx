@@ -49,30 +49,31 @@ const UploadDockerImage = () => {
     setLoading(true);
     setStatus({ message: "", type: "" });
 
-    try {
-      const response = await APIAuth.post("/upload-image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    APIAuth.post("/upload-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        console.log(response);
+        setStatus({ message: "Image uploaded successfully.", type: "success" });
+      })
+      .catch((error) => {
+        console.error(error);
+        setStatus({
+          message: "Failed to upload image.",
+          type: "danger",
+        });
+      })
+      .finally(() => {
+        setLoading(false);
       });
-      console.log(response);
-      setStatus({ message: "Image uploaded successfully.", type: "success" });
-    } catch (error) {
-      console.error(error);
-      setStatus({
-        message: "Failed to upload image.",
-        type: "danger",
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
     <Container className="mt-4">
       <Row className="justify-content-md-center">
         <Col md={6}>
-          <h2 className="mb-3">Upload Docker Image</h2>
           {status.message && (
             <Alert variant={status.type}>{status.message}</Alert>
           )}

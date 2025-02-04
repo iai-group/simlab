@@ -20,7 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomeLayout />} />
-          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/experiment" element={<TaskList />} />
           <Route path="/system" element={<SystemHome />} />
           <Route path="/submit-run" element={<RunSubmissionForm />} />
           <Route path="/leaderboard" element={<ResultsDashboard />} />

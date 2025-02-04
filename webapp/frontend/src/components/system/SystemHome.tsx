@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { System } from "../../types";
+import ToastNotification from "../ToastNotification";
 import UploadDockerImage from "./UploadDockerImage";
 import { baseURL } from "../API";
 
@@ -24,15 +25,14 @@ const SystemHome = () => {
   const [agents, setAgents] = useState<System[]>([]);
   const [simulators, setSimulators] = useState<System[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 10;
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Fetch agents and simulators on initial load
   useEffect(() => {
     const fetchSystems = async () => {
       setLoading(true);
-      setError(null);
       try {
         const agentsResponse = await fetch(`${baseURL}/agents`);
         const simulatorsResponse = await fetch(`${baseURL}/simulators`);
@@ -42,7 +42,7 @@ const SystemHome = () => {
         setSimulators(simulatorsData);
       } catch (err) {
         console.error(err);
-        setError("Failed to fetch systems data.");
+        setToastMessage("Error fetching systems. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -51,10 +51,8 @@ const SystemHome = () => {
     fetchSystems();
   }, []);
 
-  // Combine agents and simulators into one list
   const systemsData = [...agents, ...simulators];
 
-  // Filter and paginate systems
   const filteredSystems = systemsData
     .filter((system) => {
       if (filterType !== "all" && system.type !== filterType) return false;
@@ -69,35 +67,33 @@ const SystemHome = () => {
   };
 
   const handleFilterTypeChange = (eventKey: string | null) => {
-    // Ensure that null doesn't get passed, use 'all' as fallback
     setFilterType(eventKey || "all");
   };
 
-  const handlePaginationClick = (page: number) => {
-    setCurrentPage(page);
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   if (loading) {
     return <Container className="mt-5 text-center">Loading...</Container>;
   }
 
-  //   if (error) {
-  //     return <Container className="mt-5 text-center">{error}</Container>;
-  //   }
-
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
-
   return (
     <Container className="mt-5 text-center">
       <h2 className="mb-4">Systems Repository</h2>
 
-      {/* Add System Button */}
-      <Button variant="primary" className="mb-3" onClick={handleShowModal}>
+      <Button
+        variant="primary"
+        className="mb-3"
+        onClick={() => setShowModal(true)}
+      >
         Add New System
       </Button>
 
-      {/* Search Bar */}
       <InputGroup className="mb-3">
         <Form.Control
           placeholder="Search for a system..."
@@ -106,7 +102,6 @@ const SystemHome = () => {
         />
       </InputGroup>
 
-      {/* Filter Dropdown */}
       <DropdownButton
         variant="outline-secondary"
         title={`Filter by Type: ${filterType === "all" ? "All" : filterType}`}
@@ -118,39 +113,60 @@ const SystemHome = () => {
         <Dropdown.Item eventKey="simulator">Simulator</Dropdown.Item>
       </DropdownButton>
 
-      {/* List of Systems */}
-      <Row>
-        {filteredSystems.map((system) => (
-          <Col md={4} key={system.id} className="mb-4">
-            <Card>
-              <Card.Body>
-                <Card.Title>{system.image}</Card.Title>
-                <Card.Text>{system.type}</Card.Text>
-                <Button variant="info" className="me-2">
-                  View Details
-                </Button>
-                <Button variant="success">Download</Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      {/* Systems List */}
+      {filteredSystems.length === 0 ? (
+        <p className="text-muted">No systems found.</p>
+      ) : (
+        <>
+          <Row>
+            {filteredSystems.map((system) => (
+              <Col md={4} key={system.id} className="mb-4">
+                <Card>
+                  <Card.Body>
+                    <Card.Title>{system.image}</Card.Title>
+                    <Card.Text>{system.type}</Card.Text>
+                    <Button variant="info" className="me-2">
+                      View Details
+                    </Button>
+                    <Button variant="success">Download</Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
 
-      {/* Pagination */}
-      <Pagination>
-        {Array.from({ length: totalPages }, (_, index) => (
-          <Pagination.Item
-            key={index + 1}
-            active={index + 1 === currentPage}
-            onClick={() => handlePaginationClick(index + 1)}
-          >
-            {index + 1}
-          </Pagination.Item>
-        ))}
-      </Pagination>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center">
+              <Button
+                variant="secondary"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      )}
 
-      {/* Modal for UploadDockerImage */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      {/* Upload Docker Image Modal */}
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        size="lg"
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Upload Docker Image</Modal.Title>
         </Modal.Header>
@@ -158,6 +174,13 @@ const SystemHome = () => {
           <UploadDockerImage />
         </Modal.Body>
       </Modal>
+
+      {/* Toast Notifications */}
+      <ToastNotification
+        message={toastMessage}
+        type="error"
+        setMessage={setToastMessage}
+      />
     </Container>
   );
 };
