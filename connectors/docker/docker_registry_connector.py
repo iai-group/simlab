@@ -65,7 +65,7 @@ class DockerRegistryConnector:
         registry_host = urlparse(self.registry_uri).netloc
 
         if ":" not in image:
-            return f"{registry_host}/{self.repository}/{image}", "latest"
+            return f"{registry_host}/{self.repository}/{image}", None
 
         tag = image.split(":")[-1]
         name = image.split(":")[0]
@@ -78,6 +78,10 @@ class DockerRegistryConnector:
             image: Image to pull.
         """
         remote_repo, tag = self.get_remote_image_tag(image)
+
+        if not tag:
+            return self.client.images.pull(remote_repo)
+
         image_tag = f"{remote_repo}:{tag}"
         return self.client.images.pull(image_tag)
 
@@ -88,7 +92,11 @@ class DockerRegistryConnector:
             image_name: Image name to push.
         """
         remote_repo, tag = self.get_remote_image_tag(image_name)
-        image_tag = f"{remote_repo}:{tag}"
+
+        if not tag:
+            image_tag = remote_repo
+        else:
+            image_tag = f"{remote_repo}:{tag}"
 
         image = self.client.images.get(image_name)
         image.tag(remote_repo, tag=tag)
