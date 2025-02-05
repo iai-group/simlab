@@ -56,7 +56,7 @@ const UploadDockerImage = () => {
     })
       .then((response) => {
         console.log(response);
-        setStatus({ message: "Image uploaded successfully.", type: "success" });
+        setStatus({ message: "Upload started.", type: "info" });
       })
       .catch((error) => {
         console.error(error);

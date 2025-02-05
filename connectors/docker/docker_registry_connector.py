@@ -1,6 +1,6 @@
 """Docker connector module.
 
-Establishes a connection to the private Docker registry.
+Establishes a connection to the external private Docker registry.
 """
 
 import os
@@ -52,13 +52,26 @@ class DockerRegistryConnector:
         """Closes the connection to the Docker registry."""
         self.client.close()
 
+    def get_remote_image_tag(self, image: str) -> str:
+        """Gets the image tag in the Docker registry.
+
+        Args:
+            image: Image to get the tag for.
+
+        Returns:
+            Image tag.
+        """
+        registry_host = urlparse(self.registry_uri).netloc
+        return f"{registry_host}/{self.repository}/{image}"
+
     def pull_image(self, image: str) -> Image:
         """Pulls an image from the Docker registry.
 
         Args:
             image: Image to pull.
         """
-        return self.client.images.pull(image)
+        image_tag = self.get_remote_image_tag(image)
+        return self.client.images.pull(image_tag)
 
     def push_image(self, image_name: str) -> None:
         """Pushes an image to the Docker registry.
@@ -66,12 +79,14 @@ class DockerRegistryConnector:
         Args:
             image_name: Image name to push.
         """
-        # Tag the image
-        registry_host = urlparse(self.registry_uri).netloc
-        image_tag = f"{registry_host}/{self.repository}/{image_name}"
+        image_tag = self.get_remote_image_tag(image_name)
 
         image = self.client.images.get(image_name)
         image.tag(image_name, tag=image_tag)
 
         # Push the image
         self.client.images.push(image_tag)
+
+        # Remove the image from the local repository
+        self.client.images.remove(image_name)
+        self.client.images.remove(image_tag)
