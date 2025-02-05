@@ -37,6 +37,8 @@ class DockerRegistryConnector:
             repository: Docker repository. Defaults to DOCKER_REPOSITORY.
         """
         super().__init__()
+        self.username = username
+        self.password = password
         self.registry_uri = registry_uri
         self.repository = repository
         self.client = docker.DockerClient(base_url=docker_url)
