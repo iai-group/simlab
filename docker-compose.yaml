@@ -18,6 +18,7 @@ services:
       - ./registry/simlab-447518-3117f021d7b5.json:/registry/simlab-447518-3117f021d7b5.json
     depends_on:
       - mongo
+      - redis
     networks:
       - simlab_net
 

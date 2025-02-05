@@ -83,6 +83,13 @@ def create_app(testing: bool = False) -> Flask:
 
     jenkins_job_manager.check_jenkins_connection()
 
+    # Celery worker
+    from webapp.backend.async_tasks.celery_worker import celery
+
+    app.config["CELERY_BROKER_URL"] = celery.conf.broker_url
+    app.config["CELERY_RESULT_BACKEND"] = celery.conf.result_backend
+    app.celery = celery
+
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
     from webapp.backend.routes.docs import docs as docs_blueprint
