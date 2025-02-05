@@ -50,7 +50,7 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
                 "name": image_name,
                 "tag": docker_registry_connector.get_remote_image_tag(
                     image_name
-                ),
+                )[0],
                 "type": image.labels.get("type", None),
                 "description": image.labels.get("description", None),
                 "author": image.labels.get("author", None),
