@@ -176,7 +176,13 @@ def upload_image() -> Response:
     file = request.files.get("file")
     image_name = request.form.get("image_name")
 
-    task = upload_image_task.apply_async(args=[image_name, file])
+    # Temporary save the file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".tar") as temp_file:
+        file.save(temp_file.name)
+        temp_file.close()
+        file_path = temp_file.name
+
+    task = upload_image_task.apply_async(args=[image_name, file_path])
     return (
         jsonify({"message": "Image upload started", "task_id": task.id}),
         202,
