@@ -7,7 +7,7 @@ from celery.result import AsyncResult
 from flask import Blueprint, Response, jsonify, request, send_file
 from flask_login import login_required
 
-from connectors.docker.utils import find_images, get_image
+from connectors.docker.utils import find_remote_images, get_image
 from webapp.backend.app import docker_registry_connector
 from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
 
@@ -19,7 +19,9 @@ def agents() -> Response:
     """Returns a list of available agents in Docker registry."""
     assert request.method == "GET", "Invalid request method"
 
-    agents = find_images(docker_registry_connector, {"label": "type=agent"})
+    agents = find_remote_images(
+        docker_registry_connector, {"label": "type=agent"}
+    )
 
     if not agents:
         return Response("No agents found", 200)
@@ -40,7 +42,7 @@ def agent(agent_id: str) -> Response:
     """Returns the details of an agent."""
     assert request.method == "GET", "Invalid request method"
 
-    agent = find_images(
+    agent = find_remote_images(
         docker_registry_connector,
         {"label": [f"agent_id={agent_id}", "type=agent"]},
     )
@@ -68,7 +70,7 @@ def simulators() -> Response:
     """Returns a list of available simulators in Docker registry."""
     assert request.method == "GET", "Invalid request method"
 
-    simulators = find_images(
+    simulators = find_remote_images(
         docker_registry_connector, {"label": "type=simulator"}
     )
     if not simulators:
@@ -90,7 +92,7 @@ def simulator(simulator_id: str) -> Response:
     """Returns the details of a simulator."""
     assert request.method == "GET", "Invalid request method"
 
-    simulator = find_images(
+    simulator = find_remote_images(
         docker_registry_connector,
         {"label": [f"simulator_id={simulator_id}", "type=simulator"]},
     )
