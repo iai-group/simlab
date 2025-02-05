@@ -27,8 +27,8 @@ def agents() -> Response:
 
     agent_list = [
         {
-            "id": agent.name,
-            "tag": agent.tag,
+            "id": agent.get("name", None),
+            "tag": agent.get("tag", None),
             "description": agent.get("description", None),
             "author": agent.get("author", None),
             "version": agent.get("version", None),
@@ -59,8 +59,8 @@ def agent(agent_id: str) -> Response:
     return (
         jsonify(
             {
-                "id": agent[0].name,
-                "tag": agent[0].tag,
+                "id": agent[0].get("name", None),
+                "tag": agent[0].get("tag", None),
                 "description": agent[0].get("description", None),
                 "author": agent[0].get("author", None),
                 "version": agent[0].get("version", None),
@@ -84,8 +84,8 @@ def simulators() -> Response:
 
     simulator_list = [
         {
-            "id": simulator.name,
-            "tag": simulator.tag,
+            "id": simulator.get("name", None),
+            "tag": simulator.get("tag", None),
             "description": simulator.get("description", None),
             "author": simulator.get("author", None),
             "version": simulator.get("version", None),
@@ -119,8 +119,8 @@ def simulator(simulator_id: str) -> Response:
     return (
         jsonify(
             {
-                "id": simulator[0].name,
-                "tag": simulator[0].tag,
+                "id": simulator[0].get("name", None),
+                "tag": simulator[0].get("tag", None),
                 "description": simulator[0].get("description", None),
                 "author": simulator[0].get("author", None),
                 "version": simulator[0].get("version", None),
@@ -176,13 +176,7 @@ def upload_image() -> Response:
     file = request.files.get("file")
     image_name = request.form.get("image_name")
 
-    # Temporary save the file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".tar") as temp_file:
-        file.save(temp_file.name)
-        temp_file.close()
-        file_path = temp_file.name
-
-    task = upload_image_task.apply_async(args=[image_name, file_path])
+    task = upload_image_task.apply_async(args=[image_name, file])
     return (
         jsonify({"message": "Image upload started", "task_id": task.id}),
         202,

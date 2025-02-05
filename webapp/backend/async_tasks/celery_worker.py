@@ -1,6 +1,7 @@
 """Celery worker."""
 
 import os
+import tempfile
 from datetime import datetime
 
 from celery import Celery
@@ -22,7 +23,7 @@ celery = Celery(
 
 
 @celery.task
-def upload_image_task(image_name: str, file_path: str) -> bool:
+def upload_image_task(image_name: str, file) -> bool:
     """Uploads an image to the Docker registry in background.
 
     A record of the image is saved in the MongoDB as docker connector cannot
@@ -30,9 +31,20 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
 
     Args:
         image_name: Image name.
-        file_path: Path to the image file.
+        file: File to upload.
+
+    Returns:
+        True if the image was successfully uploaded, False otherwise.
     """
     try:
+        # Temporary save the file
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".tar"
+        ) as temp_file:
+            file.save(temp_file.name)
+            temp_file.close()
+            file_path = temp_file.name
+
         image = docker_registry_connector.client.images.load(
             open(file_path, "rb")
         )[0]
