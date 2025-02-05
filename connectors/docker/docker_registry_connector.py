@@ -91,7 +91,7 @@ class DockerRegistryConnector:
         image_tag = f"{remote_repo}:{tag}"
 
         image = self.client.images.get(image_name)
-        image.tag(image_name, tag=image_tag)
+        image.tag(remote_repo, tag=tag)
 
         # Push the image
         self.client.images.push(image_tag)
