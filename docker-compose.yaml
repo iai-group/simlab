@@ -17,6 +17,7 @@ services:
       - ./data:/data
     depends_on:
       - mongo
+      - redis
     networks:
       - simlab_net
 
