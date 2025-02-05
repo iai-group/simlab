@@ -4,6 +4,7 @@ Establishes a connection to the external private Docker registry.
 """
 
 import os
+from typing import Tuple
 from urllib.parse import urlparse
 
 import docker
@@ -52,17 +53,23 @@ class DockerRegistryConnector:
         """Closes the connection to the Docker registry."""
         self.client.close()
 
-    def get_remote_image_tag(self, image: str) -> str:
+    def get_remote_image_tag(self, image: str) -> Tuple[str, str]:
         """Gets the image tag in the Docker registry.
 
         Args:
             image: Image to get the tag for.
 
         Returns:
-            Image tag.
+            Remote repository and tag.
         """
         registry_host = urlparse(self.registry_uri).netloc
-        return f"{registry_host}/{self.repository}/{image}"
+
+        if ":" not in image:
+            return f"{registry_host}/{self.repository}/{image}", "latest"
+
+        tag = image.split(":")[-1]
+        name = image.split(":")[0]
+        return f"{registry_host}/{self.repository}/{name}", tag
 
     def pull_image(self, image: str) -> Image:
         """Pulls an image from the Docker registry.
@@ -70,7 +77,8 @@ class DockerRegistryConnector:
         Args:
             image: Image to pull.
         """
-        image_tag = self.get_remote_image_tag(image)
+        remote_repo, tag = self.get_remote_image_tag(image)
+        image_tag = f"{remote_repo}:{tag}"
         return self.client.images.pull(image_tag)
 
     def push_image(self, image_name: str) -> None:
@@ -79,7 +87,8 @@ class DockerRegistryConnector:
         Args:
             image_name: Image name to push.
         """
-        image_tag = self.get_remote_image_tag(image_name)
+        remote_repo, tag = self.get_remote_image_tag(image_name)
+        image_tag = f"{remote_repo}:{tag}"
 
         image = self.client.images.get(image_name)
         image.tag(image_name, tag=image_tag)
