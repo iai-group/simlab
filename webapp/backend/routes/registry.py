@@ -7,8 +7,9 @@ from celery.result import AsyncResult
 from flask import Blueprint, Response, jsonify, request, send_file
 from flask_login import login_required
 
-from connectors.docker.utils import find_remote_images, get_image
-from webapp.backend.app import docker_registry_connector
+from connectors.docker.utils import get_image
+from connectors.mongo.utils import find_records
+from webapp.backend.app import docker_registry_connector, mongo_connector
 from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
 
 registry = Blueprint("registry", __name__)
@@ -19,18 +20,19 @@ def agents() -> Response:
     """Returns a list of available agents in Docker registry."""
     assert request.method == "GET", "Invalid request method"
 
-    agents = find_remote_images(
-        docker_registry_connector, {"label": "type=agent"}
-    )
+    agents = find_records(mongo_connector, "system_images", {"type": "agent"})
 
     if not agents:
         return Response("No agents found", 200)
 
     agent_list = [
         {
-            "id": agent.id,
-            "tags": agent.tags,
-            "labels": agent.labels,
+            "id": agent.name,
+            "tag": agent.tag,
+            "description": agent.get("description", None),
+            "author": agent.get("author", None),
+            "version": agent.get("version", None),
+            "added": agent.get("added", None),
         }
         for agent in agents
     ]
@@ -42,9 +44,10 @@ def agent(agent_id: str) -> Response:
     """Returns the details of an agent."""
     assert request.method == "GET", "Invalid request method"
 
-    agent = find_remote_images(
-        docker_registry_connector,
-        {"label": [f"agent_id={agent_id}", "type=agent"]},
+    agent = find_records(
+        mongo_connector,
+        "system_images",
+        {"$or": [{"_id": agent_id}, {"tag": agent_id}], "type": "agent"},
     )
 
     if len(agent) > 1:
@@ -56,9 +59,12 @@ def agent(agent_id: str) -> Response:
     return (
         jsonify(
             {
-                "id": agent[0].id,
-                "tags": agent[0].tags,
-                "labels": agent[0].labels,
+                "id": agent[0].name,
+                "tag": agent[0].tag,
+                "description": agent[0].get("description", None),
+                "author": agent[0].get("author", None),
+                "version": agent[0].get("version", None),
+                "added": agent[0].get("added", None),
             }
         ),
         200,
@@ -70,17 +76,20 @@ def simulators() -> Response:
     """Returns a list of available simulators in Docker registry."""
     assert request.method == "GET", "Invalid request method"
 
-    simulators = find_remote_images(
-        docker_registry_connector, {"label": "type=simulator"}
+    simulators = find_records(
+        mongo_connector, "system_images", {"type": "simulator"}
     )
     if not simulators:
         return Response("No simulators found", 200)
 
     simulator_list = [
         {
-            "id": simulator.id,
-            "tags": simulator.tags,
-            "labels": simulator.labels,
+            "id": simulator.name,
+            "tag": simulator.tag,
+            "description": simulator.get("description", None),
+            "author": simulator.get("author", None),
+            "version": simulator.get("version", None),
+            "added": simulator.get("added", None),
         }
         for simulator in simulators
     ]
@@ -92,9 +101,13 @@ def simulator(simulator_id: str) -> Response:
     """Returns the details of a simulator."""
     assert request.method == "GET", "Invalid request method"
 
-    simulator = find_remote_images(
-        docker_registry_connector,
-        {"label": [f"simulator_id={simulator_id}", "type=simulator"]},
+    simulator = find_records(
+        mongo_connector,
+        "system_images",
+        {
+            "$or": [{"_id": simulator_id}, {"tag": simulator_id}],
+            "type": "simulator",
+        },
     )
 
     if len(simulator) > 1:
@@ -106,9 +119,12 @@ def simulator(simulator_id: str) -> Response:
     return (
         jsonify(
             {
-                "id": simulator[0].id,
-                "tags": simulator[0].tags,
-                "labels": simulator[0].labels,
+                "id": simulator[0].name,
+                "tag": simulator[0].tag,
+                "description": simulator[0].get("description", None),
+                "author": simulator[0].get("author", None),
+                "version": simulator[0].get("version", None),
+                "added": simulator[0].get("added", None),
             }
         ),
         200,

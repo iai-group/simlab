@@ -1,53 +1,12 @@
 """Utility functions for Docker connector."""
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-import requests
 from docker.models.containers import Container
 from docker.models.images import Image
 
 from connectors.docker.docker_registry_connector import DockerRegistryConnector
-
-
-def find_remote_images(
-    connector: DockerRegistryConnector, filters: Dict[str, Any]
-) -> List[Image]:
-    """Finds images in remote repository by label.
-
-    This function uses the Docker API to find images in the remote repository
-    as the connector list method works only for local images.
-
-    Args:
-        connector: Docker registry connector.
-        filters: Filters.
-
-    Returns:
-        List of images.
-    """
-    url = f"{connector.registry_uri}/v2/{connector.repository}/tags/list"
-    auth = (connector.username, connector.password)
-    try:
-        response = requests.get(url, auth=auth)
-        response.raise_for_status()
-        data = response.json()
-        tags = data.get("tags", [])
-
-        # Pull the images and filter by labels
-        images = []
-        for tag in tags:
-            image = connector.pull_image(f"{tag}")
-            if all(
-                label in image.labels.items()
-                for label in filters.get("label", {}).items()
-            ):
-                images.append(image)
-            else:
-                connector.client.images.remove(image.id, noprune=True)
-        return images
-    except Exception as e:
-        logging.error(f"Error finding images: {e}")
-    return []
 
 
 def get_image(connector: DockerRegistryConnector, image_id: str) -> Image:
