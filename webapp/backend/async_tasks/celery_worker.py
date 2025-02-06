@@ -1,13 +1,17 @@
 """Celery worker."""
 
+import logging
 import os
-from datetime import datetime
 
 from celery import Celery
-from flask import logging
 
-from connectors.mongo.utils import insert_record
-from webapp.backend.app import docker_registry_connector, mongo_connector
+from connectors.docker.commands import (
+    docker_push_image,
+    get_remote_image_tag,
+    load_image,
+)
+from connectors.mongo.utils import upsert_records
+from webapp.backend.app import docker_registry_metadata, mongo_connector
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost")
 CELERY_RESULT_BACKEND = os.environ.get(
@@ -36,35 +40,27 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
         True if the image was successfully uploaded, False otherwise.
     """
     try:
-        image = docker_registry_connector.client.images.load(
-            open(file_path, "rb")
-        )[0]
+        image_info = load_image(file_path)
+        image_labels = image_info.get("Config", {}).get("Labels", {})
 
-        if not image.labels.get("type"):
+        if not image_labels.get("type"):
             raise ValueError("Image type not found")
 
-        docker_registry_connector.push_image(image_name)
+        docker_push_image(image_name, docker_registry_metadata)
 
-        # Save system image information in MongoDB
-        insert_record(
-            mongo_connector,
-            "system_images",
-            {
-                "name": image_name,
-                "tag": docker_registry_connector.get_remote_image_tag(
-                    image_name
-                )[0],
-                "type": image.labels.get("type", None),
-                "description": image.labels.get("description", None),
-                "author": image.labels.get("author", None),
-                "version": image.labels.get("version", None),
-                "added": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            },
-        )
+        # Save or update system image information in MongoDB
+        repo, tag = get_remote_image_tag(image_name, docker_registry_metadata)
+
+        record = {
+            "name": image_name,
+            "repository": repo,
+            "tag": tag,
+        }
+        record.update(image_labels)
+        upsert_records(mongo_connector, "system_images", [record])
+
     except Exception as e:
         logging.error(f"Failed to push image: {e}")
         return False
     finally:
         os.remove(file_path)
-
-    return True

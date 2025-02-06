@@ -5,7 +5,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
-from connectors.docker.docker_registry_connector import DockerRegistryConnector
+from connectors.docker.commands import DockerRegistryMetadata
 from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
@@ -14,7 +14,7 @@ DATA_FOLDER = "data/simlab"
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
-docker_registry_connector = DockerRegistryConnector()
+docker_registry_metadata = DockerRegistryMetadata()
 jenkins_job_manager = JenkinsJobManager()
 
 

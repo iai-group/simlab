@@ -7,9 +7,9 @@ from celery.result import AsyncResult
 from flask import Blueprint, Response, jsonify, request, send_file
 from flask_login import login_required
 
-from connectors.docker.utils import get_image
+from connectors.docker.commands import docker_pull_image, save_image
 from connectors.mongo.utils import find_records
-from webapp.backend.app import docker_registry_connector, mongo_connector
+from webapp.backend.app import mongo_connector
 from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
 
 registry = Blueprint("registry", __name__)
@@ -137,17 +137,23 @@ def find_image() -> Response:
     assert request.method == "POST", "Invalid request method"
 
     image_name = request.get_json().get("image")
-    image = get_image(docker_registry_connector, image_name)
 
-    if not image:
-        return Response("Image not found", 400)
+    image_metadata = find_records(
+        mongo_connector, "system_images", {"name": image_name}
+    )
 
-    participant_id = image.labels.get("name")
-    participant_description = image.labels.get("description", "")
-    if image.labels.get("type") == "agent":
-        participant_class = image.labels.get("class", "WrapperAgent")
-    elif image.labels.get("type") == "simulator":
-        participant_class = image.labels.get("class", "WrapperSimulator")
+    if not image_metadata:
+        return jsonify({"error": "Image not found"}), 400
+
+    image_metadata = image_metadata[0]
+    image = f"{image_metadata.get('repository')}:{image_metadata.get('tag')}"
+
+    participant_id = image_metadata.get("name")
+    participant_description = image_metadata.get("description", "")
+    if image_metadata.get("type") == "agent":
+        participant_class = image_metadata.get("class", "WrapperAgent")
+    elif image_metadata.get("type") == "simulator":
+        participant_class = image_metadata.get("class", "WrapperSimulator")
 
     if not participant_id:
         return Response("ID not found in image labels", 500)
@@ -155,7 +161,7 @@ def find_image() -> Response:
     participant_config = {
         "class_name": participant_class,
         "arguments": {"id": participant_id},
-        "image": image_name,
+        "image": image,
         "description": participant_description,
     }
 
@@ -229,13 +235,12 @@ def download_image() -> Response:
         return Response("Image name not provided.", 400)
 
     try:
-        image = docker_registry_connector.pull_image(image_name)
+        docker_pull_image(image_name)
+        temp_file_path = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".tar"
+        ).name
+        save_image(image_name, temp_file_path)
 
-        # Save the image to a temp file
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            for chunk in image:
-                temp_file.write(chunk)
-            temp_file.close()
     except Exception as e:
         return (
             jsonify({"error": str(e), "message": "Failed to pull image"}),
@@ -243,8 +248,8 @@ def download_image() -> Response:
         )
 
     response = send_file(
-        temp_file.name, as_attachment=True, download_name=f"{image_name}.tar"
+        temp_file_path, as_attachment=True, download_name=f"{image_name}.tar"
     )
 
-    os.remove(temp_file.name)
+    os.remove(temp_file_path)
     return response

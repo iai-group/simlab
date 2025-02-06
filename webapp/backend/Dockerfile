@@ -1,5 +1,16 @@
 FROM python:3.9-slim
 
+# Install system dependencies required for Docker
+RUN apt-get update && apt-get install -y \
+    curl \
+    lsb-release \
+    gnupg2 \
+    ca-certificates \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | tee /etc/apt/trusted.gpg.d/docker.asc \
+    && echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
+    && apt-get update && apt-get install -y docker-ce-cli \
+    && apt-get clean
+
 WORKDIR /webapp/backend
 
 COPY requirements.txt requirements.txt

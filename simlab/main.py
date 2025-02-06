@@ -15,13 +15,18 @@ import argparse
 import itertools
 import os
 from statistics import mean, median, stdev
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from docker.models.containers import Container
 
-from connectors.docker.docker_registry_connector import DockerRegistryConnector
-from connectors.docker.utils import get_image, run_image
+from connectors.docker.commands import (
+    DockerRegistryMetadata,
+    clean_local_docker_registry,
+    docker_pull_image,
+    docker_run_container,
+    docker_stop_container,
+    inspect_image,
+)
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.utils import insert_record, update_record
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
@@ -77,9 +82,14 @@ def parse_args() -> argparse.Namespace:
         help="Docker registry username.",
     )
     parser.add_argument(
-        "registry_password",
+        "registry_password_file",
         type=str,
         help="Docker registry password.",
+    )
+    parser.add_argument(
+        "registry_repository",
+        type=str,
+        help="Docker registry repository.",
     )
 
     parser.add_argument(
@@ -129,29 +139,50 @@ def generate_synthetic_dialogues(
 
 
 def start_participant(
-    registry_connector: DockerRegistryConnector,
+    registry_metadata: DockerRegistryMetadata,
     participant_configuration: ParticipantConfiguration,
     port: int,
-) -> Container:
+) -> Tuple[str, List[int]]:
     """Starts a container for a participant.
 
     Args:
-        registry_connector: Docker registry connector.
+        registry_metadata: Docker registry metadata.
         participant_configuration: Participant configuration.
-        port: Port to expose.
+        port: Local port to bind the container to.
+
+    Raises:
+        RuntimeError: If the participant fails to start.
 
     Returns:
-        Container running the participant.
+        Container id and the list of ports used by the container.
     """
+    ports_used = []
+    container_id = None
     try:
-        image = get_image(registry_connector, participant_configuration.image)
-        exposed_port = image.labels.get("exposed_port")
-        run_args = {"ports": {port: exposed_port}}
-        container = run_image(
-            registry_connector,
-            participant_configuration.image,
-            run_args=run_args,
+        docker_pull_image(participant_configuration.image, registry_metadata)
+        image_info = inspect_image(participant_configuration.image)
+        flask_exposed_port = (
+            image_info.get("Config", {}).get("Labels", {}).get("port", None)
         )
+        exposed_ports = [
+            port.split("/")[0]
+            for port in image_info["Config"]["ExposedPorts"].keys()
+        ]
+
+        if not flask_exposed_port:
+            # Use the first exposed port if the port label is not found
+            flask_exposed_port = exposed_ports.pop(0)
+        else:
+            # Check if the port is in the list of exposed ports
+            if flask_exposed_port not in exposed_ports:
+                raise ValueError(
+                    f"Port {flask_exposed_port} not in the list of exposed"
+                    " ports"
+                )
+            exposed_ports.remove(flask_exposed_port)
+
+        ports_used.append(port)
+        run_args = f"-p {port}:{flask_exposed_port}"
 
         # Configure the participant
         participant_configuration.participant._uri = f"http://localhost:{port}"
@@ -159,12 +190,21 @@ def start_participant(
             participant_configuration.participant._uri,
             participant_configuration.custom_parameters,
         )
-        return container
+
+        for exposed_port in exposed_ports:
+            port += 1
+            ports_used.append(port)
+            run_args += f" -p {port}:{exposed_port}"
+
+        container_id = docker_run_container(
+            participant_configuration.image, run_args, registry_metadata
+        )
     except Exception as e:
         raise RuntimeError(
             "Failed to start participant "
             f"{participant_configuration.participant.id}: {e}"
         )
+    return container_id, ports_used
 
 
 def evaluate_participant_pair(
@@ -173,7 +213,7 @@ def evaluate_participant_pair(
     simulation_platform: SimulationPlatform,
     configuration: RunConfiguration,
     output_dir: str,
-    registry_connector: DockerRegistryConnector,
+    registry_metadata: DockerRegistryMetadata,
 ) -> Dict[str, Any]:
     """Evaluates the performance of an agent-user simulator pair.
 
@@ -183,7 +223,7 @@ def evaluate_participant_pair(
         simulation_platform: Simulation platform.
         configuration: Simulation configuration.
         output_dir: Path to the output directory for the task.
-        registry_connector: Docker registry connector
+        registry_metadata: Docker registry metadata.
 
     Returns:
         Evaluation record.
@@ -192,13 +232,13 @@ def evaluate_participant_pair(
     # TODO: This solution is suboptimal. See issue:
     #
     agent_port = 7000
-    agent_container = start_participant(
-        registry_connector, agent_configuration, agent_port
+    agent_container_id, agent_ports = start_participant(
+        registry_metadata, agent_configuration, agent_port
     )
 
-    simulator_port = 7001
-    simulator_container = start_participant(
-        registry_connector,
+    simulator_port = max(agent_ports) + 1
+    simulator_container_id, _ = start_participant(
+        registry_metadata,
         user_simulator_configuration,
         simulator_port,
     )
@@ -219,8 +259,8 @@ def evaluate_participant_pair(
         )
 
     # Stop the containers
-    agent_container.stop()
-    simulator_container.stop()
+    docker_stop_container(agent_container_id)
+    docker_stop_container(simulator_container_id)
 
     # Evaluate the performance of the agent
     dialogues_dir = os.path.join(
@@ -272,7 +312,7 @@ def _dialogues_evaluation(dialogues_dir: str, task: Task) -> Dict[str, Any]:
 def main(
     configuration: RunConfiguration,
     mongo_connector: MongoDBConnector,
-    registry_connector: DockerRegistryConnector,
+    registry_metadata: DockerRegistryMetadata,
     output_dir: str,
 ) -> None:
     """Runs the simulation-based evaluation given a configuration.
@@ -280,7 +320,7 @@ def main(
     Args:
         configuration: Simulation configuration object.
         mongo_connector: MongoDB connector.
-        registry_connector: Docker registry connector.
+        registry_metadata: Docker registry metadata.
         output_dir: Path to the output directory for the task.
     """
     # Generate all possible agent-user simulator pairs
@@ -300,7 +340,7 @@ def main(
             simulation_platform,
             configuration,
             output_dir,
-            registry_connector,
+            registry_metadata,
         )
         insert_record(
             mongo_connector,
@@ -314,11 +354,12 @@ if __name__ == "__main__":
     try:
         configuration = load_configuration(args.config_file)
 
-        # Docker registry connector
-        registry_connector = DockerRegistryConnector(
-            registry_uri=args.registry_uri,
-            username=args.registry_username,
-            password=args.registry_password,
+        # Docker registry metadata
+        registry_metadata = DockerRegistryMetadata(
+            args.registry_uri,
+            args.registry_username,
+            args.registry_password_file,
+            args.registry_repository,
         )
 
         # MongoDB connector
@@ -329,7 +370,7 @@ if __name__ == "__main__":
             configuration.task.batch_id,
         )
 
-        main(configuration, mongo_connector, registry_connector, output_dir)
+        main(configuration, mongo_connector, registry_metadata, output_dir)
         update_record(
             mongo_connector,
             "runs",
@@ -344,3 +385,6 @@ if __name__ == "__main__":
             {"name": configuration.name},
             {"status": "failed", "error": str(e)},
         )
+    finally:
+        # Delete containers and images from the local Docker registry
+        clean_local_docker_registry()
