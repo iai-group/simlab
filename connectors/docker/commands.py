@@ -62,6 +62,22 @@ def docker_login(
     subprocess.run(auth_command, shell=True, check=True)
 
 
+def inspect_image(image_name: str) -> Dict[str, Any]:
+    """Inspects an image.
+
+    Args:
+        image_name: Image name.
+
+    Returns:
+        Image information.
+    """
+    inspect_command = f"docker image inspect -f json {image_name}"
+    result = subprocess.run(
+        inspect_command, shell=True, check=True, capture_output=True
+    )
+    return json.loads(result.stdout.decode())[0]
+
+
 def load_image(image_path: str) -> Dict[str, Any]:
     """Loads an image to the local Docker registry.
 
@@ -77,12 +93,19 @@ def load_image(image_path: str) -> Dict[str, Any]:
     )
     image_name = result.stdout.decode().split()[2]
 
-    inspect_command = f"docker image inspect -f json {image_name}"
-    result = subprocess.run(
-        inspect_command, shell=True, check=True, capture_output=True
-    )
-    image_info = json.loads(result.stdout.decode())[0]
+    image_info = inspect_image(image_name)
     return image_info
+
+
+def save_image(image_name: str, image_path: str) -> None:
+    """Saves an images to a file.
+
+    Args:
+        image_name: Image name.
+        image_path: Path to save the image.
+    """
+    save_command = f"docker save -o {image_path} {image_name}"
+    subprocess.run(save_command, shell=True, check=True)
 
 
 def docker_pull_image(
@@ -151,13 +174,16 @@ def docker_run_container(
     image_name: str,
     run_args: str = "",
     docker_metadata: DockerRegistryMetadata = DockerRegistryMetadata(),
-) -> None:
+) -> str:
     """Runs a container from an image.
 
     Args:
         image_name: Image name.
         run_args: Arguments for the run command. Defaults to empty string.
         docker_metadata: Docker registry metadata.
+
+    Returns:
+        Container ID.
     """
     docker_login(docker_metadata)
     remote_repo, tag = get_remote_image_tag(image_name, docker_metadata)
@@ -172,17 +198,21 @@ def docker_run_container(
         docker_pull_image(image_name, docker_metadata)
 
     run_command = f"docker run {run_args} {image_tag}"
-    subprocess.run(run_command, shell=True, check=True)
+    result = subprocess.run(run_command, shell=True, check=True)
+    container_id = result.stdout.decode().strip()
+    return container_id
 
 
 def docker_stop_container(container_id: str) -> None:
-    """Stops a container.
+    """Stops and deletes a container.
 
     Args:
         container_id: Container ID.
     """
-    stop_command = f"docker stop {container_id}"
+    stop_command = f"docker container stop {container_id}"
     subprocess.run(stop_command, shell=True, check=True)
+    delete_command = f"docker container rm {container_id}"
+    subprocess.run(delete_command, shell=True, check=True)
 
 
 def delete_image(image_id: str) -> None:
@@ -193,3 +223,11 @@ def delete_image(image_id: str) -> None:
     """
     delete_command = f"docker rmi {image_id}"
     subprocess.run(delete_command, shell=True, check=True)
+
+
+def clean_local_docker_registry() -> None:
+    """Cleans the local Docker registry."""
+    delete_containers_command = "docker rm $(docker ps -a -q)"
+    subprocess.run(delete_containers_command, shell=True, check=True)
+    delete_images_command = "docker rmi $(docker images -q)"
+    subprocess.run(delete_images_command, shell=True, check=True)
