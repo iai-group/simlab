@@ -31,6 +31,8 @@ paths:
                   type: string
               agent_id:
                 type: string
+              user_id:
+                type: string
               message:
                 type: string
             example:
@@ -40,6 +42,7 @@ paths:
                 - "Do you a favorite actor?"
                 - "I like Tom Cruise"
               agent_id: "CRS1"
+              user_id: "USR1"
               message: "I suggest you watch Top Gun"
       responses:
         200:
@@ -79,11 +82,15 @@ paths:
           schema:
             type: object
             properties:
+              user_id:
+                type: string
               parameters:
                 type: object
             example:
-              parameters:
-                key: "value"
+              application/json:
+                user_id: "USR1"
+                parameters:
+                  key: "value"
       responses:
         200:
           description: Acknowledgement of successful configuration

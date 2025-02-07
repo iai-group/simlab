@@ -20,6 +20,10 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 
 from connectors.docker.commands import (
+    DOCKER_PASSWORD_FILE,
+    DOCKER_REGISTRY_URI,
+    DOCKER_REPOSITORY,
+    DOCKER_USERNAME,
     DockerRegistryMetadata,
     clean_local_docker_registry,
     docker_pull_image,
@@ -27,7 +31,11 @@ from connectors.docker.commands import (
     docker_stop_container,
     inspect_image,
 )
-from connectors.mongo.mongo_connector import MongoDBConnector
+from connectors.mongo.mongo_connector import (
+    DEFAULT_DB,
+    MONGO_URI,
+    MongoDBConnector,
+)
 from connectors.mongo.utils import insert_record, update_record
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
@@ -61,35 +69,41 @@ def parse_args() -> argparse.Namespace:
     )
     # MongoDB arguments
     parser.add_argument(
-        "mongo_uri",
+        "--mongo_uri",
         type=str,
         help="MongoDB URI.",
+        default=MONGO_URI,
     )
     parser.add_argument(
-        "mongo_db",
+        "--mongo_db",
         type=str,
         help="MongoDB database name.",
+        default=DEFAULT_DB,
     )
     # Docker registry arguments
     parser.add_argument(
-        "registry_uri",
+        "--registry_uri",
         type=str,
         help="Docker registry URI.",
+        default=DOCKER_REGISTRY_URI,
     )
     parser.add_argument(
-        "registry_username",
+        "--registry_username",
         type=str,
         help="Docker registry username.",
+        default=DOCKER_USERNAME,
     )
     parser.add_argument(
-        "registry_password_file",
+        "--registry_password_file",
         type=str,
-        help="Docker registry password.",
+        help="File with Docker registry password.",
+        default=DOCKER_PASSWORD_FILE,
     )
     parser.add_argument(
-        "registry_repository",
+        "--registry_repository",
         type=str,
         help="Docker registry repository.",
+        default=DOCKER_REPOSITORY,
     )
 
     parser.add_argument(
