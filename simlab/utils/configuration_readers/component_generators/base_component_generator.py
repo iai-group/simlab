@@ -5,13 +5,15 @@ import inspect
 import pkgutil
 from typing import Any, Dict
 
-DEFAULT_MAP_TYPE_TO_MODULE_NAME = {
+_DEFAULT_MAP_TYPE_TO_MODULE_NAME = {
     "agent": "simlab.participant.wrapper_agent",
     "user_simulator": "simlab.participant.wrapper_user_simulator",
     "task": "simlab.tasks",
     "metric": "simlab.metrics",
     "domain": "simlab.core.simulation_domain",
     "information_need": "simlab.core.information_need",
+    # DialogueKit components
+    "nlu": "dialoguekit.nlu",
 }
 
 
@@ -20,13 +22,13 @@ class BaseComponentGenerator:
         self,
         map_type_to_module_name: Dict[
             str, str
-        ] = DEFAULT_MAP_TYPE_TO_MODULE_NAME,
+        ] = _DEFAULT_MAP_TYPE_TO_MODULE_NAME,
     ) -> None:
         """Initializes a component generator.
 
         Args:
             map_type_to_module_name: Mapping of component types to module names.
-              Defaults to DEFAULT_MAP_TYPE_TO_MODULE_NAME.
+              Defaults to _DEFAULT_MAP_TYPE_TO_MODULE_NAME.
         """
         self.map_type_to_module_name = map_type_to_module_name
 

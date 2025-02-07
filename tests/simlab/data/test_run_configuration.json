@@ -46,5 +46,79 @@
                 "language": "en"
             }
         }
+    ],
+    "metrics": [
+        {
+            "class_name": "RecommendationSuccessRatio",
+            "type": "metric",
+            "arguments": {
+                "name": "Recommendation Success Ratio",
+                "user_nlu": {
+                    "type": "nlu",
+                    "class_name": "LMDialogueActsExtractor",
+                    "arguments": {
+                        "extraction_prompt": "Intents:\n- Greet: User is greeting the agent.\n- Goodbye: User is saying goodbye to the agent.\n- Disclose: User is disclosing some information about its information need to the agent.\n- Accept: User is accepting the agent's recommendation.\n- Reject: User is rejecting the agent's recommendation.\n- Neutral: User is neither accepting nor rejecting the agent's recommendation.\n- Inquire: User is inquiring about a movie.\n- Other: User is performing some other action.\n\nSlots:\n- GENRE: Genre of the movie.\n- TITLE: Title of the movie.\n- PLOT: Plot of the movie.\n- ACTOR: Actor in the movie.\n- DIRECTOR: Director of the movie.\n- RATING: Rating of the movie.\n- KEYWORD: Keyword related to the movie.\n- YEAR: Year of the movie.\n- OTHER: Other information.\n\nGiven the list of available intents and slots, extract a list of dialogue acts from a given utterance. A dialogue act is a pair of an intent and an optional list of slot-value pairs represented as intent_code(slot='value',slot,...) where the value of a slot is optional or taken from the utterance without any modifications. Multiple dialogue acts are separated by '|'. If no dialogue acts are found, say None. Strictly follow the specified format.\n\nExample 1:\nUtterance: \"Hello! Recommend me an action movie\"\nDialogue Acts: Greet|Recommend(GENRE='action')\n\nExample 2:\nUtterance: \"I don't want to watch this movie.\"\nDialogue Acts: Reject\n\nExample 3:\nUtterance: \"What is the plot of the movie?\"\nDialogue Acts: Inquire(PLOT)\n\nUtterance: {utterance}\nDialogue acts:",
+                        "intent_labels": [
+                            "Greet",
+                            "Goodbye",
+                            "Disclose",
+                            "Accept",
+                            "Reject",
+                            "Neutral",
+                            "Inquire",
+                            "Other"
+                        ],
+                        "slot_labels": [
+                            "GENRE",
+                            "TITLE",
+                            "PLOT",
+                            "ACTOR",
+                            "DIRECTOR",
+                            "RATING",
+                            "KEYWORD",
+                            "YEAR",
+                            "OTHER"
+                        ]
+                    }
+                },
+                "agent_nlu": {
+                    "type": "nlu",
+                    "class_name": "LMDialogueActsExtractor",
+                    "arguments": {
+                        "extraction_prompt": "Intents:\n- Greet: Agent is greeting the user.\n- Goodbye: Agent is saying goodbye to the user.\n- Elicit: Agent is eliciting the user's preferences and wishes.\nClarify: Agent is asking a clarification question.\n- Recommend: Agent is recommending a movie to the user.\n- Explain: Agent is explaining something to the user.\n- Inform: Agent is providing information to the user.\n- Other: Agent is performing some other action.\n\nSlots:\n- GENRE: Genre of the movie.\n- TITLE: Title of the movie.\n- PLOT: Plot of the movie.\n- ACTOR: Actor in the movie.\n- DIRECTOR: Director of the movie.\n- RATING: Rating of the movie.\n- KEYWORD: Keyword related to the movie.\n- YEAR: Year of the movie.\n- OTHER: Other information.\n\nGiven the list of available intents and slots, extract a list of dialogue acts from a given utterance. A dialogue act is a pair of an intent and an optional list of slot-value pairs represented as intent_code(slot='value',slot,...) where the value of a slot is optional or taken from the utterance without any modifications. Multiple dialogue acts are separated by '|'. If no dialogue acts are found, say None. Strictly follow the specified format.\n\nExample 1:\nUtterance: \"You should watch Inception.\"\nDialogue Acts: Recommend(TITLE='Inception')\n\nExample 2:\nUtterance: \"What genres do you like?\"\nDialogue Acts: Elicit(GENRE)\n\nExample 3:\nUtterance: \"Leonardo DiCaprio starred in Inception.\"\nDialogue Acts: Inform(ACTOR='Leonardo DiCaprio', TITLE='Inception')\n\nUtterance: {utterance}\nDialogue acts:",
+                        "intent_labels": [
+                            "Elicit",
+                            "Clarify",
+                            "Recommend",
+                            "Explain",
+                            "Greet",
+                            "Goodbye",
+                            "Inform",
+                            "Other"
+                        ],
+                        "slot_labels": [
+                            "GENRE",
+                            "TITLE",
+                            "PLOT",
+                            "ACTOR",
+                            "DIRECTOR",
+                            "RATING",
+                            "KEYWORD",
+                            "YEAR",
+                            "OTHER"
+                        ]
+                    }
+                },
+                "reject_intent_labels": [
+                    "Reject"
+                ],
+                "accept_intent_labels": [
+                    "Accept"
+                ],
+                "recommendation_intent_labels": [
+                    "Recommend"
+                ]
+            }
+        }
     ]
 }
