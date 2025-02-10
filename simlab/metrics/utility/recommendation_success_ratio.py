@@ -136,7 +136,7 @@ class RecommendationSuccessRatio(Metric):
             dialogue: Dialogue to evaluate.
 
         Returns:
-            Ratio of successful rounds of recommendation, or None if no
+            Ratio of successful rounds of recommendation, or 0 if no
             recommendation rounds are found.
         """
         rounds = self.get_recommendation_rounds(dialogue)
@@ -144,4 +144,4 @@ class RecommendationSuccessRatio(Metric):
         for round in rounds:
             if self.is_recommendation_accepted(round):
                 successful_rounds += 1
-        return successful_rounds / len(rounds) if rounds else None
+        return successful_rounds / len(rounds) if rounds else 0.0

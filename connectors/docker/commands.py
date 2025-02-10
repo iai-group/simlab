@@ -233,7 +233,12 @@ def delete_image(image_id: str) -> None:
 
 def clean_local_docker_registry() -> None:
     """Cleans the local Docker registry."""
-    delete_containers_command = "docker rm $(docker ps -a -q)"
+    delete_containers_command = (
+        "docker rm $(docker ps -aq -f status=exited) 2>/dev/null"
+    )
     subprocess.run(delete_containers_command, shell=True, check=True)
-    delete_images_command = "docker rmi $(docker images -q)"
+    delete_images_command = (
+        'docker rmi $(docker images -q --filter "dangling=true") -f '
+        "2>/dev/null"
+    )
     subprocess.run(delete_images_command, shell=True, check=True)

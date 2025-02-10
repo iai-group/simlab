@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from dialoguekit.connector.dialogue_connector import DialogueConnector
 from dialoguekit.participant.agent import Agent
@@ -55,6 +56,7 @@ class SimulationDialogueConnector(DialogueConnector):
             return
 
         history = self._dialogue_history
+        history.conversation_id = uuid4()
         file_name = os.path.join(
             self._output_dir, f"{self._agent.id}_{self._user.id}.json"
         )
