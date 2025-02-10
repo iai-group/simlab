@@ -1,0 +1,12 @@
+name: FED
+description: "The FED metric is an automatic and unsupervised metric using DialoGPT to evaluate different features of dialogue quality. It supports 11 features: coherence, error recovery, consistency, diversity, topic depth, likeability, understanding, flexibility, informativeness, inquisitiveness, and overall impression. The metric is introduced in: https://arxiv.org/abs/2006.12719"
+class_name: FED
+
+arguments:
+  feature:
+    type: string
+    configurable: true
+  name:
+    type: string
+    configurable: true
+    default: "fed"
