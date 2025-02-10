@@ -137,7 +137,7 @@ def generate_synthetic_dialogues(
     agent: WrapperAgent,
     information_needs: List[InformationNeed],
     output_dir: str,
-):
+) -> None:
     """Generates synthetic dialogues for the given agent-user simulator pair.
 
     Args:

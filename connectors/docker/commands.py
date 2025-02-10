@@ -48,7 +48,7 @@ def get_remote_image_tag(
 
 def docker_login(
     docker_metadata: DockerRegistryMetadata = DockerRegistryMetadata(),
-):
+) -> None:
     """Logs in to the remote Docker registry.
 
     Args:

@@ -12,17 +12,22 @@ from simlab.utils.participant_api.utils_response_parsing import (
 )
 
 
-def configure_participant(uri: str, parameters: Dict[str, Any]) -> None:
+def configure_participant(
+    uri: str, id: str, parameters: Dict[str, Any]
+) -> None:
     """Configures the participant with parameters.
 
     Args:
         uri: URI of the participant's API.
+        id: Participant's ID.
         parameters: Configuration parameters.
 
     Raises:
         RuntimeError: If the agent fails to configure.
     """
-    r = requests.post(f"{uri}/configure", json={"parameters": parameters})
+    r = requests.post(
+        f"{uri}/configure", json={"id": id, "parameters": parameters}
+    )
     if r.status_code != 201:
         raise RuntimeError("Failed to configure the agent.")
 
