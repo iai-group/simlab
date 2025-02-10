@@ -82,17 +82,17 @@ paths:
           schema:
             type: object
             properties:
-              user_id:
+              id:
                 type: string
               parameters:
                 type: object
             example:
               application/json:
-                user_id: "USR1"
+                id: "USR1"
                 parameters:
                   key: "value"
       responses:
-        200:
+        201:
           description: Acknowledgement of successful configuration
           schema:
             type: object
@@ -149,7 +149,7 @@ paths:
                   - "director"
                 fulfilled_slots:
       responses:
-        200:
+        201:
           description: Acknowledgement of information need being set
           schema:
             type: object

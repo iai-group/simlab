@@ -43,7 +43,7 @@ class WrapperUserSimulator(User):
             },
         )
         status_code = r.status_code
-        if status_code != 200:
+        if status_code != 201:
             raise RuntimeError(
                 f"Failed to set information need. Status code: {status_code}\n"
                 f"Response: {r.text}"
@@ -90,6 +90,7 @@ class WrapperUserSimulator(User):
             "context": context,
             "message": utterance.text,
             "agent_id": self._dialogue_connector._agent.id,
+            "user_id": self.id,
         }
         response = get_utterance_response(self._uri, request_data, self._type)
         self._dialogue_connector.register_user_utterance(response)
