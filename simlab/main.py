@@ -220,6 +220,7 @@ def start_participant(
 
         configure_participant(
             participant_configuration.participant._uri,
+            participant_configuration.participant.id,
             participant_configuration.custom_parameters,
         )
     except Exception as e:
