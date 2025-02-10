@@ -70,12 +70,14 @@ class RecommendationSuccessRatio(Metric):
                 continue
 
             if utterance.participant == DialogueParticipant.USER:
-                dialogue.utterances[i].dialogue_acts = (
-                    self.user_nlu.extract_dialogue_acts(utterance)
-                )
+                dialogue.utterances[
+                    i
+                ].dialogue_acts = self.user_nlu.extract_dialogue_acts(utterance)
             elif utterance.participant == DialogueParticipant.AGENT:
-                dialogue.utterances[i].dialogue_acts = (
-                    self.agent_nlu.extract_dialogue_acts(utterance)
+                dialogue.utterances[
+                    i
+                ].dialogue_acts = self.agent_nlu.extract_dialogue_acts(
+                    utterance
                 )
             else:
                 raise ValueError(

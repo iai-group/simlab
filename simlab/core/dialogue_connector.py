@@ -85,8 +85,8 @@ class SimulationDialogueConnector(DialogueConnector):
     def close(self) -> None:
         """Closes the conversation.
 
-        If '_save_dialogue_history' is set to True it will export the dialogue
-        history.
+        If '_save_dialogue_history' is set to True it will export the
+        dialogue history.
         """
         if isinstance(self._user, WrapperUserSimulator):
             self._user.update_information_need()
