@@ -57,6 +57,7 @@ class WrapperAgent(Agent):
             "context": context,
             "message": utterance.text,
             "user_id": self._dialogue_connector._user.id,
+            "agent_id": self.id,
         }
         response = get_utterance_response(self._uri, request_data, self._type)
         self._dialogue_connector.register_agent_utterance(response)

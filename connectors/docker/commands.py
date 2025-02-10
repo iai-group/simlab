@@ -48,7 +48,7 @@ def get_remote_image_tag(
 
 def docker_login(
     docker_metadata: DockerRegistryMetadata = DockerRegistryMetadata(),
-):
+) -> None:
     """Logs in to the remote Docker registry.
 
     Args:
@@ -111,12 +111,15 @@ def save_image(image_name: str, image_path: str) -> None:
 def docker_pull_image(
     image_name: str,
     docker_metadata: DockerRegistryMetadata = DockerRegistryMetadata(),
-) -> None:
+) -> str:
     """Pulls an image from the remote Docker registry.
 
     Args:
         image_name: Image name.
         docker_metadata: Docker registry metadata.
+
+    Returns:
+        Image tag.
     """
     docker_login(docker_metadata)
     remote_repo, tag = get_remote_image_tag(image_name, docker_metadata)
@@ -128,6 +131,7 @@ def docker_pull_image(
 
     pull_command = f"docker pull {image_tag}"
     subprocess.run(pull_command, shell=True, check=True)
+    return image_tag
 
 
 def docker_push_image(
@@ -197,8 +201,10 @@ def docker_run_container(
     if not image_exists(image_tag):
         docker_pull_image(image_name, docker_metadata)
 
-    run_command = f"docker run {run_args} {image_tag}"
-    result = subprocess.run(run_command, shell=True, check=True)
+    run_command = f"docker run -d {run_args} {image_tag}"
+    result = subprocess.run(
+        run_command, shell=True, check=True, capture_output=True
+    )
     container_id = result.stdout.decode().strip()
     return container_id
 
@@ -227,7 +233,12 @@ def delete_image(image_id: str) -> None:
 
 def clean_local_docker_registry() -> None:
     """Cleans the local Docker registry."""
-    delete_containers_command = "docker rm $(docker ps -a -q)"
+    delete_containers_command = (
+        "docker rm $(docker ps -aq -f status=exited) 2>/dev/null"
+    )
     subprocess.run(delete_containers_command, shell=True, check=True)
-    delete_images_command = "docker rmi $(docker images -q)"
+    delete_images_command = (
+        'docker rmi $(docker images -q --filter "dangling=true") -f '
+        "2>/dev/null"
+    )
     subprocess.run(delete_images_command, shell=True, check=True)

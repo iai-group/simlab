@@ -153,7 +153,7 @@ def find_image() -> Response:
     if image_metadata.get("type") == "agent":
         participant_class = image_metadata.get("class", "WrapperAgent")
     elif image_metadata.get("type") == "simulator":
-        participant_class = image_metadata.get("class", "WrapperSimulator")
+        participant_class = image_metadata.get("class", "WrapperUserSimulator")
 
     if not participant_id:
         return Response("ID not found in image labels", 500)

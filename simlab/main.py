@@ -50,7 +50,10 @@ from simlab.tasks.task import Task
 from simlab.utils.configuration_readers.base_configuration_reader import (
     BaseConfigurationReader,
 )
-from simlab.utils.participant_api.utils_api_calls import configure_participant
+from simlab.utils.participant_api.utils_api_calls import (
+    configure_participant,
+    wait_for_participant,
+)
 
 _NUM_ITER_PER_INFORMATION_NEED = 10
 
@@ -134,7 +137,7 @@ def generate_synthetic_dialogues(
     agent: WrapperAgent,
     information_needs: List[InformationNeed],
     output_dir: str,
-):
+) -> None:
     """Generates synthetic dialogues for the given agent-user simulator pair.
 
     Args:
@@ -173,8 +176,10 @@ def start_participant(
     ports_used = []
     container_id = None
     try:
-        docker_pull_image(participant_configuration.image, registry_metadata)
-        image_info = inspect_image(participant_configuration.image)
+        image_tag = docker_pull_image(
+            participant_configuration.image, registry_metadata
+        )
+        image_info = inspect_image(image_tag)
         flask_exposed_port = (
             image_info.get("Config", {}).get("Labels", {}).get("port", None)
         )
@@ -200,10 +205,6 @@ def start_participant(
 
         # Configure the participant
         participant_configuration.participant._uri = f"http://localhost:{port}"
-        configure_participant(
-            participant_configuration.participant._uri,
-            participant_configuration.custom_parameters,
-        )
 
         for exposed_port in exposed_ports:
             port += 1
@@ -212,6 +213,15 @@ def start_participant(
 
         container_id = docker_run_container(
             participant_configuration.image, run_args, registry_metadata
+        )
+
+        # Wait for participant to be ready
+        wait_for_participant(participant_configuration.participant._uri)
+
+        configure_participant(
+            participant_configuration.participant._uri,
+            participant_configuration.participant.id,
+            participant_configuration.custom_parameters,
         )
     except Exception as e:
         raise RuntimeError(

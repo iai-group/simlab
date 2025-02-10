@@ -70,12 +70,14 @@ class RecommendationSuccessRatio(Metric):
                 continue
 
             if utterance.participant == DialogueParticipant.USER:
-                dialogue.utterances[i].dialogue_acts = (
-                    self.user_nlu.extract_dialogue_acts(utterance)
-                )
+                dialogue.utterances[
+                    i
+                ].dialogue_acts = self.user_nlu.extract_dialogue_acts(utterance)
             elif utterance.participant == DialogueParticipant.AGENT:
-                dialogue.utterances[i].dialogue_acts = (
-                    self.agent_nlu.extract_dialogue_acts(utterance)
+                dialogue.utterances[
+                    i
+                ].dialogue_acts = self.agent_nlu.extract_dialogue_acts(
+                    utterance
                 )
             else:
                 raise ValueError(
@@ -136,7 +138,7 @@ class RecommendationSuccessRatio(Metric):
             dialogue: Dialogue to evaluate.
 
         Returns:
-            Ratio of successful rounds of recommendation, or None if no
+            Ratio of successful rounds of recommendation, or 0 if no
             recommendation rounds are found.
         """
         rounds = self.get_recommendation_rounds(dialogue)
@@ -144,4 +146,4 @@ class RecommendationSuccessRatio(Metric):
         for round in rounds:
             if self.is_recommendation_accepted(round):
                 successful_rounds += 1
-        return successful_rounds / len(rounds) if rounds else None
+        return successful_rounds / len(rounds) if rounds else 0.0

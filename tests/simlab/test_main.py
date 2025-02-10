@@ -129,9 +129,7 @@ def test_main(task: Task) -> None:
         )
     ]
     with (
-        patch(
-            "simlab.main.DockerRegistryConnector"
-        ) as mocked_docker_connector,
+        patch("simlab.main.DockerRegistryConnector") as mocked_docker_connector,
         patch("simlab.main.MongoDBConnector") as mocked_mongo_connector,
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,

@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import os
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from dialoguekit.connector.dialogue_connector import DialogueConnector
 from dialoguekit.participant.agent import Agent
 from dialoguekit.participant.user import User
+from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 
 if TYPE_CHECKING:
     from simlab.simulation_platform import SimulationPlatform
@@ -54,6 +56,7 @@ class SimulationDialogueConnector(DialogueConnector):
             return
 
         history = self._dialogue_history
+        history.conversation_id = uuid4()
         file_name = os.path.join(
             self._output_dir, f"{self._agent.id}_{self._user.id}.json"
         )
@@ -78,3 +81,15 @@ class SimulationDialogueConnector(DialogueConnector):
         # Empty dialogue history to avoid duplicate save
         for _ in range(len(self._dialogue_history.utterances)):
             self._dialogue_history.utterances.pop()
+
+    def close(self) -> None:
+        """Closes the conversation.
+
+        If '_save_dialogue_history' is set to True it will export the
+        dialogue history.
+        """
+        if isinstance(self._user, WrapperUserSimulator):
+            self._user.update_information_need()
+
+        if self._save_dialogue_history:
+            self._dump_dialogue_history()
