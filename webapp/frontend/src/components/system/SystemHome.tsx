@@ -1,29 +1,27 @@
 import {
   Button,
-  Card,
-  Col,
   Container,
   Dropdown,
   DropdownButton,
   Form,
   InputGroup,
+  ListGroup,
   Modal,
-  Pagination,
-  Row,
 } from "react-bootstrap";
 import { useEffect, useState } from "react";
 
-import { System } from "../../types";
+import SystemRow from "./SystemRow";
 import ToastNotification from "../ToastNotification";
 import UploadDockerImage from "./UploadDockerImage";
+import axios from "axios";
 import { baseURL } from "../API";
 
 const SystemHome = () => {
   const [search, setSearch] = useState<string>("");
   const [filterType, setFilterType] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [agents, setAgents] = useState<System[]>([]);
-  const [simulators, setSimulators] = useState<System[]>([]);
+  const [agents, setAgents] = useState<Object[]>([]);
+  const [simulators, setSimulators] = useState<Object[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const itemsPerPage = 10;
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -33,19 +31,26 @@ const SystemHome = () => {
   useEffect(() => {
     const fetchSystems = async () => {
       setLoading(true);
-      try {
-        const agentsResponse = await fetch(`${baseURL}/agents`);
-        const simulatorsResponse = await fetch(`${baseURL}/simulators`);
-        const agentsData = await agentsResponse.json();
-        const simulatorsData = await simulatorsResponse.json();
-        setAgents(agentsData);
-        setSimulators(simulatorsData);
-      } catch (err) {
-        console.error(err);
-        setToastMessage("Error fetching systems. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+
+      axios
+        .get(`${baseURL}/agents`)
+        .then((response) => {
+          setAgents(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+          setToastMessage("Error fetching systems. Please try again later.");
+        });
+      axios
+        .get(`${baseURL}/simulators`)
+        .then((response) => {
+          setSimulators(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+          setToastMessage("Error fetching systems. Please try again later.");
+        });
+      setLoading(false);
     };
 
     fetchSystems();
@@ -56,7 +61,7 @@ const SystemHome = () => {
   const filteredSystems = systemsData
     .filter((system) => {
       if (filterType !== "all" && system.type !== filterType) return false;
-      return system.image.toLowerCase().includes(search.toLowerCase());
+      return system.id?.toLowerCase().includes(search.toLowerCase());
     })
     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -118,22 +123,11 @@ const SystemHome = () => {
         <p className="text-muted">No systems found.</p>
       ) : (
         <>
-          <Row>
+          <ListGroup>
             {filteredSystems.map((system) => (
-              <Col md={4} key={system.id} className="mb-4">
-                <Card>
-                  <Card.Body>
-                    <Card.Title>{system.image}</Card.Title>
-                    <Card.Text>{system.type}</Card.Text>
-                    <Button variant="info" className="me-2">
-                      View Details
-                    </Button>
-                    <Button variant="success">Download</Button>
-                  </Card.Body>
-                </Card>
-              </Col>
+              <SystemRow system={system} />
             ))}
-          </Row>
+          </ListGroup>
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
