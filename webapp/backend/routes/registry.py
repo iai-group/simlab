@@ -23,7 +23,7 @@ def agents() -> Response:
     agents = find_records(mongo_connector, "system_images", {"type": "agent"})
 
     if not agents:
-        return Response("No agents found", 200)
+        return jsonify({"message": "No agents found"}), 200
 
     agent_list = [
         {
@@ -51,10 +51,10 @@ def agent(agent_id: str) -> Response:
     )
 
     if len(agent) > 1:
-        return Response("Multiple agents found", 500)
+        return jsonify({"error": "Multiple agents found"}), 500
 
     if not agent:
-        return Response("Agent not found", 400)
+        return jsonify({"error": "Agent not found"}), 400
 
     return (
         jsonify(
@@ -80,7 +80,7 @@ def simulators() -> Response:
         mongo_connector, "system_images", {"type": "simulator"}
     )
     if not simulators:
-        return Response("No simulators found", 200)
+        return jsonify({"message": "No simulators found"}), 200
 
     simulator_list = [
         {
@@ -111,10 +111,10 @@ def simulator(simulator_id: str) -> Response:
     )
 
     if len(simulator) > 1:
-        return Response("Multiple simulators found", 500)
+        return jsonify({"error": "Multiple simulators found"}), 500
 
     if not simulator:
-        return Response("Simulator not found", 400)
+        return jsonify({"error": "Simulator not found"}), 400
 
     return (
         jsonify(
@@ -156,7 +156,7 @@ def find_image() -> Response:
         participant_class = image_metadata.get("class", "WrapperUserSimulator")
 
     if not participant_id:
-        return Response("ID not found in image labels", 500)
+        return jsonify({"error": "ID not found in image labels"}), 500
 
     participant_config = {
         "class_name": participant_class,
@@ -175,9 +175,9 @@ def upload_image() -> Response:
     assert request.method == "POST", "Invalid request method"
 
     if "file" not in request.files:
-        return Response("No file submitted", 400)
+        return jsonify({"error": "No file submitted"}), 400
     if "image_name" not in request.form:
-        return Response("No image name submitted", 400)
+        return jsonify({"error": "No image name submitted"}), 400
 
     file = request.files.get("file")
     image_name = request.form.get("image_name")
@@ -203,7 +203,7 @@ def upload_image_status() -> Response:
 
     task_id = request.get_json().get("task_id")
     if not task_id:
-        return Response("Task ID not provided", 400)
+        return jsonify({"error": "Task ID not provided"}), 400
 
     task = AsyncResult(task_id, app=celery)
     if task.state == "SUCCESS":
@@ -232,7 +232,7 @@ def download_image() -> Response:
     image_name = request.get_json().get("image")
 
     if not image_name:
-        return Response("Image name not provided.", 400)
+        return jsonify({"error": "Image name not provided"}), 400
 
     try:
         docker_pull_image(image_name)
@@ -240,7 +240,6 @@ def download_image() -> Response:
             delete=False, suffix=".tar"
         ).name
         save_image(image_name, temp_file_path)
-
     except Exception as e:
         return (
             jsonify({"error": str(e), "message": "Failed to pull image"}),
