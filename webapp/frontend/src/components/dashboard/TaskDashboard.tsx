@@ -1,4 +1,14 @@
-import { Alert, Button, Container } from "react-bootstrap";
+import { Alert, Button, Container, Tab } from "react-bootstrap";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -9,6 +19,8 @@ const TaskDashboard = () => {
   const location = useLocation();
   const task = location.state?.task;
   const [resultRecords, setResultRecords] = useState<any[]>([]);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("run_name");
 
   if (!task) {
     return (
@@ -33,11 +45,13 @@ const TaskDashboard = () => {
   const fetchResultRecords = async () => {
     APIAuth.get(`/results/${task.id}`)
       .then((response) => {
-        console.log(response.data.results);
+        if (response.status !== 200) {
+          return;
+        }
         setResultRecords(response.data.results);
       })
       .catch((error) => {
-        console.error(error);
+        console.error("error", error);
       });
   };
 
@@ -55,43 +69,123 @@ const TaskDashboard = () => {
     a.click();
   };
 
+  // Sorting
+  const handleSort = (column: string) => {
+    if (orderBy === column) {
+      setOrder(order === "asc" ? "desc" : "asc");
+    } else {
+      setOrderBy(column);
+      setOrder("asc");
+    }
+  };
+
+  const sortNumeric = (a: number, b: number, order: "asc" | "desc") => {
+    return order === "asc" ? a - b : b - a;
+  };
+
+  const sortString = (a: string, b: string, order: "asc" | "desc") => {
+    return order === "asc"
+      ? a.localeCompare(b, undefined, { sensitivity: "base" })
+      : b.localeCompare(a, undefined, { sensitivity: "base" });
+  };
+
+  const sortedResults = [...resultRecords].sort((a, b) => {
+    let valueA = orderBy in a ? a[orderBy] : a.metrics?.[orderBy]?.mean;
+    let valueB = orderBy in b ? b[orderBy] : b.metrics?.[orderBy]?.mean;
+
+    if (valueA == null || valueB == null) return 0;
+
+    // Detect if it's a number (allowing for numeric metrics)
+    const isNumeric = !isNaN(parseFloat(valueA)) && !isNaN(parseFloat(valueB));
+
+    return isNumeric
+      ? sortNumeric(parseFloat(valueA), parseFloat(valueB), order)
+      : sortString(valueA.toString(), valueB.toString(), order);
+  });
+
   return (
     <Container>
       <h2>{task.name}</h2>
       <p>{task.description}</p>
 
       {/* Add option to download all results in a JSON file */}
-      <Button variant="primary" className="mb-3" onClick={downloadResults}>
+      <Button
+        variant="primary"
+        className="mb-3"
+        onClick={downloadResults}
+        disabled={resultRecords.length === 0}
+      >
         Download detailed results as JSON
       </Button>
 
       {/* Select metric to build result matrix */}
       <h3>Results</h3>
       {resultRecords.length > 0 ? (
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Conversational Agent ID</th>
-              <th>User Simulation ID</th>
-              {Object.keys(resultRecords[0]?.metrics || {}).map(
-                (metricName) => (
-                  <th key={metricName}>{metricName}</th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {resultRecords.map((record: any) => (
-              <tr key={record.run_name}>
-                <td>{record.agent_id}</td>
-                <td>{record.user_simulator_id}</td>
-                {Object.values(record.metrics || {}).map((metric: any, idx) => (
-                  <td key={idx}>{metric.mean.toFixed(2)}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "run_name"}
+                    direction={orderBy === "run_name" ? order : "asc"}
+                    onClick={() => handleSort("run_name")}
+                  >
+                    <strong>Run Name</strong>
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "agent_id"}
+                    direction={orderBy === "agent_id" ? order : "asc"}
+                    onClick={() => handleSort("agent_id")}
+                  >
+                    <strong>Conv. Agent ID</strong>
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "user_simulator_id"}
+                    direction={orderBy === "user_simulator_id" ? order : "asc"}
+                    onClick={() => handleSort("user_simulator_id")}
+                  >
+                    <strong>User Sim. ID</strong>
+                  </TableSortLabel>
+                </TableCell>
+
+                {Object.keys(resultRecords[0]?.metrics || {}).map(
+                  (metricName) => (
+                    <TableCell key={metricName}>
+                      <TableSortLabel
+                        active={orderBy === metricName}
+                        direction={orderBy === metricName ? order : "asc"}
+                        onClick={() => handleSort(metricName)}
+                      >
+                        <strong>{metricName}</strong>
+                      </TableSortLabel>
+                    </TableCell>
+                  )
+                )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedResults.map((record: any) => (
+                <TableRow key={record.run_name}>
+                  <TableCell>{record.run_name}</TableCell>
+                  <TableCell>{record.agent_id}</TableCell>
+                  <TableCell>{record.user_simulator_id}</TableCell>
+                  {Object.values(record.metrics || {}).map(
+                    (metric: any, idx) => (
+                      <TableCell key={idx}>{metric.mean}</TableCell>
+                    )
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       ) : (
         <p>No results available</p>
       )}
