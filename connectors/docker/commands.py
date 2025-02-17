@@ -97,15 +97,38 @@ def load_image(image_path: str) -> Dict[str, Any]:
     return image_info
 
 
-def save_image(image_name: str, image_path: str) -> None:
-    """Saves an images to a file.
+def stream_save_image(image_name: str):
+    """Streams the image file.
 
     Args:
         image_name: Image name.
-        image_path: Path to save the image.
+
+    Raises:
+        subprocess.CalledProcessError: If the subprocess fails.
+
+    Yields:
+        Image file chunks.
     """
-    save_command = f"docker save -o {image_path} {image_name}"
-    subprocess.run(save_command, shell=True, check=True)
+    save_command = f"docker save {image_name}"
+    process = subprocess.Popen(
+        save_command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    while True:
+        chunk = process.stdout.read(4096)  # Read 4KB at a time
+        if not chunk:
+            break
+        yield chunk
+
+    process.wait()
+    if process.returncode != 0:
+        error_message = process.stderr.read().decode()
+        raise subprocess.CalledProcessError(
+            process.returncode, save_command, error_message
+        )
 
 
 def docker_pull_image(
@@ -134,15 +157,21 @@ def docker_pull_image(
     return image_tag
 
 
-def docker_push_image(
+def docker_stream_push_image(
     image_name: str,
     docker_metadata: DockerRegistryMetadata = DockerRegistryMetadata(),
-) -> None:
-    """Pushes an image to the remote Docker registry.
+):
+    """Pushes an image to the remote Docker registry using a stream.
 
     Args:
         image_name: Image name.
         docker_metadata: Docker registry metadata.
+
+    Raises:
+        subprocess.CalledProcessError: If the subprocess fails.
+
+    Yields:
+        Docker logs output.
     """
     docker_login(docker_metadata)
     remote_repo, tag = get_remote_image_tag(image_name, docker_metadata)
@@ -157,7 +186,25 @@ def docker_push_image(
     subprocess.run(tag_command, shell=True, check=True)
 
     push_command = f"docker push {image_tag}"
-    subprocess.run(push_command, shell=True, check=True)
+    process = subprocess.Popen(
+        push_command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    for line in iter(process.stdout.readline, ""):
+        yield line.strip()
+
+    process.stdout.close()
+    process.wait()
+
+    if process.returncode != 0:
+        error_message = process.stderr.read().decode()
+        raise subprocess.CalledProcessError(
+            process.returncode, push_command, error_message
+        )
 
 
 def image_exists(image_name: str) -> bool:

@@ -1,13 +1,13 @@
 """Routes interacting with the registry."""
 
-import os
+import subprocess
 import tempfile
 
 from celery.result import AsyncResult
-from flask import Blueprint, Response, jsonify, request, send_file
+from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required
 
-from connectors.docker.commands import docker_pull_image, save_image
+from connectors.docker.commands import docker_pull_image, stream_save_image
 from connectors.mongo.utils import find_records
 from webapp.backend.app import mongo_connector
 from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
@@ -28,8 +28,10 @@ def agents() -> Response:
     agent_list = [
         {
             "id": agent.get("name", None),
+            "image_name": agent.get("image_name", None),
             "tag": agent.get("tag", None),
             "description": agent.get("description", None),
+            "type": agent.get("type", None),
             "author": agent.get("author", None),
             "version": agent.get("version", None),
             "added": agent.get("added", None),
@@ -60,8 +62,10 @@ def agent(agent_id: str) -> Response:
         jsonify(
             {
                 "id": agent[0].get("name", None),
+                "image_name": agent.get("image_name", None),
                 "tag": agent[0].get("tag", None),
                 "description": agent[0].get("description", None),
+                "type": agent.get("type", None),
                 "author": agent[0].get("author", None),
                 "version": agent[0].get("version", None),
                 "added": agent[0].get("added", None),
@@ -85,8 +89,10 @@ def simulators() -> Response:
     simulator_list = [
         {
             "id": simulator.get("name", None),
+            "image_name": simulator.get("image_name", None),
             "tag": simulator.get("tag", None),
             "description": simulator.get("description", None),
+            "type": simulator.get("type", None),
             "author": simulator.get("author", None),
             "version": simulator.get("version", None),
             "added": simulator.get("added", None),
@@ -120,8 +126,10 @@ def simulator(simulator_id: str) -> Response:
         jsonify(
             {
                 "id": simulator[0].get("name", None),
+                "image_name": simulator.get("image_name", None),
                 "tag": simulator[0].get("tag", None),
                 "description": simulator[0].get("description", None),
+                "type": simulator.get("type", None),
                 "author": simulator[0].get("author", None),
                 "version": simulator[0].get("version", None),
                 "added": simulator[0].get("added", None),
@@ -206,6 +214,11 @@ def upload_image_status() -> Response:
         return jsonify({"error": "Task ID not provided"}), 400
 
     task = AsyncResult(task_id, app=celery)
+    if task.state == "PROGRESS":
+        return (
+            jsonify({"status": "PROGRESS", "log": task.info.get("log", "")}),
+            202,
+        )
     if task.state == "SUCCESS":
         return jsonify({"status": "SUCCESS", "message": "Image uploaded"}), 200
     if task.state == "FAILURE":
@@ -235,20 +248,21 @@ def download_image() -> Response:
         return jsonify({"error": "Image name not provided"}), 400
 
     try:
-        docker_pull_image(image_name)
-        temp_file_path = tempfile.NamedTemporaryFile(
-            delete=False, suffix=".tar"
-        ).name
-        save_image(image_name, temp_file_path)
-    except Exception as e:
-        return (
-            jsonify({"error": str(e), "message": "Failed to pull image"}),
-            500,
+        # Pull the image first
+        image_pulled = docker_pull_image(image_name)
+
+        def generate():
+            """Generates the image file."""
+            yield from stream_save_image(image_pulled)
+
+        response = Response(generate(), content_type="application/x-tar")
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename={image_name.replace(':', '_')}.tar"
         )
 
-    response = send_file(
-        temp_file_path, as_attachment=True, download_name=f"{image_name}.tar"
-    )
+        return response
 
-    os.remove(temp_file_path)
-    return response
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Failed to download image: {str(e)}"}), 500
