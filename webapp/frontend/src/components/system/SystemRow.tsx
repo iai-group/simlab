@@ -9,13 +9,13 @@ const SystemRow = ({ system }: { system: any }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const downloadSystemImage = () => {
-    if (!system.id) {
+    if (!system.image_name) {
       setToastMessage("Image cannot be downloaded.");
       return;
     }
 
     APIAuth.post(`${baseURL}/download-image`, {
-      image: system.id,
+      image: system.image_name,
     })
       .then((response) => {
         console.log(response);

@@ -35,7 +35,9 @@ const SystemHome = () => {
       axios
         .get(`${baseURL}/agents`)
         .then((response) => {
-          setAgents(response.data);
+          if (Array.isArray(response.data)) {
+            setAgents(response.data);
+          }
         })
         .catch((error) => {
           console.error(error);
@@ -44,7 +46,9 @@ const SystemHome = () => {
       axios
         .get(`${baseURL}/simulators`)
         .then((response) => {
-          setSimulators(response.data);
+          if (Array.isArray(response.data)) {
+            setSimulators(response.data);
+          }
         })
         .catch((error) => {
           console.error(error);
@@ -61,7 +65,10 @@ const SystemHome = () => {
   const filteredSystems = systemsData
     .filter((system) => {
       if (filterType !== "all" && system.type !== filterType) return false;
-      return system.id?.toLowerCase().includes(search.toLowerCase());
+      return (
+        system.id?.toLowerCase().includes(search.toLowerCase()) ||
+        system.image_name?.toLowerCase().includes(search.toLowerCase())
+      );
     })
     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -165,7 +172,7 @@ const SystemHome = () => {
           <Modal.Title>Upload Docker Image</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <UploadDockerImage />
+          <UploadDockerImage onUploadSuccess={() => setShowModal(false)} />
         </Modal.Body>
       </Modal>
 
