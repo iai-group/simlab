@@ -1,15 +1,21 @@
-name: movie_recommendation
-description: Movie recommendation task.
-class_name: Task
-
 arguments:
+  db_name: simlab
   domain:
-    type: domain
-    class_name: SimulationDomain
     arguments:
       config_file: data/simlab/domains/movie_recommendation_domain.yaml
-  db_name: simlab
+    class_name: SimulationDomain
+    type: domain
   metrics:
+    - arguments:
+        feature: understand
+        name: Understanding
+      class_name: FED
+      type: metric
+    - arguments:
+        feature: consistent
+        name: Consistency
+      class_name: FED
+      type: metric
     - arguments:
         accept_intent_labels:
           - Accept
@@ -211,7 +217,6 @@ arguments:
           type: nlu
       class_name: RecommendationSuccessRatio
       type: metric
-    - arguments:
-        feature: consistent
-      class_name: FED
-      type: metric
+class_name: Task
+description: Movie recommendation task with FED metrics and recommendation success ratio for the evaluation.
+name: movie_recommendation_example
