@@ -11,7 +11,7 @@ import {
 import { APIAuth } from "../API";
 import { useState } from "react";
 
-const UploadDockerImage = () => {
+const UploadDockerImage: React.FC<UploadDockerImageProps> = ({ onUploadSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
   const [imageName, setImageName] = useState("");
   const [status, setStatus] = useState({ message: "", type: "" });
@@ -57,6 +57,7 @@ const UploadDockerImage = () => {
       .then((response) => {
         console.log(response);
         setStatus({ message: "Upload started.", type: "info" });
+        onUploadSuccess();
       })
       .catch((error) => {
         console.error(error);

@@ -55,7 +55,7 @@ from simlab.utils.participant_api.utils_api_calls import (
     wait_for_participant,
 )
 
-_NUM_ITER_PER_INFORMATION_NEED = 10
+_NUM_ITER_PER_INFORMATION_NEED = 3
 
 
 def parse_args() -> argparse.Namespace:
