@@ -43,11 +43,12 @@ const TaskDashboard = () => {
   }
 
   const fetchResultRecords = async () => {
-    APIAuth.get(`/results/${task.id}`)
+    APIAuth.get(`/results/${task.name}`)
       .then((response) => {
         if (response.status !== 200) {
           return;
         }
+        console.log(response.data);
         setResultRecords(response.data.results);
       })
       .catch((error) => {
@@ -57,7 +58,7 @@ const TaskDashboard = () => {
 
   useEffect(() => {
     fetchResultRecords();
-  }, []);
+  }, [task?.name]);
 
   const downloadResults = () => {
     const data = JSON.stringify(resultRecords, null, 2);
@@ -89,7 +90,7 @@ const TaskDashboard = () => {
       : b.localeCompare(a, undefined, { sensitivity: "base" });
   };
 
-  const sortedResults = [...resultRecords].sort((a, b) => {
+  const sortedResults = resultRecords.slice().sort((a, b) => {
     let valueA = orderBy in a ? a[orderBy] : a.metrics?.[orderBy]?.mean;
     let valueB = orderBy in b ? b[orderBy] : b.metrics?.[orderBy]?.mean;
 
@@ -157,7 +158,7 @@ const TaskDashboard = () => {
 
                 {Object.keys(resultRecords[0]?.metrics || {}).map(
                   (metricName) => (
-                    <TableCell key={metricName}>
+                    <TableCell key={metricName} align="center">
                       <TableSortLabel
                         active={orderBy === metricName}
                         direction={orderBy === metricName ? order : "asc"}
@@ -172,13 +173,17 @@ const TaskDashboard = () => {
             </TableHead>
             <TableBody>
               {sortedResults.map((record: any) => (
-                <TableRow key={record.run_name}>
+                <TableRow key={record._id}>
                   <TableCell>{record.run_name}</TableCell>
                   <TableCell>{record.agent_id}</TableCell>
                   <TableCell>{record.user_simulator_id}</TableCell>
                   {Object.values(record.metrics || {}).map(
                     (metric: any, idx) => (
-                      <TableCell key={idx}>{metric.mean}</TableCell>
+                      <TableCell key={idx} align="center">
+                        {typeof metric.mean === "number"
+                          ? metric.mean.toFixed(2)
+                          : metric.mean}
+                      </TableCell>
                     )
                   )}
                 </TableRow>
