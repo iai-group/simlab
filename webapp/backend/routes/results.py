@@ -1,6 +1,5 @@
 """Routes to interact with the experiment results."""
 
-from bson import ObjectId
 from flask import Blueprint, Response, jsonify, request
 from flask_login import current_user, login_required
 
@@ -10,12 +9,12 @@ from webapp.backend.app import mongo_connector
 results = Blueprint("results", __name__)
 
 
-@results.route("/results/<task_id>", methods=["GET"])
-def get_results(task_id: str) -> Response:
+@results.route("/results/<task_name>", methods=["GET"])
+def get_results(task_name: str) -> Response:
     """Returns the results of a task.
 
     Args:
-        task_id: Task ID.
+        task_name: Task name.
 
     Returns:
         Public results of the task.
@@ -25,7 +24,7 @@ def get_results(task_id: str) -> Response:
     result_records = find_records(
         mongo_connector,
         "evaluation_results",
-        {"task_id": ObjectId(task_id), "public": True},
+        {"task_id": task_name, "public": True},
     )
 
     if not result_records or len(result_records) == 0:

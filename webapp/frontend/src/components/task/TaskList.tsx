@@ -5,8 +5,6 @@ import {
   Container,
   Form,
   InputGroup,
-  Toast,
-  ToastContainer,
 } from "react-bootstrap";
 import { MDBBtn, MDBListGroup, MDBListGroupItem } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
@@ -88,8 +86,8 @@ const TaskList = () => {
   }, []);
 
   // Handle search
-  const filteredTasks = tasks.filter((task) =>
-    task.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTasks = tasks.filter((task) => 
+    task.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination logic

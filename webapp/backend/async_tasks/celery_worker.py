@@ -66,4 +66,5 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
         logging.error(f"Failed to push image: {e}")
         return False
     finally:
+        # TODO: Remove new image from local registry to free space
         os.remove(file_path)
