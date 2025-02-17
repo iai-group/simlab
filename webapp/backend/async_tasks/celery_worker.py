@@ -6,7 +6,7 @@ import os
 from celery import Celery
 
 from connectors.docker.commands import (
-    docker_push_image,
+    docker_stream_push_image,
     get_remote_image_tag,
     load_image,
 )
@@ -46,13 +46,16 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
         if not image_labels.get("type"):
             raise ValueError("Image type not found")
 
-        docker_push_image(image_name, docker_registry_metadata)
+        for log_line in docker_stream_push_image(
+            image_name, docker_registry_metadata
+        ):
+            logging.info(f"[docker] {log_line}")
 
         # Save or update system image information in MongoDB
         repo, tag = get_remote_image_tag(image_name, docker_registry_metadata)
 
         record = {
-            "name": image_name,
+            "image_name": image_name,
             "repository": repo,
             "tag": tag,
         }

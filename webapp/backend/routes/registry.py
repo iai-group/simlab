@@ -1,13 +1,13 @@
 """Routes interacting with the registry."""
 
-import os
+import subprocess
 import tempfile
 
 from celery.result import AsyncResult
-from flask import Blueprint, Response, jsonify, request, send_file
+from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required
 
-from connectors.docker.commands import docker_pull_image, save_image
+from connectors.docker.commands import docker_pull_image, stream_save_image
 from connectors.mongo.utils import find_records
 from webapp.backend.app import mongo_connector
 from webapp.backend.async_tasks.celery_worker import celery, upload_image_task
@@ -23,13 +23,15 @@ def agents() -> Response:
     agents = find_records(mongo_connector, "system_images", {"type": "agent"})
 
     if not agents:
-        return Response("No agents found", 200)
+        return jsonify({"message": "No agents found"}), 200
 
     agent_list = [
         {
             "id": agent.get("name", None),
+            "image_name": agent.get("image_name", None),
             "tag": agent.get("tag", None),
             "description": agent.get("description", None),
+            "type": agent.get("type", None),
             "author": agent.get("author", None),
             "version": agent.get("version", None),
             "added": agent.get("added", None),
@@ -51,17 +53,19 @@ def agent(agent_id: str) -> Response:
     )
 
     if len(agent) > 1:
-        return Response("Multiple agents found", 500)
+        return jsonify({"error": "Multiple agents found"}), 500
 
     if not agent:
-        return Response("Agent not found", 400)
+        return jsonify({"error": "Agent not found"}), 400
 
     return (
         jsonify(
             {
                 "id": agent[0].get("name", None),
+                "image_name": agent.get("image_name", None),
                 "tag": agent[0].get("tag", None),
                 "description": agent[0].get("description", None),
+                "type": agent.get("type", None),
                 "author": agent[0].get("author", None),
                 "version": agent[0].get("version", None),
                 "added": agent[0].get("added", None),
@@ -80,13 +84,15 @@ def simulators() -> Response:
         mongo_connector, "system_images", {"type": "simulator"}
     )
     if not simulators:
-        return Response("No simulators found", 200)
+        return jsonify({"message": "No simulators found"}), 200
 
     simulator_list = [
         {
             "id": simulator.get("name", None),
+            "image_name": simulator.get("image_name", None),
             "tag": simulator.get("tag", None),
             "description": simulator.get("description", None),
+            "type": simulator.get("type", None),
             "author": simulator.get("author", None),
             "version": simulator.get("version", None),
             "added": simulator.get("added", None),
@@ -111,17 +117,19 @@ def simulator(simulator_id: str) -> Response:
     )
 
     if len(simulator) > 1:
-        return Response("Multiple simulators found", 500)
+        return jsonify({"error": "Multiple simulators found"}), 500
 
     if not simulator:
-        return Response("Simulator not found", 400)
+        return jsonify({"error": "Simulator not found"}), 400
 
     return (
         jsonify(
             {
                 "id": simulator[0].get("name", None),
+                "image_name": simulator.get("image_name", None),
                 "tag": simulator[0].get("tag", None),
                 "description": simulator[0].get("description", None),
+                "type": simulator.get("type", None),
                 "author": simulator[0].get("author", None),
                 "version": simulator[0].get("version", None),
                 "added": simulator[0].get("added", None),
@@ -156,7 +164,7 @@ def find_image() -> Response:
         participant_class = image_metadata.get("class", "WrapperUserSimulator")
 
     if not participant_id:
-        return Response("ID not found in image labels", 500)
+        return jsonify({"error": "ID not found in image labels"}), 500
 
     participant_config = {
         "class_name": participant_class,
@@ -175,9 +183,9 @@ def upload_image() -> Response:
     assert request.method == "POST", "Invalid request method"
 
     if "file" not in request.files:
-        return Response("No file submitted", 400)
+        return jsonify({"error": "No file submitted"}), 400
     if "image_name" not in request.form:
-        return Response("No image name submitted", 400)
+        return jsonify({"error": "No image name submitted"}), 400
 
     file = request.files.get("file")
     image_name = request.form.get("image_name")
@@ -203,9 +211,14 @@ def upload_image_status() -> Response:
 
     task_id = request.get_json().get("task_id")
     if not task_id:
-        return Response("Task ID not provided", 400)
+        return jsonify({"error": "Task ID not provided"}), 400
 
     task = AsyncResult(task_id, app=celery)
+    if task.state == "PROGRESS":
+        return (
+            jsonify({"status": "PROGRESS", "log": task.info.get("log", "")}),
+            202,
+        )
     if task.state == "SUCCESS":
         return jsonify({"status": "SUCCESS", "message": "Image uploaded"}), 200
     if task.state == "FAILURE":
@@ -232,24 +245,24 @@ def download_image() -> Response:
     image_name = request.get_json().get("image")
 
     if not image_name:
-        return Response("Image name not provided.", 400)
+        return jsonify({"error": "Image name not provided"}), 400
 
     try:
-        docker_pull_image(image_name)
-        temp_file_path = tempfile.NamedTemporaryFile(
-            delete=False, suffix=".tar"
-        ).name
-        save_image(image_name, temp_file_path)
+        # Pull the image first
+        image_pulled = docker_pull_image(image_name)
 
-    except Exception as e:
-        return (
-            jsonify({"error": str(e), "message": "Failed to pull image"}),
-            500,
+        def generate():
+            """Generates the image file."""
+            yield from stream_save_image(image_pulled)
+
+        response = Response(generate(), content_type="application/x-tar")
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename={image_name.replace(':', '_')}.tar"
         )
 
-    response = send_file(
-        temp_file_path, as_attachment=True, download_name=f"{image_name}.tar"
-    )
+        return response
 
-    os.remove(temp_file_path)
-    return response
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Failed to download image: {str(e)}"}), 500

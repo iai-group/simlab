@@ -25,4 +25,4 @@ ENV FLASK_APP=webapp.backend.app
 WORKDIR /
 
 # CMD ["flask", "run", "--host", "0.0.0.0", "--port", "5005", "--cert", "adhoc", "--debug"]  
-CMD ["sh", "-c", "celery -A webapp.backend.async_tasks.celery_worker.celery worker --loglevel=info & flask run --host 0.0.0.0 --port 5005 --cert adhoc --debug"]
+CMD ["sh", "-c", "celery -A webapp.backend.async_tasks.celery_worker.celery worker --loglevel=info --time-limit=900 & flask run --host 0.0.0.0 --port 5005 --cert adhoc --debug"]

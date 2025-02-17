@@ -11,7 +11,6 @@ The supported features are:
 - Flexible
 - Informative
 - Inquisitive
-- Overall Impression
 
 Reference:
 Mehri S, Eskenazi M. Unsupervised evaluation of interactive dialog with

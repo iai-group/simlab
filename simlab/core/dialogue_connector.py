@@ -56,7 +56,7 @@ class SimulationDialogueConnector(DialogueConnector):
             return
 
         history = self._dialogue_history
-        history.conversation_id = uuid4()
+        history._conversation_id = str(uuid4())
         file_name = os.path.join(
             self._output_dir, f"{self._agent.id}_{self._user.id}.json"
         )
