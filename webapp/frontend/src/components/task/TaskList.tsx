@@ -81,7 +81,7 @@ const TaskList = () => {
   }, []);
 
   // Handle search
-  const filteredTasks = tasks.filter((task) =>
+  const filteredTasks = tasks.filter((task) => 
     task.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

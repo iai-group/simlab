@@ -15,6 +15,7 @@ services:
       - ./connectors:/connectors
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/data
+      - ./registry/simlab-447518-3117f021d7b5.json:/registry/simlab-447518-3117f021d7b5.json
     depends_on:
       - mongo
       - redis
@@ -54,6 +55,5 @@ services:
     depends_on:
       - backend
       - frontend
-      - registry
     networks:
       - simlab_net

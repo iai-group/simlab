@@ -29,11 +29,11 @@ const SystemRow = ({ system }: { system: any }) => {
     <>
       <ListGroup.Item>
         <div className="d-flex justify-content-between align-items-center">
-          <Button variant="light" onClick={() => setShowDetails(!showDetails)}>
+          <Button variant="light"  onClick={() => setShowDetails(!showDetails)}>
             {showDetails ? (
-              <i className="bi bi-caret-down-fill"></i>
+                <i className="bi bi-caret-down-fill"></i>
             ) : (
-              <i className="bi bi-caret-right-fill"></i>
+                <i className="bi bi-caret-right-fill"></i>
             )}
           </Button>
           <p>{system.id}</p>
