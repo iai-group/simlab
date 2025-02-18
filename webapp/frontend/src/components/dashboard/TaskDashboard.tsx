@@ -181,7 +181,7 @@ const TaskDashboard = () => {
                     (metric: any, idx) => (
                       <TableCell key={idx} align="center">
                         {typeof metric.mean === "number"
-                          ? metric.mean.toFixed(2)
+                          ? metric.mean.toFixed(3)
                           : metric.mean}
                       </TableCell>
                     )
