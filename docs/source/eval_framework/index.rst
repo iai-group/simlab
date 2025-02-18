@@ -1,5 +1,5 @@
-SimLab codebase
-===============
+Evaluation framework
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -8,4 +8,3 @@ SimLab codebase
    conversational_systems
    task
    metric
-   run_configuration

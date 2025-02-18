@@ -35,5 +35,5 @@ SimLab is a platform to perform simulation-based evaluation of conversational ag
    :maxdepth: 2
    :caption: Developer
 
-   simlab/index
+   eval_framework/index
    webapp/index

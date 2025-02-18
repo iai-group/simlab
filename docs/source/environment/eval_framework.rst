@@ -10,4 +10,4 @@ The workflow of the evaluation process is illustrated in the following diagram:
     :width: 400px
     :alt: UML activity diagram of the simulation-based evaluation process. The experiment data, highlighted in green boxes, is saved in the storage. It is assumed that the systems are available in the systems registry.
 
-Additional details on implementation can be found in the :doc:`developer documentation <../simlab/index>`.
+Additional details on implementation can be found in the :doc:`developer documentation <../eval_framework/index>`.
