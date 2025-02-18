@@ -48,7 +48,7 @@ const TaskDashboard = () => {
         if (response.status !== 200) {
           return;
         }
-        console.log(response.data)
+        console.log(response.data);
         setResultRecords(response.data.results);
       })
       .catch((error) => {
@@ -180,7 +180,9 @@ const TaskDashboard = () => {
                   {Object.values(record.metrics || {}).map(
                     (metric: any, idx) => (
                       <TableCell key={idx} align="center">
-                        {typeof metric.mean === "number" ? metric.mean.toFixed(2) : metric.mean}
+                        {typeof metric.mean === "number"
+                          ? metric.mean.toFixed(2)
+                          : metric.mean}
                       </TableCell>
                     )
                   )}

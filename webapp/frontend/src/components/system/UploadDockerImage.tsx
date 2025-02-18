@@ -11,7 +11,13 @@ import {
 import { APIAuth } from "../API";
 import { useState } from "react";
 
-const UploadDockerImage: React.FC<UploadDockerImageProps> = ({ onUploadSuccess }) => {
+interface UploadDockerImageProps {
+  onUploadSuccess: () => void;
+}
+
+const UploadDockerImage: React.FC<UploadDockerImageProps> = ({
+  onUploadSuccess,
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const [imageName, setImageName] = useState("");
   const [status, setStatus] = useState({ message: "", type: "" });

@@ -1,11 +1,6 @@
 // Component to display the list of available tasks
 
-import {
-  Button,
-  Container,
-  Form,
-  InputGroup,
-} from "react-bootstrap";
+import { Button, Container, Form, InputGroup } from "react-bootstrap";
 import { MDBBtn, MDBListGroup, MDBListGroupItem } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
 
