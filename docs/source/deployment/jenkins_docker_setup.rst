@@ -1,4 +1,3 @@
-===============================
 Jenkins and Docker Installation
 ===============================
 
@@ -33,7 +32,7 @@ Install Docker
 
        sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
 
-2. Add Docker’s GPG key and repository:
+2. Add Docker's GPG key and repository:
 
    .. code-block:: bash
 
@@ -143,3 +142,31 @@ Verify Installation
 
    ``http://<your_vm_external_ip>:8080``
 
+Troubleshooting
+---------------
+
+You may encounter some of the following issues during the installation process:
+
+- Error when adding Docker's GPG key and repository:
+
+  .. code-block:: bash
+
+      curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+This is likely the output of the command: ``lsb_release -cs``, that is not parsed correctly. To fix this issue, first check the output of the command and then replace it in the command above. 
+
+- Error when adding a firewall rule for Jenkins:
+
+  .. code-block:: bash
+
+      gcloud compute firewall-rules create allow-jenkins --allow tcp:8080 --target-tags=jenkins --description="Allow Jenkins traffic"
+
+      ERROR: (gcloud.compute.firewall-rules.create) Could not fetch resource:
+       - Request had insufficient authentication scopes.
+
+To fix this issue, update the authentication scopes by running the following command:
+
+.. code-block:: bash
+
+    gcloud auth login --update-adc
