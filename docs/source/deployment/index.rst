@@ -30,8 +30,19 @@ With these resources, SimLab can be deployed and run on GCP in an idle state; it
 Jenkins Server
 """"""""""""""
 
-To install Jenkins on a GCP VM, follow the guide :doc:`jenkins_docker_setup`. After the installation, you can customize Jenkins by following the guide :doc:`jenkins_customization`.
+To install Jenkins on a GCP VM, follow the guide :doc:`jenkins_installation`. After the installation, you can customize Jenkins by following the guide :doc:`jenkins_customization`.
 
 
-.. TODO: Add guide for deploying the web application.
+Web Application VM
+""""""""""""""""""
 
+To set up the web application on a GCP VM, follow the guide :doc:`webapp_vm`.
+
+
+.. toctree::
+   :hidden:
+
+   docker_installation
+   jenkins_installation
+   jenkins_customization
+   webapp_vm
