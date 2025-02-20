@@ -68,15 +68,15 @@ const RunSubmissionForm = () => {
     APIAuth.post(`${baseURL}/run-request`, formData)
       .then((response) => {
         if (response.status === 201) {
-          setToastMessage("Run submitted successfully!");
+          setToastMessage("Experiment request submitted successfully!");
           setToastType("success");
         } else {
-          setToastMessage("Error submitting run.");
+          setToastMessage("Error submitting experiment request.");
           setToastType("error");
         }
       })
       .catch((error) => {
-        setToastMessage("Error submitting run. Please reach out to the admin.");
+        setToastMessage("Error submitting experiment request. Please reach out to the admin.");
         setToastType("error");
         console.error("error", error);
       });
@@ -130,7 +130,7 @@ const RunSubmissionForm = () => {
 
   return (
     <Container>
-      <h3>Submit a new run</h3>
+      <h3>Submit a new experiment request</h3>
       <p>
         Selected Task:{" "}
         {task
@@ -138,11 +138,11 @@ const RunSubmissionForm = () => {
           : "No task selected. Please go back and select a task."}
       </p>
 
-      {/* Run Name */}
-      <p>Run name*</p>
+      {/* Exepriment Name */}
+      <p>Experiment name*</p>
       <MDBInput
         wrapperClass="mb-4"
-        label="Run name"
+        label="Experiment name"
         id="formRunName"
         type="text"
         onChange={(e) => setRunName(e.target.value)}
@@ -217,7 +217,7 @@ const RunSubmissionForm = () => {
 
       {/* Submit Button */}
       <Button variant="primary" type="submit" onClick={handleSubmit}>
-        Submit run request
+        Submit experiment request
       </Button>
 
       {/* Toast Notifications */}
