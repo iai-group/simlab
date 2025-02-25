@@ -32,6 +32,6 @@ You can use the following command to create an archive of your Docker image:
 
 4. Submit the archive to SimLab
 
-To add your image to SimLab's registry, login to the SimLab web interface and navigate to the `"Systems" page <https://35.222.6.112/system>`_. Click on the button "ADD NEW SYSTEM", fill in the form with your archive file and the image name before submitting the form. Be aware that the upload process may take a few minutes depending on the size of the image.
+To add your image to SimLab's registry, login to the SimLab web interface and navigate to the `"Systems" page <https://35.224.170.127/system>`_. Click on the button "ADD NEW SYSTEM", fill in the form with your archive file and the image name before submitting the form. Be aware that the upload process may take a few minutes depending on the size of the image.
 
 Once the upload is complete, your system will be added to the registry and will be available for use in SimLab. If you cannot find your system in the list of available systems, try refreshing the page after a few minutes.

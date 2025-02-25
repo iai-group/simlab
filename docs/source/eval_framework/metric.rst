@@ -5,4 +5,4 @@ A metric is a **quantitative** measure that is used to evaluate a conversation b
 
 The metric class, :py:class:`simlab.metrics.metric.Metric`, is designed to be generic and flexible to support a wide range of evaluation scenarios. New metrics may be added to SimLab by inheriting from this class and implementing the additional functionalities required for the specific evaluation scenario.
 
-A list of supported metrics is available at: `<https://35.222.6.112/api/metrics>`_.
+A list of supported metrics is available at: `<https://35.224.170.127/api/metrics>`_.
