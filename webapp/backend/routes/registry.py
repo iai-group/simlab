@@ -34,7 +34,6 @@ def agents() -> Response:
             "type": agent.get("type", None),
             "author": agent.get("author", None),
             "version": agent.get("version", None),
-            "added": agent.get("added", None),
         }
         for agent in agents
     ]
@@ -68,7 +67,6 @@ def agent(agent_id: str) -> Response:
                 "type": agent.get("type", None),
                 "author": agent[0].get("author", None),
                 "version": agent[0].get("version", None),
-                "added": agent[0].get("added", None),
             }
         ),
         200,
@@ -95,7 +93,6 @@ def simulators() -> Response:
             "type": simulator.get("type", None),
             "author": simulator.get("author", None),
             "version": simulator.get("version", None),
-            "added": simulator.get("added", None),
         }
         for simulator in simulators
     ]
@@ -132,7 +129,6 @@ def simulator(simulator_id: str) -> Response:
                 "type": simulator.get("type", None),
                 "author": simulator[0].get("author", None),
                 "version": simulator[0].get("version", None),
-                "added": simulator[0].get("added", None),
             }
         ),
         200,
