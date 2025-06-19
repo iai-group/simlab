@@ -11,6 +11,7 @@ Before you begin, ensure you have the following:
 - A Debian-based Virtual Machine (VM).
 - Sudo/root access to the VM.
 - Docker installed on the VM. Follow the guide :doc:`docker_installation` to install Docker.
+- Conda or Miniconda installed on the VM.
 
 Update and Upgrade the System
 -----------------------------
