@@ -21,22 +21,23 @@ pipeline {
         stage('Partial Clone and Prepare Workspace') {
             steps {
                 script {
-                    echo "Cloning repository: ${env.GIT_URL}"
-                    // Ensure git remote URL is set for sparse checkout
-                    sh 'git config remote.origin.url "$GIT_URL"'
-                    sh 'git config core.sparseCheckout true'
-
-                    // Add paths to include in the sparse checkout
-                    sh "echo '${env.PYTHON_SIMLAB_DIR}/*' >> .git/info/sparse-checkout"
-                    sh "echo '${env.PYTHON_CONNECTORS_DIR}/*' >> .git/info/sparse-checkout"
-                    sh "echo '${env.PYTHON_DIALOGUEKIT_DIR}/*' >> .git/info/sparse-checkout"
-                    sh "echo '${env.PYTHON_GLOBAL_REQUIREMENTS}' >> .git/info/sparse-checkout"
-
-                    // Perform the sparse checkout
-                    sh 'git checkout ${env.GIT_BRANCH}'
-                    sh 'git pull origin ${env.GIT_BRANCH}'
+                    echo "Starting sparse clone for branch: ${env.GIT_BRANCH}."
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "${env.GIT_BRANCH}"]],
+                        userRemoteConfigs: [[url: "${env.GIT_URL}", credentialsId: '']], 
+                        extensions: [
+                            [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_SIMLAB_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_CONNECTORS_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_DIALOGUEKIT_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_GLOBAL_REQUIREMENTS}"]
+                            ]],
+                            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+                        ]
+                    ])
                 }
-                echo "Workspace prepared with partial clone for branch: ${env.GIT_BRANCH}."
+                echo "Workspace prepared with sparse clone for branch: ${env.GIT_BRANCH}."
             }
         }
 
