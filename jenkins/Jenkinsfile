@@ -58,11 +58,11 @@ pipeline {
             steps {
                 script {
                     echo "Installing Python requirements from ${env.PYTHON_REQUIREMENTS}..."
-                    sh 'python3 -m venv venv'
-                    sh '. venv/bin/activate'
+                    sh 'conda create -n simlab_env python=3.9 -y'
+                    sh 'conda activate simlab_env'
                     sh "pip install --no-cache-dir -r ${env.PYTHON_REQUIREMENTS}"
                     sh "pip install --no-cache-dir -r ${env.PYTHON_SIMLAB_DIR}/requirements.txt"
-                    sh 'deactivate'
+                    sh 'conda deactivate'
                     
                 }
                 echo "Python requirements installed."
@@ -75,10 +75,10 @@ pipeline {
                     echo "Running main Python script..."
                     def dialogueExportFolder = "${env.MOUNT_POINT_DATA}/dialogue_export"
 
-                    // Activate the virtual environment and run the main script
-                    sh '. venv/bin/activate'
-                    sh "python -m simlab.main ${params.CONFIG_FILE_PATH_PARAM} -o ${dialogueExportFolder}"
-                    sh 'deactivate'
+                    // Activate the virtual environment and run the main script (other parameters can be passed as needed)
+                    sh 'conda activate simlab_env'
+                    sh "python3 -m simlab.main ${params.CONFIG_FILE_PATH_PARAM} -o ${dialogueExportFolder} --mongo_uri mongodb://10.128.0.3:27017"
+                    sh 'conda deactivate'
                     
                     echo "Main Python script executed successfully."
                 }
