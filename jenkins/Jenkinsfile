@@ -73,6 +73,8 @@ pipeline {
                 script {
                     echo "Installing Python requirements..."
                     sh '''
+                        export PATH="/opt/miniconda3/bin:$PATH"
+                        
                         eval "$(conda shell hook)"
 
                         conda create -n simlab_env python=3.9 -y
@@ -96,6 +98,7 @@ pipeline {
 
                     // Activate the virtual environment and run the main script (other parameters can be passed as needed)
                     sh '''
+                        export PATH="/opt/miniconda3/bin:$PATH"
                         eval "$(conda shell hook)"
 
                         conda activate simlab_env
