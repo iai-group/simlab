@@ -6,9 +6,11 @@ pipeline {
     environment {
         // --- GCP Bucket Configurations ---
         GCP_DATA_BUCKET_NAME = 'simlab_data'     
+        GCP_DIALOGUES_BUCKET_NAME = 'dialogue_export'
 
         // --- Local Mount Points for Buckets ---
-        MOUNT_POINT_DATA = 'simlab_data'    
+        MOUNT_POINT_DATA = 'data'
+        MOUNT_POINT_DIALOGUES = 'dialogue_export'
 
         // --- Python Project Specifics ---
         PYTHON_SIMLAB_DIR = 'simlab'
@@ -44,12 +46,17 @@ pipeline {
         stage('Mount GCP Buckets') {
             steps {
                 script {
-                    echo "Creating mount points: ${env.MOUNT_POINT_DATA}"
+                    echo "Creating mount points: ${env.MOUNT_POINT_DATA} and ${env.MOUNT_POINT_DIALOGUES}"
                     sh "mkdir -p ${env.MOUNT_POINT_DATA}"
+                    sh "mkdir -p ${env.MOUNT_POINT_DIALOGUES}"
 
                     echo "Mounting data bucket: ${env.GCP_DATA_BUCKET_NAME} to ${env.MOUNT_POINT_DATA}"
                     // Mount the data bucket (read/write access)
                     sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DATA_BUCKET_NAME} ${env.MOUNT_POINT_DATA}"
+                    echo "Mounting dialogues bucket: ${env.GCP_DIALOGUES_BUCKET_NAME} to ${env.MOUNT_POINT_DIALOGUES}"
+                    // Mount the dialogues bucket (read/write access)
+                    sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DIALOGUES_BUCKET_NAME} ${env.MOUNT_POINT_DIALOGUES}"
+                    echo "GCP Buckets mounted successfully."
                 }
             }
         }
@@ -79,14 +86,12 @@ pipeline {
             steps {
                 script {
                     echo "Running main Python script..."
-                    def dialogueExportFolder = "${env.MOUNT_POINT_DATA}/dialogue_export"
-
                     sh '''
                         # Make conda commands available.
                         . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
                         conda activate simlab_env
-                        python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${dialogueExportFolder}" + ''' --mongo_uri mongodb://10.128.0.3:27017
+                        python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${env.MOUNT_POINT_DIALOGUES}" + ''' --mongo_uri mongodb://10.128.0.3:27017
                     '''
                     
                     echo "Main Python script executed successfully."
