@@ -86,7 +86,7 @@ pipeline {
                         . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
                         conda activate simlab_env
-                        python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${dialogueExportFolder}" + ''' --mongo_uri mongodb://10.128.0.3:27017"
+                        python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${dialogueExportFolder}" + ''' --mongo_uri mongodb://10.128.0.3:27017
                     '''
                     
                     echo "Main Python script executed successfully."
