@@ -375,6 +375,14 @@ def main(
 
 if __name__ == "__main__":
     args = parse_args()
+
+    try:
+        # MongoDB connector
+        mongo_connector = MongoDBConnector(args.mongo_uri, args.mongo_db)
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        exit(1)
+
     try:
         configuration = load_configuration(args.config_file)
 
@@ -386,8 +394,6 @@ if __name__ == "__main__":
             args.registry_repository,
         )
 
-        # MongoDB connector
-        mongo_connector = MongoDBConnector(args.mongo_uri, args.mongo_db)
         output_dir = os.path.join(
             args.output_dir,
             configuration.task.name,
