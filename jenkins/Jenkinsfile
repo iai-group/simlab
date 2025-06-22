@@ -73,9 +73,8 @@ pipeline {
                 script {
                     echo "Installing Python requirements..."
                     sh '''
-                        export PATH="/opt/miniconda3/bin:$PATH"
-                        
-                        eval "$(conda shell hook)"
+                        # eval "$(conda shell hook)"
+                        . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
                         conda create -n simlab_env python=3.9 -y
                         conda activate simlab_env
@@ -98,8 +97,8 @@ pipeline {
 
                     // Activate the virtual environment and run the main script (other parameters can be passed as needed)
                     sh '''
-                        export PATH="/opt/miniconda3/bin:$PATH"
-                        eval "$(conda shell hook)"
+                        # eval "$(conda shell hook)"
+                        . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
                         conda activate simlab_env
                         python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${dialogueExportFolder}" + '''--mongo_uri mongodb://10.128.0.3:27017"
