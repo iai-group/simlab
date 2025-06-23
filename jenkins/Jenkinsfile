@@ -53,6 +53,8 @@ pipeline {
                     echo "Mounting data bucket: ${env.GCP_DATA_BUCKET_NAME} to ${env.MOUNT_POINT_DATA}"
                     // Mount the data bucket (read/write access)
                     sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DATA_BUCKET_NAME} ${env.MOUNT_POINT_DATA}"
+                    // Check contents of the data bucket
+                    sh "ls -la ${env.MOUNT_POINT_DATA}"
                     echo "Mounting dialogues bucket: ${env.GCP_DIALOGUES_BUCKET_NAME} to ${env.MOUNT_POINT_DIALOGUES}"
                     // Mount the dialogues bucket (read/write access)
                     sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DIALOGUES_BUCKET_NAME} ${env.MOUNT_POINT_DIALOGUES}"
@@ -107,8 +109,8 @@ pipeline {
                 echo "Attempting to unmount GCP Buckets..."
                 // Unmount the buckets to clean up resources.
                 // '|| true' ensures the step doesn't fail the pipeline if unmount fails (e.g., already unmounted).
-                sh "fusermount -u ${env.MOUNT_POINT_CONFIG} || true"
                 sh "fusermount -u ${env.MOUNT_POINT_DATA} || true"
+                sh "fusermount -u ${env.MOUNT_POINT_DIALOGUES} || true"
                 echo "GCP Buckets unmounted (or attempted)."
             }
         }
