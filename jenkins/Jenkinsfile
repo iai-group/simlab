@@ -46,19 +46,35 @@ pipeline {
         stage('Mount GCP Buckets') {
             steps {
                 script {
-                    echo "Creating mount points: ${env.MOUNT_POINT_DATA} and ${env.MOUNT_POINT_DIALOGUES}"
-                    sh "mkdir -p ${env.MOUNT_POINT_DATA}"
-                    sh "mkdir -p ${env.MOUNT_POINT_DIALOGUES}"
+                    // Helper function to check if a directory is already a mount point
+                    // Returns true if mounted, false otherwise
+                    def isMounted(mountPoint) {
+                        return sh(script: "mountpoint -q ${mountPoint}", returnStatus: true) == 0
+                    }
 
-                    echo "Mounting data bucket: ${env.GCP_DATA_BUCKET_NAME} to ${env.MOUNT_POINT_DATA}"
-                    // Mount the data bucket (read/write access)
-                    sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DATA_BUCKET_NAME} ${env.MOUNT_POINT_DATA}"
-                    // Check contents of the data bucket
-                    sh "ls -la ${env.MOUNT_POINT_DATA}"
-                    echo "Mounting dialogues bucket: ${env.GCP_DIALOGUES_BUCKET_NAME} to ${env.MOUNT_POINT_DIALOGUES}"
-                    // Mount the dialogues bucket (read/write access)
-                    sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DIALOGUES_BUCKET_NAME} ${env.MOUNT_POINT_DIALOGUES}"
-                    echo "GCP Buckets mounted successfully."
+                    echo "Processing mount point: ${env.MOUNT_POINT_DATA}"
+                    if (isMounted(env.MOUNT_POINT_DATA)) {
+                        echo "  -> ${env.MOUNT_POINT_DATA} is already mounted. Skipping re-mount."
+                    } else {
+                        sh "mkdir -p ${env.MOUNT_POINT_DATA}"
+                        sh "sudo chown -R \$(whoami):\$(id -gn) ${env.MOUNT_POINT_DATA}"
+
+                        echo "  Mounting data bucket: ${env.GCP_DATA_BUCKET_NAME} to ${env.MOUNT_POINT_DATA}"
+                        sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DATA_BUCKET_NAME} ${env.MOUNT_POINT_DATA}"
+                    }
+
+                    echo "Processing mount point: ${env.MOUNT_POINT_DIALOGUES}"
+                    if (isMounted(env.MOUNT_POINT_DIALOGUES)) {
+                        echo "  -> ${env.MOUNT_POINT_DIALOGUES} is already mounted. Skipping re-mount."
+                    } else {
+                        sh "mkdir -p ${env.MOUNT_POINT_DIALOGUES}"
+                        sh "sudo chown -R \$(whoami):\$(id -gn) ${env.MOUNT_POINT_DIALOGUES}"
+
+                        echo "  Mounting dialogues bucket: ${env.GCP_DIALOGUES_BUCKET_NAME} to ${env.MOUNT_POINT_DIALOGUES}"
+                        sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DIALOGUES_BUCKET_NAME} ${env.MOUNT_POINT_DIALOGUES}"
+                    }
+
+                    echo "GCP Buckets processed for mounting."
                 }
             }
         }
