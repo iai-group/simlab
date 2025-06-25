@@ -59,8 +59,6 @@ Before starting the web application, you need to execute the following steps:
 
    .. code-block:: bash
 
-    FLASK_HOST=
-    FLASK_PORT=
     JENKINS_URI=
     JENKINS_USERNAME=
     JENKINS_PASSWORD=

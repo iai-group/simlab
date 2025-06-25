@@ -98,6 +98,11 @@ You need to update the cloud configuration in Jenkins to use the custom image to
 
 4. Save the changes.
 
+Create Secrets
+--------------
+
+.. TODO: Add instructions for creating secrets for JSON key file for artifact registry authentication and full mongo db uri.
+
 Create Jenkins Pipeline Job
 ---------------------------
 

@@ -17,6 +17,12 @@ pipeline {
         PYTHON_CONNECTORS_DIR = 'connectors'
         PYTHON_DIALOGUEKIT_DIR = 'dialoguekit'
         PYTHON_GLOBAL_REQUIREMENTS = 'requirements.txt' // Global requirements file
+
+        // --- Docker Registry Configurations ---
+        DOCKER_REGISTRY_URI = 'us-central1-docker.pkg.dev'
+        DOCKER_REGISTRY_REPOSITORY = 'simlab-systems'
+        DOCKER_REGISTRY_USERNAME = '_json_key'
+
     }
 
     stages {
@@ -104,13 +110,20 @@ pipeline {
             steps {
                 script {
                     echo "Running main Python script..."
-                    sh '''
-                        # Make conda commands available.
-                        . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
+                    withCredentials([
+                        // Secret file for GCP Docker registry authentication
+                        file(credentialsId: 'simlab-registry-key', variable: 'GCP_KEY_FILE_PATH'),
+                        // Secret text for MongoDB URI
+                        string(credentialsId: 'mongodb-uri', variable: 'MONGODB_FULL_URI')
+                    ]) {
+                        sh '''
+                            # Make conda commands available.
+                            . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
-                        conda activate simlab_env
-                        python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${env.MOUNT_POINT_DIALOGUES}" + ''' --mongo_uri mongodb://10.128.0.3:27017
-                    '''
+                            conda activate simlab_env
+                            python3 -m simlab.main ''' + "${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${env.MOUNT_POINT_DIALOGUES}" + ''' --mongo_uri ''' + "${MONGODB_FULL_URI}" + ''' --registry_username ''' + "${env.DOCKER_REGISTRY_USERNAME}" + ''' --registry_uri ''' + "${env.DOCKER_REGISTRY_URI}" + ''' --registry_repository ''' + "${env.DOCKER_REGISTRY_REPOSITORY}" + ''' --registry_password_file ''' + "${GCP_KEY_FILE_PATH}" + '''
+                        '''
+                    }
                     
                     echo "Main Python script executed successfully."
                 }
