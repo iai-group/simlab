@@ -54,7 +54,7 @@ pipeline {
                 script {
                     // Helper function to check if a directory is already a mount point
                     // Returns true if mounted, false otherwise
-                    def isMounted(mountPoint) {
+                    def isMounted = { mountPoint -> 
                         return sh(script: "mountpoint -q ${mountPoint}", returnStatus: true) == 0
                     }
 
