@@ -60,7 +60,7 @@ class JenkinsJobManager:
             raise RuntimeError(f"Job '{job_name}' does not exist.")
 
         params = {
-            "CONFIG_FILE": run_configuration_path,
+            "CONFIG_FILE_PATH_PARAM": run_configuration_path,
         }
 
         try:
@@ -96,7 +96,7 @@ class JenkinsJobManager:
                 )
                 for param in build_params:
                     if (
-                        param["name"] == "CONFIG_FILE"
+                        param["name"] == "CONFIG_FILE_PATH_PARAM"
                         and param["value"] == run_configuration_path
                     ):
                         logs = self.server.get_build_console_output(

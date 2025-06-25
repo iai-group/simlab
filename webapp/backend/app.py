@@ -1,5 +1,7 @@
 """Flask API for SimLab backend."""
 
+import os
+
 from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
@@ -10,7 +12,7 @@ from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 
-DATA_FOLDER = "data/simlab"
+DATA_FOLDER = os.path.join(os.environ.get("BUCKET_MOUNT_FOLDER", "data"), "simlab")
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
