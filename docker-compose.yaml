@@ -14,8 +14,8 @@ services:
     volumes:
       - ./connectors:/connectors
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./registry/simlab-447518-3117f021d7b5.json:/registry/simlab-447518-3117f021d7b5.json
-      - ./data/gcp/simlab-447518-7db13a49e1c6.json:/gcp/service-account.json:ro
+      - ./secrets/registry/simlab-447518-3117f021d7b5.json:/registry/simlab-447518-3117f021d7b5.json
+      - ./secrets/gcs/simlab-447518-7db13a49e1c6.json:/gcp/service-account.json:ro
     depends_on:
       - mongo
       - redis
