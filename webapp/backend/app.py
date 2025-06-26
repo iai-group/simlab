@@ -12,7 +12,7 @@ from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 
-DATA_FOLDER = os.environ.get("BUCKET_MOUNT_FOLDER", "data")
+DATA_FOLDER = "/mnt/gcs_bucket"
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
