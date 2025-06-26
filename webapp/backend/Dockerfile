@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
 # Install system dependencies required for Docker
 RUN apt-get update && apt-get install -y \
@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get update && apt-get install -y docker-ce-cli \
     && apt-get clean
 
-RUN export GCSFUSE_REPO=gcsfuse-$(lsb_release -c -s) \
-    && echo "deb https://packages.cloud.google.com/apt $GCSFUSE_REPO main" | sudo tee /etc/apt/sources.list.d/gcsfuse.list
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt gcsfuse-buster main" | tee /etc/apt/sources.list.d/gcsfuse.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends gcsfuse \
     && apt-get clean
