@@ -9,11 +9,7 @@ from flask import Blueprint, Response, json, jsonify, request
 from flask_login import current_user, login_required
 
 from connectors.mongo.utils import delete_records, find_records, insert_record
-from webapp.backend.app import (
-    DATA_FOLDER,
-    jenkins_job_manager,
-    mongo_connector,
-)
+from webapp.backend.app import DATA_FOLDER, jenkins_job_manager, mongo_connector
 
 run = Blueprint("run", __name__)
 
@@ -94,15 +90,16 @@ def _save_configuration(username: str, configuration: Dict[str, Any]) -> str:
         Path to the saved configuration file.
     """
     configuration_path = os.path.join(
-        DATA_FOLDER,
+        "simlab",
         "configs",
         configuration["task"]["_id"],
         f"{username}_{configuration['name']}.json",
     )
-    if not os.path.exists(os.path.dirname(configuration_path)):
-        os.makedirs(os.path.dirname(configuration_path))
-    with open(configuration_path, "w") as f:
-        json.dump(configuration, f)
+    full_path = os.path.join(DATA_FOLDER, configuration_path)
+    if not os.path.exists(os.path.dirname(full_path)):
+        os.makedirs(os.path.dirname(full_path))
+    with open(full_path, "w") as f:
+        json.dump(full_path, f)
     return configuration_path
 
 
