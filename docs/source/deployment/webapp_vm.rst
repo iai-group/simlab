@@ -70,7 +70,9 @@ Before starting the web application, you need to execute the following steps:
     DOCKER_REPOSITORY=
     CELERY_BROKER_URL=
     CELERY_RESULT_BACKEND=
-
+    GCS_BUCKET_NAME=
+    GOOGLE_APPLICATION_CREDENTIALS=
+    
 7. Create a `.env` file with the following environment variables in the directory `webapp/frontend/`:
 
    .. code-block:: bash
