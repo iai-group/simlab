@@ -99,7 +99,7 @@ def _save_configuration(username: str, configuration: Dict[str, Any]) -> str:
     if not os.path.exists(os.path.dirname(full_path)):
         os.makedirs(os.path.dirname(full_path))
     with open(full_path, "w") as f:
-        json.dump(full_path, f)
+        json.dump(configuration, f)
     return configuration_path
 
 
