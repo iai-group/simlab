@@ -19,6 +19,11 @@ services:
     depends_on:
       - mongo
       - redis
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    privileged: true
     networks:
       - simlab_net
 

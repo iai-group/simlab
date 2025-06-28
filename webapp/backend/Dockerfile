@@ -19,6 +19,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 RUN apt-get update && apt-get install -y --no-install-recommends gcsfuse \
     && apt-get clean
 
+RUN sed -i 's/#user_allow_other/user_allow_other/' /etc/fuse.conf || echo "user_allow_other" >> /etc/fuse.conf
+
 RUN mkdir -p /mnt/gcs_bucket
 
 WORKDIR /webapp/backend
