@@ -37,6 +37,8 @@ def get_remote_image_tag(
         Remote repository and tag.
     """
     registry_host = urlparse(docker_metadata.registry_uri).netloc
+    if not registry_host:
+        registry_host = docker_metadata.registry_uri
 
     if ":" not in image:
         return f"{registry_host}/{docker_metadata.repository}/{image}", None
