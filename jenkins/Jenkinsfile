@@ -19,7 +19,7 @@ pipeline {
         PYTHON_GLOBAL_REQUIREMENTS = 'requirements.txt' // Global requirements file
 
         // --- Docker Registry Configurations ---
-        DOCKER_REGISTRY_URI = 'us-central1-docker.pkg.dev'
+        DOCKER_REGISTRY_URI = 'us-central1-docker.pkg.dev/simlab-447518'
         DOCKER_REGISTRY_REPOSITORY = 'simlab-systems'
         DOCKER_REGISTRY_USERNAME = '_json_key'
 
