@@ -120,6 +120,8 @@ pipeline {
                             # Make conda commands available.
                             . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
 
+                            export MONGO_URI="${MONGODB_FULL_URI}"
+
                             conda activate simlab_env
                             python3 -m simlab.main ''' + "${env.MOUNT_POINT_DATA}/${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${env.MOUNT_POINT_DIALOGUES}" + ''' --mongo_uri ''' + "${MONGODB_FULL_URI}" + ''' --registry_username ''' + "${env.DOCKER_REGISTRY_USERNAME}" + ''' --registry_uri ''' + "${env.DOCKER_REGISTRY_URI}" + ''' --registry_repository ''' + "${env.DOCKER_REGISTRY_REPOSITORY}" + ''' --registry_password_file ''' + "${GCP_KEY_FILE_PATH}" + '''
                         '''
