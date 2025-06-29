@@ -16,3 +16,4 @@ arguments:
       type: metric
       arguments:
         name: "Template Metric"
+  name: "Template Task"
