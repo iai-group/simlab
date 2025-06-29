@@ -118,11 +118,11 @@ const RunSubmissionForm = () => {
     if (agentEvaluated !== null) {
       if (agentEvaluated) {
         fetchAgents().then((response) => {
-          setParticipants(response.map((agent: any) => agent.tags[0]));
+          setParticipants(response.map((agent: any) => agent.image_name));
         });
       } else {
         fetchSimulators().then((response) => {
-          setParticipants(response.map((simulator: any) => simulator.tags[0]));
+          setParticipants(response.map((simulator: any) => simulator.image_name));
         });
       }
     }

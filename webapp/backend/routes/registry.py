@@ -143,7 +143,7 @@ def find_image() -> Response:
     image_name = request.get_json().get("image")
 
     image_metadata = find_records(
-        mongo_connector, "system_images", {"name": image_name}
+        mongo_connector, "system_images", {"image_name": image_name}
     )
 
     if not image_metadata:
@@ -252,9 +252,9 @@ def download_image() -> Response:
             yield from stream_save_image(image_pulled)
 
         response = Response(generate(), content_type="application/x-tar")
-        response.headers["Content-Disposition"] = (
-            f"attachment; filename={image_name.replace(':', '_')}.tar"
-        )
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename={image_name.replace(':', '_')}.tar"
 
         return response
 
