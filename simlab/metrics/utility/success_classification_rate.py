@@ -22,9 +22,7 @@ class SuccessClassificationRate(Metric):
         """
         super().__init__(name)
 
-        self.classifier = pipeline(
-            "zero-shot-classification", model=model_name
-        )
+        self.classifier = pipeline("zero-shot-classification", model=model_name)
 
         self.hypothesis_template = (
             "The AGENT's recommendations are {} with the USER's preferences."

@@ -55,7 +55,7 @@ const ResultsDashboard = () => {
 
         return {
           id: task._id,
-          name: task.name,
+          name: args.find((arg) => arg.name === "name")?.value,
           description: task.description,
           arguments: args,
           metrics: metrics,
