@@ -1,6 +1,7 @@
 """Utilities for running Docker commands."""
 
 import json
+import logging
 import os
 import subprocess
 from dataclasses import dataclass
@@ -282,12 +283,71 @@ def delete_image(image_id: str) -> None:
 
 def clean_local_docker_registry() -> None:
     """Cleans the local Docker registry."""
-    delete_containers_command = (
-        "docker rm $(docker ps -aq -f status=exited) 2>/dev/null"
+
+    exited_containers_command = "docker ps -aq -f status=exited 2>/dev/null"
+    dangling_images_command = (
+        'docker images -q --filter "dangling=true" 2>/dev/null'
     )
-    subprocess.run(delete_containers_command, shell=True, check=True)
-    delete_images_command = (
-        'docker rmi $(docker images -q --filter "dangling=true") -f '
-        "2>/dev/null"
-    )
-    subprocess.run(delete_images_command, shell=True, check=True)
+
+    try:
+        result = subprocess.run(
+            exited_containers_command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        exited_container_ids = result.stdout.strip()
+
+        if exited_container_ids:
+            delete_containers_command = (
+                f"docker rm {exited_container_ids} 2>/dev/null"
+            )
+            subprocess.run(delete_containers_command, shell=True, check=True)
+            logging.info(
+                "Successfully cleaned up exited Docker containers: "
+                f"{exited_container_ids}"
+            )
+        else:
+            logging.info(
+                "No exited Docker containers found to clean up. "
+                "Skipping removal."
+            )
+
+        result = subprocess.run(
+            dangling_images_command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        dangling_image_ids = result.stdout.strip()
+
+        if dangling_image_ids:
+            delete_images_command = (
+                f"docker rmi {dangling_image_ids} -f 2>/dev/null"
+            )
+            subprocess.run(delete_images_command, shell=True, check=True)
+            logging.info(
+                "Successfully cleaned up dangling Docker images: "
+                f"{dangling_image_ids}"
+            )
+        else:
+            logging.info(
+                "No dangling Docker images found to clean up. Skipping removal."
+            )
+
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error during Docker cleanup: {e}")
+        logging.error(f"Command failed: {e.cmd}")
+        logging.error(f"Return code: {e.returncode}")
+        if e.stdout:
+            logging.error(f"Stdout: {e.stdout}")
+        if e.stderr:
+            logging.error(f"Stderr: {e.stderr}")
+        raise
+    except Exception as e:
+        logging.error(
+            f"An unexpected error occurred during Docker cleanup: {e}"
+        )
+        raise
