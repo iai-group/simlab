@@ -1,8 +1,9 @@
-"""Zero-shot classifier to assess success of conversations"""
+"""Zero-shot classifier to assess success of conversations."""
+
+from transformers import pipeline
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.metrics.metric import Metric
-from transformers import pipeline
 
 DEFAULT_CLASSIFIER_MODEL = "facebook/bart-large-mnli"
 

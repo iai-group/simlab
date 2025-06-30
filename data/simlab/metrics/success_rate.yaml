@@ -1,0 +1,13 @@
+name: "Success Rate"
+description: "Zero-shot classifier to assess success of conversations."
+class_name: SuccessClassificationRate
+
+arguments:
+  name:
+    type: string
+    configurable: true
+    default: "success_rate"
+  model_name:
+    type: string
+    configurable: true
+    default: "facebook/bart-large-mnli"
