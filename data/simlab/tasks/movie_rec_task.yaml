@@ -1,0 +1,25 @@
+arguments:
+  db_name: simlab
+  domain:
+    arguments:
+      config_file: data/simlab/domains/movie_recommendation_domain.yaml
+    class_name: SimulationDomain
+    type: domain
+  metrics:
+    - arguments:
+        feature: understand
+        name: FED
+      class_name: FED
+      type: metric
+    - arguments:
+        feature: consistent
+        name: FED
+      class_name: FED
+      type: metric
+    - arguments:
+        name: Success Rate
+      class_name: SuccessClassificationRate
+      type: metric
+  name: movie_rec_example
+class_name: Task
+description: Movie recommendation task with FED metrics and success rate computed with a zero-shot classifier.
