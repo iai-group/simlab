@@ -61,7 +61,7 @@ const TaskList = () => {
 
         return {
           id: task._id,
-          name: task.name,
+          name: args.find((arg) => arg.name === "name")?.value,
           description: task.description,
           arguments: args,
           metrics: metrics,
@@ -81,7 +81,7 @@ const TaskList = () => {
   }, []);
 
   // Handle search
-  const filteredTasks = tasks.filter((task) => 
+  const filteredTasks = tasks.filter((task) =>
     task.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

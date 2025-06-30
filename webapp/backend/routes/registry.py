@@ -238,7 +238,7 @@ def download_image() -> Response:
     """Downloads an image from the Docker registry."""
     assert request.method == "POST", "Invalid request method"
 
-    image_name = request.get_json().get("image")
+    image_name = request.get_json().get("image_name")
 
     if not image_name:
         return jsonify({"error": "Image name not provided"}), 400
