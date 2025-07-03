@@ -5,8 +5,8 @@ import os
 import pytest
 
 from simlab.core.simulation_domain import SimulationDomain
-from simlab.metrics.utility.recommendation_success_ratio import (
-    RecommendationSuccessRatio,
+from simlab.metrics.utility.success_classification_rate import (
+    SuccessClassificationRate,
 )
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
@@ -64,7 +64,7 @@ def test_parse_task(
     assert isinstance(task, Task)
     assert task.name == "Template Task"
     assert len(task.metrics) == 1
-    assert isinstance(task.metrics[0], RecommendationSuccessRatio)
+    assert isinstance(task.metrics[0], SuccessClassificationRate)
     assert isinstance(task.domain, SimulationDomain)
 
 
