@@ -25,6 +25,20 @@ dummy_information_needs = [
     ).to_dict(),
     InformationNeed({"year": 2024}, ["title", "genre"]).to_dict(),
 ]
+dummy_training_information_needs = [
+    InformationNeed(
+        constraints={"genre": "action"},
+        requests=["title"],
+    ).to_dict(),
+    InformationNeed(
+        constraints={"genre": "drama"},
+        requests=["title", "rating"],
+    ).to_dict(),
+    InformationNeed(
+        constraints={"year": 1999},
+        requests=["title", "rating"],
+    ).to_dict()
+]
 
 insert_records(
     mongo_connector,
@@ -33,7 +47,11 @@ insert_records(
         {
             "_id": ObjectId("675380fa0f51790295720dac"),
             "information_needs": dummy_information_needs,
-        }
+        },
+        {
+            "_id": ObjectId("675380fa0f51790295720edc"),
+            "information_needs": dummy_training_information_needs,
+        },
     ],
 )
 
