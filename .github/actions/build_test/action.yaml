@@ -56,21 +56,21 @@ runs:
 
     - name: Upload Coverage Results txt
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-results-txt
         path: ./pytest-coverage.txt
 
     - name: Upload Coverage Results xml
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-results-xml
         path: ./coverage.xml
 
     - name: Upload Unit Test Results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: unit-test-py39
         path: ./pytest.xml
