@@ -276,8 +276,8 @@ def evaluate_participant_pair(
     for _ in range(_NUM_ITER_PER_INFORMATION_NEED):
         generate_synthetic_dialogues(
             simulation_platform,
-            user_simulator,
-            agent,
+            user_simulator,  # type: ignore[arg-type]
+            agent,  # type: ignore[arg-type]
             configuration.task.information_needs,
             output_dir,
         )

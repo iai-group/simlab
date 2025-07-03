@@ -3,7 +3,7 @@
 import json
 import os
 from copy import deepcopy
-from typing import List
+from typing import Any, Dict, List
 
 from simlab.core.run_configuration import (
     ParticipantConfiguration,
@@ -23,8 +23,8 @@ class BaseConfigurationReader:
             configuration_path: Path to the configuration file. Defaults to
               None.
         """
-        self.configuration_dict = dict()
-        self._component_generator = None
+        self.configuration_dict: Dict[str, Any] = dict()
+        self._component_generator: BaseComponentGenerator = None
 
         if configuration_path:
             self.load_configuration_dict(configuration_path)

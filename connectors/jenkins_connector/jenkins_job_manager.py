@@ -30,7 +30,7 @@ class JenkinsJobManager:
             password: Jenkins admin password. Defaults to JENKINS_PASSWORD.
         """
         super().__init__()
-        self.server = jenkins.Jenkins(
+        self.server = jenkins.Jenkins(  # type: ignore[attr-defined]
             jenkins_uri, username=username, password=password
         )
 

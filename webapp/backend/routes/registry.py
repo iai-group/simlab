@@ -61,10 +61,10 @@ def agent(agent_id: str) -> Response:
         jsonify(
             {
                 "id": agent[0].get("name", None),
-                "image_name": agent.get("image_name", None),
+                "image_name": agent[0].get("image_name", None),
                 "tag": agent[0].get("tag", None),
                 "description": agent[0].get("description", None),
-                "type": agent.get("type", None),
+                "type": agent[0].get("type", None),
                 "author": agent[0].get("author", None),
                 "version": agent[0].get("version", None),
             }
@@ -123,10 +123,10 @@ def simulator(simulator_id: str) -> Response:
         jsonify(
             {
                 "id": simulator[0].get("name", None),
-                "image_name": simulator.get("image_name", None),
+                "image_name": simulator[0].get("image_name", None),
                 "tag": simulator[0].get("tag", None),
                 "description": simulator[0].get("description", None),
-                "type": simulator.get("type", None),
+                "type": simulator[0].get("type", None),
                 "author": simulator[0].get("author", None),
                 "version": simulator[0].get("version", None),
             }
@@ -142,14 +142,17 @@ def find_image() -> Response:
 
     image_name = request.get_json().get("image")
 
-    image_metadata = find_records(
+    images_metadata = find_records(
         mongo_connector, "system_images", {"image_name": image_name}
     )
 
-    if not image_metadata:
+    if not images_metadata:
         return jsonify({"error": "Image not found"}), 400
 
-    image_metadata = image_metadata[0]
+    if len(images_metadata) > 1:
+        return jsonify({"error": "Multiple images found"}), 500
+
+    image_metadata = images_metadata[0]
     image = f"{image_metadata.get('repository')}:{image_metadata.get('tag')}"
 
     participant_id = image_metadata.get("name")
