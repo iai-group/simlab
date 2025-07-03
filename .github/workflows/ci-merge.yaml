@@ -47,12 +47,7 @@ jobs:
         with:
           code_dir: "webapp/backend"
           test_dir: "tests/backend"
-
-      - name: Update coverage badge in README
-        uses: ./.github/actions/coverage_badge
-        with:
-          coverage_file: "artifacts/coverage-results-txt/pytest-coverage.txt"
-          badge_title: "backend"
+          artifact_prefix: "backend"
 
   build-and-test-simlab:
     name: "Build and Test SimLab"
@@ -69,9 +64,47 @@ jobs:
         with:
           code_dir: "simlab"
           test_dir: "tests/simlab"
+          artifact_prefix: "simlab"
 
-      - name: Update coverage badge in README
+  update-coverage-badges:
+    name: "Update Coverage Badges in README"
+    runs-on: ubuntu-latest
+    needs: [build-and-test-backend, build-and-test-simlab]
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Download Backend Coverage Results
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-results-txt
+          path: artifacts/backend_coverage
+      
+      - name: Download SimLab Coverage Results
+        uses: actions/download-artifact@v4
+        with:
+          name: simlab-coverage-results-txt
+          path: artifacts/simlab_coverage
+
+      - name: Update Coverage Backend Badge
         uses: ./.github/actions/coverage_badge
         with:
-          coverage_file: "artifacts/coverage-results-txt/pytest-coverage.txt"
+          coverage_file: "artifacts/backend_coverage/pytest-coverage.txt"
+          badge_title: "backend"
+
+      - name: Update Coverage SimLab Badge
+        uses: ./.github/actions/coverage_badge
+        with:
+          coverage_file: "artifacts/simlab_coverage/pytest-coverage.txt"
           badge_title: "simlab"
+
+      - name: Commit Updated README.md
+        shell: bash
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update coverage badge in README"
+          git push 
