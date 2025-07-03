@@ -31,11 +31,12 @@ def test_parse_args(monkeypatch) -> None:
     args = [
         "test_script",
         "run_configuration.json",
-        "mongodb://localhost:27017",
-        "simlab_test",
-        "http://localhost:5000",
-        "user",
-        "pwd",
+        "--mongo_uri=mongodb://localhost:27017",
+        "--mongo_db=simlab_test",
+        "--registry_uri=http://localhost:5000",
+        "--registry_username=user",
+        "--registry_password_file=tests/simlab/data/registry_password.txt",
+        "--registry_repository=simlab-test-registry",
         "-o=tests/simlab/data/dialogue_export",
     ]
 
@@ -45,12 +46,19 @@ def test_parse_args(monkeypatch) -> None:
     assert parsed_args.config_file == "run_configuration.json"
     assert parsed_args.mongo_uri == "mongodb://localhost:27017"
     assert parsed_args.mongo_db == "simlab_test"
+    assert parsed_args.registry_uri == "http://localhost:5000"
+    assert parsed_args.registry_username == "user"
+    assert (
+        parsed_args.registry_password_file
+        == "tests/simlab/data/registry_password.txt"
+    )
+    assert parsed_args.registry_repository == "simlab-test-registry"
     assert parsed_args.output_dir == "tests/simlab/data/dialogue_export"
 
 
-def test_parse_args_missing_args(monkeypatch) -> None:
-    """Tests the argument parser with missing arguments."""
-    args = ["test_script", "run_configuration.json"]
+def test_parse_args_missing_configuration(monkeypatch) -> None:
+    """Tests the argument parser with missing configuration."""
+    args = ["test_script"]
 
     monkeypatch.setattr("sys.argv", args)
 
@@ -129,7 +137,7 @@ def test_main(task: Task) -> None:
         )
     ]
     with (
-        patch("simlab.main.DockerRegistryConnector") as mocked_docker_connector,
+        patch("simlab.main.DockerRegistryMetadata") as mocked_docker_metadata,
         patch("simlab.main.MongoDBConnector") as mocked_mongo_connector,
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,
@@ -142,7 +150,7 @@ def test_main(task: Task) -> None:
         main(
             mocked_configuration,
             mocked_mongo_connector,
-            mocked_docker_connector,
+            mocked_docker_metadata,
             "tests/simlab/data/dialogue_export/",
         )
 
