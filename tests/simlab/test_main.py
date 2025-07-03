@@ -7,10 +7,7 @@ import pytest
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.core.information_need import InformationNeed
-from simlab.core.run_configuration import (
-    ParticipantConfiguration,
-    RunConfiguration,
-)
+from simlab.core.run_configuration import ParticipantConfiguration, RunConfiguration
 from simlab.main import (
     generate_synthetic_dialogues,
     load_configuration,
@@ -147,7 +144,7 @@ def test_main(task: Task) -> None:
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
         mocked_start_participant.return_value = (
             MagicMock(spec=str),
-            MagicMock([7000], spec=List[int]),
+            MagicMock([7000]),
         )
 
         main(
