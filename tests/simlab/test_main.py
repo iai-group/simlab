@@ -1,13 +1,15 @@
 """Tests for the main module."""
 
-from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.core.information_need import InformationNeed
-from simlab.core.run_configuration import ParticipantConfiguration, RunConfiguration
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.main import (
     generate_synthetic_dialogues,
     load_configuration,
