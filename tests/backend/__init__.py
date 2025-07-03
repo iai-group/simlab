@@ -29,6 +29,12 @@ dummy_runs = [
                 "name": "crs",
                 "arguments": {
                     "n_simulations": 100,
+                    "metrics": [
+                        {
+                            "_id": metrics_ids[0],
+                            "name": "success_rate",
+                        }
+                    ],
                 },
             },
             "agents": [
@@ -39,12 +45,6 @@ dummy_runs = [
             "user_simulators": [
                 {
                     "name": "user_simulator",
-                }
-            ],
-            "metrics": [
-                {
-                    "_id": metrics_ids[0],
-                    "name": "success_rate",
                 }
             ],
         },
@@ -58,6 +58,12 @@ dummy_runs = [
                 "name": "css",
                 "arguments": {
                     "n_simulations": 100,
+                    "metrics": [
+                        {
+                            "_id": metrics_ids[0],
+                            "name": "success_rate",
+                        }
+                    ],
                 },
             },
             "agents": [
@@ -70,13 +76,45 @@ dummy_runs = [
                     "name": "user_simulator",
                 }
             ],
-            "metrics": [
-                {
-                    "_id": metrics_ids[0],
-                    "name": "success_rate",
-                }
-            ],
         },
     },
 ]
 insert_records(mongo_connector, "runs", dummy_runs)
+
+dummy_agents = [
+    {
+        "name": "agent1",
+        "image_name": "dummy/agent1:1.0",
+        "tag": "1.0",
+        "description": "Test agent 1",
+        "type": "agent",
+        "author": "Test Author",
+        "port": 5005,
+        "version": "1.0",
+    },
+    {
+        "name": "agent2",
+        "image_name": "dummy/agent2:1.0",
+        "tag": "1.0",
+        "description": "Test agent 2",
+        "type": "agent",
+        "author": "Test Author",
+        "port": 5005,
+        "version": "1.0",
+    },
+]
+insert_records(mongo_connector, "system_images", dummy_agents)
+
+dummy_simulators = [
+    {
+        "name": "simulator1",
+        "image_name": "dummy/simulator1:1.0",
+        "tag": "1.0",
+        "description": "Test simulator 1",
+        "type": "simulator",
+        "author": "Test Author",
+        "port": 5006,
+        "version": "1.0",
+    },
+]
+insert_records(mongo_connector, "system_images", dummy_simulators)

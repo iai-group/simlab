@@ -40,33 +40,40 @@ def agents() -> Response:
     return jsonify(agent_list), 200
 
 
-@registry.route("/agents/<agent_id>", methods=["GET"])
-def agent(agent_id: str) -> Response:
+@registry.route("/agent", methods=["POST"])
+def agent() -> Response:
     """Returns the details of an agent."""
-    assert request.method == "GET", "Invalid request method"
+    assert request.method == "POST", "Invalid request method"
 
-    agent = find_records(
+    image_name = request.get_json().get("image_name")
+
+    if not image_name:
+        return jsonify({"error": "Image name not provided"}), 400
+
+    agents = find_records(
         mongo_connector,
         "system_images",
-        {"$or": [{"_id": agent_id}, {"tag": agent_id}], "type": "agent"},
+        {"image_name": image_name, "type": "agent"},
     )
 
-    if len(agent) > 1:
+    if len(agents) > 1:
         return jsonify({"error": "Multiple agents found"}), 500
 
-    if not agent:
+    if not agents:
         return jsonify({"error": "Agent not found"}), 400
+
+    agent = agents[0]
 
     return (
         jsonify(
             {
-                "id": agent[0].get("name", None),
-                "image_name": agent[0].get("image_name", None),
-                "tag": agent[0].get("tag", None),
-                "description": agent[0].get("description", None),
-                "type": agent[0].get("type", None),
-                "author": agent[0].get("author", None),
-                "version": agent[0].get("version", None),
+                "id": agent.get("name", None),
+                "image_name": agent.get("image_name", None),
+                "tag": agent.get("tag", None),
+                "description": agent.get("description", None),
+                "type": agent.get("type", None),
+                "author": agent.get("author", None),
+                "version": agent.get("version", None),
             }
         ),
         200,
@@ -99,36 +106,40 @@ def simulators() -> Response:
     return jsonify(simulator_list), 200
 
 
-@registry.route("/simulators/<simulator_id>", methods=["GET"])
-def simulator(simulator_id: str) -> Response:
+@registry.route("/simulator", methods=["POST"])
+def simulator() -> Response:
     """Returns the details of a simulator."""
-    assert request.method == "GET", "Invalid request method"
+    assert request.method == "POST", "Invalid request method"
 
-    simulator = find_records(
+    image_name = request.get_json().get("image_name")
+
+    if not image_name:
+        return jsonify({"error": "Image name not provided"}), 400
+
+    simulators = find_records(
         mongo_connector,
         "system_images",
-        {
-            "$or": [{"_id": simulator_id}, {"tag": simulator_id}],
-            "type": "simulator",
-        },
+        {"image_name": image_name, "type": "simulator"},
     )
 
-    if len(simulator) > 1:
+    if len(simulators) > 1:
         return jsonify({"error": "Multiple simulators found"}), 500
 
-    if not simulator:
+    if not simulators:
         return jsonify({"error": "Simulator not found"}), 400
+
+    simulator = simulators[0]
 
     return (
         jsonify(
             {
-                "id": simulator[0].get("name", None),
-                "image_name": simulator[0].get("image_name", None),
-                "tag": simulator[0].get("tag", None),
-                "description": simulator[0].get("description", None),
-                "type": simulator[0].get("type", None),
-                "author": simulator[0].get("author", None),
-                "version": simulator[0].get("version", None),
+                "id": simulator.get("name", None),
+                "image_name": simulator.get("image_name", None),
+                "tag": simulator.get("tag", None),
+                "description": simulator.get("description", None),
+                "type": simulator.get("type", None),
+                "author": simulator.get("author", None),
+                "version": simulator.get("version", None),
             }
         ),
         200,

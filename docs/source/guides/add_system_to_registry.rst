@@ -21,6 +21,9 @@ The docker image should include labels to specify the type of system, the system
     LABEL name=[system-name]        # Specify the name of the system
     LABEL description=[description] # Specify a brief description of the system
     LABEL port=[port-number]        # Specify the port number on which the API is running
+    LABEL tag=[tag]                 # Specify the tag of the image
+    LABEL author=[author-name]      # Specify the author of the system
+    LABEL version=[version]         # Specify the version of the system
 
 3. Create an archive of your Docker image
 
@@ -28,10 +31,10 @@ You can use the following command to create an archive of your Docker image:
 
 .. code-block:: bash
 
-    docker save [username]/[image-name]:[tag] | gzip > [image-name].tar
+    docker save [username]/[name]:[tag] | gzip > [archive-name].tar
 
 4. Submit the archive to SimLab
 
-To add your image to SimLab's registry, login to the SimLab web interface and navigate to the `"Systems" page <https://35.225.189.238/system>`_. Click on the button "ADD NEW SYSTEM", fill in the form with your archive file and the image name before submitting the form. Be aware that the upload process may take a few minutes depending on the size of the image.
+To add your image to SimLab's registry, login to the SimLab web interface and navigate to the `"Systems" page <https://35.225.189.238/system>`_. Click on the button "ADD NEW SYSTEM", fill in the form with your archive file and the image name formatted as: `[username]/[name]:[tag]`. Then submit the form, be aware that the upload process may take a few minutes depending on the size of the image.
 
 Once the upload is complete, your system will be added to the registry and will be available for use in SimLab. If you cannot find your system in the list of available systems, try refreshing the page after a few minutes.
