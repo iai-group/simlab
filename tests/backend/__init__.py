@@ -1,4 +1,5 @@
 """Module level init for backend tests."""
+from bson import ObjectId
 
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.utils import insert_records
@@ -14,69 +15,48 @@ dummy_metrics = [
 metrics_ids = insert_records(mongo_connector, "metrics", dummy_metrics)
 
 dummy_tasks = [
-    {"name": "crs", "description": "CRS Evaluation"},
-    {"name": "css", "description": "CSS Evaluation"},
+    {
+        "_id": ObjectId("675728398dd85617189bd025"),
+        "name": "crs",
+        "description": "CRS Evaluation",
+    },
+    {
+        "_id": ObjectId("675728398dd85634189bd025"),
+        "name": "css",
+        "description": "CSS Evaluation",
+    },
 ]
-task_ids = insert_records(mongo_connector, "tasks", dummy_tasks)
+insert_records(mongo_connector, "tasks", dummy_tasks)
+
 
 dummy_runs = [
     {
         "username": "test_user",
         "run_name": "test_run",
-        "run_configuration": {
-            "task": {
-                "_id": task_ids[0],
-                "name": "crs",
-                "arguments": {
-                    "n_simulations": 100,
-                    "metrics": [
-                        {
-                            "_id": metrics_ids[0],
-                            "name": "success_rate",
-                        }
-                    ],
-                },
-            },
-            "agents": [
-                {
-                    "name": "agent",
-                }
-            ],
-            "user_simulators": [
-                {
-                    "name": "user_simulator",
-                }
-            ],
+        "public": True,
+        "task_id": "675728398dd85617189bd025",
+        "system": {
+            "type": "agent",
+            "image": "dummy/agent:1.0",
+            "arguments": [{"id": "TestAgent"}],
+            "parameters": {},
+            "class_name": "WrapperAgent",
         },
+        "run_configuration_file": "dummy/config/path.json",
     },
     {
         "username": "test_user",
         "run_name": "test_run2",
-        "run_configuration": {
-            "task": {
-                "_id": task_ids[1],
-                "name": "css",
-                "arguments": {
-                    "n_simulations": 100,
-                    "metrics": [
-                        {
-                            "_id": metrics_ids[0],
-                            "name": "success_rate",
-                        }
-                    ],
-                },
-            },
-            "agents": [
-                {
-                    "name": "agent",
-                }
-            ],
-            "user_simulators": [
-                {
-                    "name": "user_simulator",
-                }
-            ],
+        "public": True,
+        "task_id": "675728398dd85634189bd025",
+        "system": {
+            "type": "simulator",
+            "image": "dummy/simulator:1.0",
+            "arguments": [{"id": "TestSimulator"}],
+            "parameters": {},
+            "class_name": "WrapperUserSimulator",
         },
+        "run_configuration_file": "dummy/config/path2.json",
     },
 ]
 insert_records(mongo_connector, "runs", dummy_runs)

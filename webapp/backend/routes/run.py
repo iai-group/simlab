@@ -240,6 +240,7 @@ def run_baseline() -> Response:
 @login_required
 def run_info(run_id: str) -> Response:
     """Returns information about a run."""
+    # TODO: Get information about a run from configuration file
     assert request.method == "GET", "Invalid request method"
 
     username = current_user.username
