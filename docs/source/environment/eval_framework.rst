@@ -5,7 +5,7 @@ The framework includes the definition of the supported tasks and metrics, and th
 
 The workflow of the evaluation process is illustrated in the following diagram:
 
-.. image:: ../_static/SimBased_Eval_UML.pdf
+.. image:: ../_static/SimBased_Eval_UML.png
     :align: center
     :width: 400px
     :alt: UML activity diagram of the simulation-based evaluation process. The experiment data, highlighted in green boxes, is saved in the storage. It is assumed that the systems are available in the systems registry.

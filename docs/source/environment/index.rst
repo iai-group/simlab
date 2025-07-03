@@ -11,7 +11,7 @@ The main components of the environment are:
 - Prometheus and Grafana: monitor the platform's performances
 - MongoDB: storage for the platform data
 
-.. image:: ../_static/SimLab_Platform.pdf
+.. image:: ../_static/SimLab_Platform.png
     :align: center
     :width: 700px
     :alt: Overview of SimLab platform
