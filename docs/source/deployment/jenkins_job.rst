@@ -101,7 +101,21 @@ You need to update the cloud configuration in Jenkins to use the custom image to
 Create Secrets
 --------------
 
-.. TODO: Add instructions for creating secrets for JSON key file for artifact registry authentication and full mongo db uri.
+The pipeline job requires to authenticate with MongoDB and the artifact registry. Secrets are used to securely store such sensitive information.
+
+To add secrets navigate to **Manage Jenkins** > **Manage Credentials** and follow the steps below:
+
+1. Add a secret for the MongoDB URI:
+
+    - Choose **Secret text** as the kind.
+    - Enter the full MongoDB URI as the secret text.
+    - Give it the ID: `mongodb-uri` (in case you use a different ID, you need to update the pipeline configuration accordingly).
+
+2. Create a secret for the JSON key file for the artifact registry authentication:
+
+    - Choose **Secret file** as the kind.
+    - Upload the JSON key file you downloaded from GCP.
+    - Give it the ID: `simlab-registry-key` (in case you use a different ID, you need to update the pipeline configuration accordingly).
 
 Create Jenkins Pipeline Job
 ---------------------------
