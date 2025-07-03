@@ -147,7 +147,7 @@ def test_main(task: Task) -> None:
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
         mocked_start_participant.return_value = (
             MagicMock(spec=str),
-            MagicMock(spec=List[int]),
+            MagicMock([7000], spec=List[int]),
         )
 
         main(
