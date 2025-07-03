@@ -1,9 +1,9 @@
 """Tests for the main module."""
 
+from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
-from docker.models.containers import Container
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.core.information_need import InformationNeed
@@ -145,7 +145,10 @@ def test_main(task: Task) -> None:
     ):
 
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
-        mocked_start_participant.return_value = MagicMock(spec=Container)
+        mocked_start_participant.return_value = (
+            MagicMock(spec=str),
+            MagicMock(spec=List[int]),
+        )
 
         main(
             mocked_configuration,
