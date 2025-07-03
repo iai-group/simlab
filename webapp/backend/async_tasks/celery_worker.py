@@ -61,10 +61,10 @@ def upload_image_task(image_name: str, file_path: str) -> bool:
         }
         record.update(image_labels)
         upsert_records(mongo_connector, "system_images", [record])
-
     except Exception as e:
         logging.error(f"Failed to push image: {e}")
         return False
     finally:
         # TODO: Remove new image from local registry to free space
         os.remove(file_path)
+    return True

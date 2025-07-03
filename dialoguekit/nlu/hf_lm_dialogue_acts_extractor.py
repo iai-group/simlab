@@ -159,9 +159,9 @@ class LMDialogueActsExtractor(DialogueActsExtractor):
                 ),
             }
         ]
-        output = self.generator(
-            model_input, do_sample=False, return_text=True
-        )[0].get("generated_text", [])
+        output = self.generator(model_input, do_sample=False, return_text=True)[
+            0
+        ].get("generated_text", [])
         assert "user" != output[-1].get(
             "role", ""
         ), "Model failed to generate dialogue acts."

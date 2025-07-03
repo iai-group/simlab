@@ -204,7 +204,7 @@ def docker_stream_push_image(
     process.wait()
 
     if process.returncode != 0:
-        error_message = process.stderr.read().decode()
+        error_message = process.stderr.read()
         raise subprocess.CalledProcessError(
             process.returncode, push_command, error_message
         )
@@ -283,7 +283,6 @@ def delete_image(image_id: str) -> None:
 
 def clean_local_docker_registry() -> None:
     """Cleans the local Docker registry."""
-
     exited_containers_command = "docker ps -aq -f status=exited 2>/dev/null"
     dangling_images_command = (
         'docker images -q --filter "dangling=true" 2>/dev/null'

@@ -128,8 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-dialoguekit/
 nginx/ssl/
 data/mongo/*
 data/datasets/*

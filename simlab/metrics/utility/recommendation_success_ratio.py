@@ -62,27 +62,24 @@ class RecommendationSuccessRatio(Metric):
         """
         for i, utterance in enumerate(dialogue.utterances):
             if not isinstance(utterance, AnnotatedUtterance):
-                dialogue.utterances[i] = AnnotatedUtterance.from_utterance(
-                    utterance
-                )
+                utterance = AnnotatedUtterance.from_utterance(utterance)
 
             if len(utterance.dialogue_acts) > 0:
                 continue
 
             if utterance.participant == DialogueParticipant.USER:
-                dialogue.utterances[
-                    i
-                ].dialogue_acts = self.user_nlu.extract_dialogue_acts(utterance)
+                utterance.dialogue_acts = self.user_nlu.extract_dialogue_acts(
+                    utterance
+                )
             elif utterance.participant == DialogueParticipant.AGENT:
-                dialogue.utterances[
-                    i
-                ].dialogue_acts = self.agent_nlu.extract_dialogue_acts(
+                utterance.dialogue_acts = self.agent_nlu.extract_dialogue_acts(
                     utterance
                 )
             else:
                 raise ValueError(
                     f"Unknown participant: {utterance.participant}"
                 )
+            dialogue.utterances[i] = utterance
         return dialogue
 
     def get_recommendation_rounds(
@@ -97,8 +94,11 @@ class RecommendationSuccessRatio(Metric):
             Utterances per recommendation round.
         """
         rounds = []
-        current_round = []
+        current_round: List[AnnotatedUtterance] = []
         for utterance in dialogue.utterances:
+            if not isinstance(utterance, AnnotatedUtterance):
+                utterance = AnnotatedUtterance.from_utterance(utterance)
+
             if any(
                 intent in utterance.get_intents()
                 for intent in self.recommendation_intents

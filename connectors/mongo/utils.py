@@ -11,7 +11,7 @@ from connectors.mongo.mongo_connector import MongoDBConnector
 def find_records(
     connector: MongoDBConnector,
     collection: str,
-    query: Dict[str, Union[str, ObjectId, Dict]],
+    query: Dict[str, Union[str, bool, int, ObjectId, Dict]],
 ) -> List[Dict[str, Any]]:
     """Finds records in a collection that match a query.
 

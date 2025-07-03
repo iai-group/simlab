@@ -1,14 +1,12 @@
 """Flask API for SimLab backend."""
 
-import os
-
 from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
 from connectors.docker.commands import DockerRegistryMetadata
-from connectors.jenkins.jenkins_job_manager import JenkinsJobManager
+from connectors.jenkins_connector.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 

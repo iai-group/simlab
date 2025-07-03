@@ -23,7 +23,7 @@ class BaseConfigurationReader:
             configuration_path: Path to the configuration file. Defaults to
               None.
         """
-        self.configuration_dict = None
+        self.configuration_dict = dict()
         self._component_generator = None
 
         if configuration_path:
