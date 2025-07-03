@@ -2,16 +2,19 @@
 
 import requests
 
-from dialoguekit.core import AnnotatedUtterance, Utterance
+from dialoguekit.core import Utterance
 from dialoguekit.participant import User
 from dialoguekit.participant.user import UserType
 from simlab.core.information_need import InformationNeed
-from simlab.utils.utils_response_parsing import parse_API_response
+from simlab.utils.participant_api.utils_api_calls import get_utterance_response
 
 
 class WrapperUserSimulator(User):
     def __init__(
-        self, id: str, uri: str, user_type: UserType = UserType.SIMULATOR
+        self,
+        id: str,
+        uri: str = "http://localhost:7001",
+        user_type: UserType = UserType.SIMULATOR,
     ) -> None:
         """Initializes the user simulator.
 
@@ -22,6 +25,7 @@ class WrapperUserSimulator(User):
         """
         super().__init__(id, user_type)
         self._uri = uri
+        self.information_need: InformationNeed = None
 
     def set_information_need(self, information_need: InformationNeed) -> None:
         """Sets the information need for the user simulator.
@@ -40,16 +44,17 @@ class WrapperUserSimulator(User):
             },
         )
         status_code = r.status_code
-        if status_code != 200:
+        if status_code != 201:
             raise RuntimeError(
                 f"Failed to set information need. Status code: {status_code}\n"
                 f"Response: {r.text}"
             )
 
-        # Add information need as dialogue metadata.
-        self._dialogue_connector.dialogue_history.metadata.update(
-            {"information_need": information_need.to_dict()}
-        )
+        self.information_need = information_need
+        if self._dialogue_connector:
+            self._dialogue_connector.dialogue_history.metadata.update(
+                {"information_need": information_need.to_dict()}
+            )
 
     def update_information_need(self) -> None:
         """Updates information need metadata in the dialogue.
@@ -57,9 +62,9 @@ class WrapperUserSimulator(User):
         Raises:
             RuntimeError: If the request fails.
         """
-        r = requests.get(
+        r = requests.post(
             f"{self._uri}/get_information_need",
-            params={"user_id": self.id},
+            json={"user_id": self.id},
         )
         status_code = r.status_code
         if status_code != 200:
@@ -69,9 +74,13 @@ class WrapperUserSimulator(User):
             )
         data = r.json()
         if data.get("information_need"):
-            self._dialogue_connector.dialogue_history.metadata.update(
-                {"information_need": data.get("information_need")}
+            self.information_need = InformationNeed.from_dict(
+                data.get("information_need")
             )
+            if self._dialogue_connector:
+                self._dialogue_connector.dialogue_history.metadata.update(
+                    {"information_need": data.get("information_need")}
+                )
 
     def receive_utterance(self, utterance: Utterance) -> None:
         """Gets called every time there is a new agent utterance.
@@ -79,33 +88,15 @@ class WrapperUserSimulator(User):
         Args:
             utterance: Agent utterance.
         """
-        # TODO: Extract common code with WrapperAgent.receive_utterance to a
-        # utility function.
         context = [
             utterance.text
             for utterance in self._dialogue_connector.dialogue_history.utterances  # noqa
         ]
-        r = requests.post(
-            f"{self._uri}/receive_utterance",
-            json={
-                "context": context,
-                "message": utterance.text,
-                "agent_id": self._dialogue_connector._agent.id,
-            },
-        )
-        data = r.json()
-        (
-            utterance_text,
-            utterance_dialogue_acts,
-            utterance_annotations,
-            metadata,
-        ) = parse_API_response(data)
-
-        response = AnnotatedUtterance(
-            text=utterance_text,
-            participant=self._type,
-            dialogue_acts=utterance_dialogue_acts,
-            annotations=utterance_annotations,
-            metadata=metadata,
-        )
+        request_data = {
+            "context": context,
+            "message": utterance.text,
+            "agent_id": self._dialogue_connector._agent.id,
+            "user_id": self.id,
+        }
+        response = get_utterance_response(self._uri, request_data, self._type)
         self._dialogue_connector.register_user_utterance(response)

@@ -1,0 +1,33 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy to GCP VM
+      uses: appleboy/ssh-action@v0.1.11
+      with:
+        host: ${{ secrets.GCP_VM_HOST }}
+        username: ${{ secrets.GCP_VM_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # Navigate to the application directory
+          cd /home/sharath/simlab
+
+          # Pull the latest code
+          git reset --hard
+          git pull origin master
+
+          # Build or restart your application (e.g., Docker, Node.js, etc.)
+          docker compose down
+          docker compose up -d --build

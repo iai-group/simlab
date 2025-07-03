@@ -5,7 +5,9 @@ import os
 import pytest
 
 from simlab.core.simulation_domain import SimulationDomain
-from simlab.metrics.task_performance.success_rate import SuccessRate
+from simlab.metrics.utility.success_classification_rate import (
+    SuccessClassificationRate,
+)
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 from simlab.tasks.task import Task
@@ -62,7 +64,7 @@ def test_parse_task(
     assert isinstance(task, Task)
     assert task.name == "Template Task"
     assert len(task.metrics) == 1
-    assert isinstance(task.metrics[0], SuccessRate)
+    assert isinstance(task.metrics[0], SuccessClassificationRate)
     assert isinstance(task.domain, SimulationDomain)
 
 
@@ -70,20 +72,27 @@ def test_parse_agents(
     base_configuration_reader: BaseConfigurationReader,
 ) -> None:
     """Tests parse agents."""
-    agents = base_configuration_reader._parse_agents()
+    agents = base_configuration_reader._parse_agent_configurations()
 
     assert len(agents) == 1
-    assert agents[0].id == "template_wrapper_agent"
-    assert isinstance(agents[0], WrapperAgent)
+    assert agents[0].participant.id == "template_wrapper_agent"
+    assert agents[0].custom_parameters == {}
+    assert isinstance(agents[0].participant, WrapperAgent)
 
 
 def test_parse_user_simulators(
     base_configuration_reader: BaseConfigurationReader,
 ) -> None:
     """Tests parse user simulators."""
-    user_simulators = base_configuration_reader._parse_user_simulators()
+    user_simulators = (
+        base_configuration_reader._parse_user_simulator_configurations()
+    )
 
     assert len(user_simulators) == 1
-    assert user_simulators[0].id == "template_wrapper_user_simulator"
-    assert user_simulators[0]._uri == "http://localhost:6001"
-    assert isinstance(user_simulators[0], WrapperUserSimulator)
+    assert user_simulators[0].image == "template_user_simulator"
+    assert user_simulators[0].custom_parameters == {"language": "en"}
+    assert (
+        user_simulators[0].participant.id == "template_wrapper_user_simulator"
+    )
+    assert user_simulators[0].participant._uri == "http://localhost:6001"
+    assert isinstance(user_simulators[0].participant, WrapperUserSimulator)

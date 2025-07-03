@@ -20,6 +20,7 @@ class Task:
         metrics: List[Metric],
         db_name: str,
         batch_id: str,
+        training_batch_id: str,
     ) -> None:
         """Initializes a task.
 
@@ -32,12 +33,14 @@ class Task:
             metrics: Metrics to evaluate the dialogue.
             db_name: Name of the MongoDB database.
             batch_id: Information need batch identifier.
+            training_batch_id: Training information need batch identifier.
         """
         self.name = name
         self.domain = domain
         self.metrics = metrics
         self.db_name = db_name
         self.batch_id = batch_id
+        self.training_batch_id = training_batch_id
         self.information_needs = self.get_information_needs(batch_id)
 
     def get_information_needs(self, batch_id: str) -> List[InformationNeed]:

@@ -6,9 +6,11 @@ import pytest
 
 from dialoguekit.core.dialogue import Dialogue
 from simlab.core.information_need import InformationNeed
-from simlab.core.run_configuration import RunConfiguration
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.main import (
-    filter_existing_participant_pairs,
     generate_synthetic_dialogues,
     load_configuration,
     main,
@@ -28,8 +30,12 @@ def test_parse_args(monkeypatch) -> None:
     args = [
         "test_script",
         "run_configuration.json",
-        "mongodb://localhost:27017",
-        "simlab_test",
+        "--mongo_uri=mongodb://localhost:27017",
+        "--mongo_db=simlab_test",
+        "--registry_uri=http://localhost:5000",
+        "--registry_username=user",
+        "--registry_password_file=tests/simlab/data/registry_password.txt",
+        "--registry_repository=simlab-test-registry",
         "-o=tests/simlab/data/dialogue_export",
     ]
 
@@ -39,12 +45,19 @@ def test_parse_args(monkeypatch) -> None:
     assert parsed_args.config_file == "run_configuration.json"
     assert parsed_args.mongo_uri == "mongodb://localhost:27017"
     assert parsed_args.mongo_db == "simlab_test"
+    assert parsed_args.registry_uri == "http://localhost:5000"
+    assert parsed_args.registry_username == "user"
+    assert (
+        parsed_args.registry_password_file
+        == "tests/simlab/data/registry_password.txt"
+    )
+    assert parsed_args.registry_repository == "simlab-test-registry"
     assert parsed_args.output_dir == "tests/simlab/data/dialogue_export"
 
 
-def test_parse_args_missing_args(monkeypatch) -> None:
-    """Tests the argument parser with missing arguments."""
-    args = ["test_script", "run_configuration.json"]
+def test_parse_args_missing_configuration(monkeypatch) -> None:
+    """Tests the argument parser with missing configuration."""
+    args = ["test_script"]
 
     monkeypatch.setattr("sys.argv", args)
 
@@ -99,57 +112,60 @@ def test_generate_synthetic_dialogues(
     )
 
 
-def test_filter_existing_participant_pairs() -> None:
-    """Tests the filter_existing_participant_pairs function."""
-    mocked_agent = MagicMock(id="test_agent_1")
-    mocker_simulator_1 = MagicMock(id="test_user_1")
-    mocker_simulator_2 = MagicMock(id="test_user_2")
-    participant_pairs = [
-        (mocked_agent, mocker_simulator_1),
-        (mocked_agent, mocker_simulator_2),
-    ]
-
-    # Mock os.path.exists to return True for the first pair and False for the
-    # second.
-    with patch("os.path.exists", side_effect=[True, False]):
-        filtered_pairs = filter_existing_participant_pairs(
-            "output_dir", participant_pairs
-        )
-        assert filtered_pairs == [(mocked_agent, mocker_simulator_2)]
-
-
 def test_main(task: Task) -> None:
     """Tests the main function."""
     # Mock dependencies
     mocked_configuration = MagicMock(spec=RunConfiguration)
+    mocked_configuration.name = "test_run"
+    mocked_configuration.public = True
     mocked_configuration.task = task
-    mocked_configuration.agents = [
-        MagicMock(spec=WrapperAgent, id="test_agent")
+    mocked_configuration.agent_configurations = [
+        MagicMock(
+            spec=ParticipantConfiguration,
+            image="template_agent",
+            participant=MagicMock(spec=WrapperAgent, id="test_agent"),
+        )
     ]
-    mocked_configuration.user_simulators = [
-        MagicMock(spec=WrapperUserSimulator, id="test_user_simulator")
+    mocked_configuration.user_simulator_configurations = [
+        MagicMock(
+            spec=ParticipantConfiguration,
+            image="template_user_simulator",
+            participant=MagicMock(
+                spec=WrapperUserSimulator, id="test_user_simulator"
+            ),
+        )
     ]
-
     with (
+        patch("simlab.main.DockerRegistryMetadata") as mocked_docker_metadata,
         patch("simlab.main.MongoDBConnector") as mocked_mongo_connector,
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,
+        patch("simlab.main.start_participant") as mocked_start_participant,
+        patch(
+            "simlab.main.docker_stop_container"
+        ) as mocked_docker_stop_container,
+        patch(
+            "simlab.main.clean_local_docker_registry"
+        ) as mocked_clean_local_docker_registry,
     ):
 
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
+        mocked_start_participant.return_value = (
+            MagicMock(spec=str),
+            [7000],
+        )
+        mocked_docker_stop_container.return_value = None
+        mocked_clean_local_docker_registry.return_value = None
 
         main(
             mocked_configuration,
-            "mongodb://localhost:27017",
-            "simlab_test",
-            "tests/simlab/data/dialogue_export",
+            mocked_mongo_connector,
+            mocked_docker_metadata,
+            "tests/simlab/data/dialogue_export/",
         )
 
-        mocked_mongo_connector.assert_called_once_with(
-            "mongodb://localhost:27017", "simlab_test"
-        )
         mocked_json_to_dialogues.assert_called_once_with(
-            "tests/simlab/data/dialogue_export/task_testing/"
-            "675380fa0f51790295720dac/test_agent_test_user_simulator.json"
+            "tests/simlab/data/dialogue_export/"
+            "test_agent_test_user_simulator.json"
         )
         mocked_insert_record.assert_called_once()

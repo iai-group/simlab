@@ -4,31 +4,58 @@ Workflow:
 1. Load simulation configuration and save it for future reference.
 2. Instantiate all components required for the simulation.
 For each agent-user simulator pair:
-    3. Generate synthetic conversations.
-    4. Evaluate the performance of the agent based on the synthetic
+    3. Start containers for the agent and user simulator.
+    4. Generate synthetic conversations.
+    5. Evaluate the performance of the agent based on the synthetic
        conversations.
-5. Aggregate and save the evaluation results.
+6. Aggregate and save the evaluation results.
 """
 
 import argparse
 import itertools
 import os
 from statistics import mean, median, stdev
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from connectors.mongo.mongo_connector import MongoDBConnector
-from connectors.mongo.utils import insert_record
+from connectors.docker.commands import (
+    DOCKER_PASSWORD_FILE,
+    DOCKER_REGISTRY_URI,
+    DOCKER_REPOSITORY,
+    DOCKER_USERNAME,
+    DockerRegistryMetadata,
+    clean_local_docker_registry,
+    docker_pull_image,
+    docker_run_container,
+    docker_stop_container,
+    inspect_image,
+)
+from connectors.mongo.mongo_connector import (
+    DEFAULT_DB,
+    MONGO_URI,
+    MongoDBConnector,
+)
+from connectors.mongo.utils import insert_record, update_record
 from dialoguekit.utils.dialogue_reader import json_to_dialogues
 from simlab.core.information_need import InformationNeed
-from simlab.core.run_configuration import RunConfiguration
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
 from simlab.simulation_platform import SimulationPlatform
+from simlab.tasks.task import Task
 from simlab.utils.configuration_readers.base_configuration_reader import (
     BaseConfigurationReader,
 )
+from simlab.utils.participant_api.utils_api_calls import (
+    configure_participant,
+    wait_for_participant,
+)
+
+_NUM_ITER_PER_INFORMATION_NEED = 3
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,16 +70,45 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="Path to the simulation configuration file.",
     )
+    # MongoDB arguments
     parser.add_argument(
-        "mongo_uri",
+        "--mongo_uri",
         type=str,
         help="MongoDB URI.",
+        default=MONGO_URI,
     )
     parser.add_argument(
-        "mongo_db",
+        "--mongo_db",
         type=str,
         help="MongoDB database name.",
+        default=DEFAULT_DB,
     )
+    # Docker registry arguments
+    parser.add_argument(
+        "--registry_uri",
+        type=str,
+        help="Docker registry URI.",
+        default=DOCKER_REGISTRY_URI,
+    )
+    parser.add_argument(
+        "--registry_username",
+        type=str,
+        help="Docker registry username.",
+        default=DOCKER_USERNAME,
+    )
+    parser.add_argument(
+        "--registry_password_file",
+        type=str,
+        help="File with Docker registry password.",
+        default=DOCKER_PASSWORD_FILE,
+    )
+    parser.add_argument(
+        "--registry_repository",
+        type=str,
+        help="Docker registry repository.",
+        default=DOCKER_REPOSITORY,
+    )
+
     parser.add_argument(
         "-o",
         "--output_dir",
@@ -81,7 +137,7 @@ def generate_synthetic_dialogues(
     agent: WrapperAgent,
     information_needs: List[InformationNeed],
     output_dir: str,
-):
+) -> None:
     """Generates synthetic dialogues for the given agent-user simulator pair.
 
     Args:
@@ -99,98 +155,217 @@ def generate_synthetic_dialogues(
         simulation_platform.disconnect(user_simulator.id, agent.id)
 
 
-def filter_existing_participant_pairs(
-    output_dir: str,
-    participant_pairs: List[Tuple[WrapperAgent, WrapperUserSimulator]],
-) -> List[Tuple[WrapperAgent, WrapperUserSimulator]]:
-    """Filters out the agent-user simulator pairs which have been evaluated.
+def start_participant(
+    registry_metadata: DockerRegistryMetadata,
+    participant_configuration: ParticipantConfiguration,
+    port: int,
+) -> Tuple[str, List[int]]:
+    """Starts a container for a participant.
 
     Args:
-        output_dir: Path to the output directory for the task.
-        participant_pairs: List of agent-user simulator pairs.
+        registry_metadata: Docker registry metadata.
+        participant_configuration: Participant configuration.
+        port: Local port to bind the container to.
+
+    Raises:
+        RuntimeError: If the participant fails to start.
 
     Returns:
-        List of agent-user simulator pairs which have not been evaluated.
+        Container id and the list of ports used by the container.
     """
-    filtered_pairs = []
+    ports_used = []
+    container_id = None
+    try:
+        image_tag = docker_pull_image(
+            participant_configuration.image, registry_metadata
+        )
+        image_info = inspect_image(image_tag)
+        flask_exposed_port = (
+            image_info.get("Config", {}).get("Labels", {}).get("port", None)
+        )
+        exposed_ports = [
+            port.split("/")[0]
+            for port in image_info["Config"]["ExposedPorts"].keys()
+        ]
 
-    for agent, user_simulator in participant_pairs:
-        if not os.path.exists(
-            os.path.join(output_dir, f"{agent.id}_{user_simulator.id}.json")
-        ):
-            filtered_pairs.append((agent, user_simulator))
+        if not flask_exposed_port:
+            # Use the first exposed port if the port label is not found
+            flask_exposed_port = exposed_ports.pop(0)
+        else:
+            # Check if the port is in the list of exposed ports
+            if flask_exposed_port not in exposed_ports:
+                raise ValueError(
+                    f"Port {flask_exposed_port} not in the list of exposed"
+                    " ports"
+                )
+            exposed_ports.remove(flask_exposed_port)
 
-    return filtered_pairs
+        ports_used.append(port)
+        run_args = f"-p {port}:{flask_exposed_port}"
+
+        # Configure the participant
+        participant_configuration.participant._uri = f"http://localhost:{port}"
+
+        for exposed_port in exposed_ports:
+            port += 1
+            ports_used.append(port)
+            run_args += f" -p {port}:{exposed_port}"
+
+        container_id = docker_run_container(
+            participant_configuration.image, run_args, registry_metadata
+        )
+
+        # Wait for participant to be ready
+        wait_for_participant(participant_configuration.participant._uri)
+
+        configure_participant(
+            participant_configuration.participant._uri,
+            participant_configuration.participant.id,
+            participant_configuration.custom_parameters,
+        )
+    except Exception as e:
+        raise RuntimeError(
+            "Failed to start participant "
+            f"{participant_configuration.participant.id}: {e}"
+        )
+    return container_id, ports_used
+
+
+def evaluate_participant_pair(
+    agent_configuration: ParticipantConfiguration,
+    user_simulator_configuration: ParticipantConfiguration,
+    simulation_platform: SimulationPlatform,
+    configuration: RunConfiguration,
+    output_dir: str,
+    registry_metadata: DockerRegistryMetadata,
+) -> Dict[str, Any]:
+    """Evaluates the performance of an agent-user simulator pair.
+
+    Args:
+        agent_configuration: Agent configuration.
+        user_simulator_configuration: User simulator configuration.
+        simulation_platform: Simulation platform.
+        configuration: Simulation configuration.
+        output_dir: Path to the output directory for the task.
+        registry_metadata: Docker registry metadata.
+
+    Returns:
+        Evaluation record.
+    """
+    # Pull images for the agent and user simulator and start the containers
+    # TODO: This solution is suboptimal. See issue:
+    #
+    agent_port = 7000
+    agent_container_id, agent_ports = start_participant(
+        registry_metadata, agent_configuration, agent_port
+    )
+
+    simulator_port = max(agent_ports) + 1
+    simulator_container_id, _ = start_participant(
+        registry_metadata,
+        user_simulator_configuration,
+        simulator_port,
+    )
+
+    agent = agent_configuration.participant
+    user_simulator = user_simulator_configuration.participant
+
+    # Generate synthetic dialogues
+    # For each information need, generate N synthetic dialogues to account for
+    # non-determinism of dialogue participants
+    for _ in range(_NUM_ITER_PER_INFORMATION_NEED):
+        generate_synthetic_dialogues(
+            simulation_platform,
+            user_simulator,  # type: ignore[arg-type]
+            agent,  # type: ignore[arg-type]
+            configuration.task.information_needs,
+            output_dir,
+        )
+
+    # Stop the containers
+    docker_stop_container(agent_container_id)
+    docker_stop_container(simulator_container_id)
+
+    # Evaluate the performance of the agent
+    dialogues_dir = os.path.join(
+        output_dir, f"{agent.id}_{user_simulator.id}.json"
+    )
+    results = _dialogues_evaluation(dialogues_dir, configuration.task)
+
+    evaluation_summary = {
+        "run_name": configuration.name,
+        "public": configuration.public,
+        "agent_id": agent.id,
+        "user_simulator_id": user_simulator.id,
+        "task_id": configuration.task.name,
+        "information_need_batch_id": configuration.task.batch_id,
+        "metrics": results,
+    }
+    return evaluation_summary
+
+
+def _dialogues_evaluation(dialogues_dir: str, task: Task) -> Dict[str, Any]:
+    """Evaluates the dialogues in the given directory.
+
+    Args:
+        dialogues_dir: Path to the directory containing the dialogues.
+        task: Evaluation task.
+
+    Returns:
+       Evaluation results.
+    """
+    synthetic_dialogues = json_to_dialogues(dialogues_dir)
+    agent_evaluation_results = task.evaluation(synthetic_dialogues)
+
+    results = {}
+    # Aggregate the evaluation results
+    for metric, values in agent_evaluation_results.items():
+        results[metric] = {
+            "values": values,
+            "mean": mean(values),
+            "std": stdev(values),
+            "median": median(values),
+            "min": min(values),
+            "max": max(values),
+            "q1": np.quantile(values, 0.25),
+            "q3": np.quantile(values, 0.75),
+        }
+    return results
 
 
 def main(
     configuration: RunConfiguration,
-    mongo_uri: str,
-    mongo_db: str,
+    mongo_connector: MongoDBConnector,
+    registry_metadata: DockerRegistryMetadata,
     output_dir: str,
 ) -> None:
     """Runs the simulation-based evaluation given a configuration.
 
     Args:
         configuration: Simulation configuration object.
-        mongo_uri: MongoDB URI.
-        mongo_db: MongoDB database name.
+        mongo_connector: MongoDB connector.
+        registry_metadata: Docker registry metadata.
         output_dir: Path to the output directory for the task.
     """
-    mongo_connector = MongoDBConnector(mongo_uri, mongo_db)
-    output_dir = os.path.join(
-        output_dir,
-        configuration.task.name,
-        configuration.task.batch_id,
-    )
     # Generate all possible agent-user simulator pairs
     participant_pairs = list(
-        itertools.product(configuration.agents, configuration.user_simulators)
+        itertools.product(
+            configuration.agent_configurations,
+            configuration.user_simulator_configurations,
+        )
     )
 
     simulation_platform = SimulationPlatform(WrapperAgent)
 
-    # Remove pairs that have already been evaluated
-    participant_pairs = filter_existing_participant_pairs(
-        output_dir, participant_pairs
-    )
-
     for agent, user_simulator in participant_pairs:
-        # Generate synthetic dialogues
-        generate_synthetic_dialogues(
-            simulation_platform,
-            user_simulator,
+        agent_evaluation_summary = evaluate_participant_pair(
             agent,
-            configuration.task.information_needs,
+            user_simulator,
+            simulation_platform,
+            configuration,
             output_dir,
+            registry_metadata,
         )
-
-        # Evaluate the performance of the agent
-        synthetic_dialogues = json_to_dialogues(
-            os.path.join(output_dir, f"{agent.id}_{user_simulator.id}.json")
-        )
-        agent_evaluation_results = configuration.task.evaluation(
-            synthetic_dialogues
-        )
-        # Aggregate and save the evaluation results
-        agent_evaluation_summary = {
-            "agent_id": agent.id,
-            "user_simulator_id": user_simulator.id,
-            "task_id": configuration.task.name,
-            "information_need_batch_id": configuration.task.batch_id,
-            "metrics": {},
-        }
-        for metric, values in agent_evaluation_results.items():
-            agent_evaluation_summary["metrics"][metric] = {
-                "values": values,
-                "mean": mean(values),
-                "std": stdev(values),
-                "median": median(values),
-                "min": min(values),
-                "max": max(values),
-                "q1": np.quantile(values, 0.25),
-                "q3": np.quantile(values, 0.75),
-            }
         insert_record(
             mongo_connector,
             "evaluation_results",
@@ -200,5 +375,46 @@ def main(
 
 if __name__ == "__main__":
     args = parse_args()
-    configuration = load_configuration(args.config_file)
-    main(configuration, args.mongo_uri, args.mongo_db, args.output_dir)
+
+    try:
+        # MongoDB connector
+        mongo_connector = MongoDBConnector(args.mongo_uri, args.mongo_db)
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        exit(1)
+
+    try:
+        configuration = load_configuration(args.config_file)
+
+        # Docker registry metadata
+        registry_metadata = DockerRegistryMetadata(
+            args.registry_uri,
+            args.registry_username,
+            args.registry_password_file,
+            args.registry_repository,
+        )
+
+        output_dir = os.path.join(
+            args.output_dir,
+            configuration.task.name,
+            configuration.task.batch_id,
+        )
+
+        main(configuration, mongo_connector, registry_metadata, output_dir)
+        update_record(
+            mongo_connector,
+            "runs",
+            {"name": configuration.name},
+            {"status": "completed"},
+        )
+    except Exception as e:
+        print(f"Error during simulation: {e}")
+        update_record(
+            mongo_connector,
+            "runs",
+            {"name": configuration.name},
+            {"status": "failed", "error": str(e)},
+        )
+    finally:
+        # Delete containers and images from the local Docker registry
+        clean_local_docker_registry()

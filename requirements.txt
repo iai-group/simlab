@@ -12,5 +12,10 @@ types-PyYAML
 types-requests
 pymongo
 docker
+python-jenkins
 wget
 pandas
+transformers
+torch
+huggingface_hub
+accelerate>=0.26.0

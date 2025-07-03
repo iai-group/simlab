@@ -1,0 +1,152 @@
+swagger: "2.0"
+info:
+  title: Agent API
+  description: API facilitating interaction with a conversational agent
+  version: "1.0.0"
+
+host: localhost
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /receive_utterance:
+    post:
+      summary: Receive an utterance from the user
+      description: Receive an utterance from the user and return the agent's response
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              context:
+                type: array
+                items:
+                  type: string
+              user_id:
+                type: string
+              agent_id:
+                type: string
+              message:
+                type: string
+            example:
+              context:
+                - "Hello, how can I help you today?"
+                - "I am looking for an action movie."
+                - "Do you have a favorite actor?"
+              user_id: "US1"
+              agent_id: "Agent1"
+              message: "I like Tom Cruise"
+      responses:
+        200:
+          description: Object containing the agent's response
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              dialogue_acts:
+                type: array
+                items:
+                  $ref: "#/definitions/DialogueAct"
+              annotations:
+                type: array
+                items:
+                  $ref: "#/definitions/Annotation"
+              metadata:
+                type: object
+                additionalProperties:
+                  type: string
+          examples:
+            application/json:
+              message: "I suggest you watch Top Gun."
+              dialogue_acts:
+                - intent: "recommend"
+                  annotations:
+                    - slot: "title"
+                      value: "Top Gun"
+              annotations: []
+              metadata:
+                genre: "Action"
+
+  /configure:
+    post:
+      summary: Configure the agent with custom parameters
+      description: Configure the agent with the desired parameters
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              parameters:
+                type: object
+            example:
+              application/json:
+                id: "Agent1"
+                parameters:
+                  language: "English"
+      responses:
+        201:
+          description: Acknowledgement of successful configuration
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Agent successfully configured."
+        400:
+          description: Error in configuration
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Error in configuration."
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Internal server error."
+
+definitions:
+  DialogueAct:
+    type: object
+    properties:
+      intent:
+        type: string
+      annotations:
+        type: array
+        items:
+          type: object
+          properties:
+            slot:
+              type: string
+            value:
+              type: string
+
+  Annotation:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string

@@ -1,7 +1,7 @@
 SimLab documentation
 ====================
 
-SimLab is a platform to perform simulation-based evaluation of conversational agents. It aims to centralized resources and tools for the community to perform evaluations in a reproducible context. A description of the platform environment and its components can be found :doc:`here <environment/index>`.
+SimLab is a platform to perform simulation-based evaluation of conversational agents. It aims to centralized resources and tools for the community to perform evaluations in a reproducible context. A high-level description of the platform environment and its components can be found :doc:`here <environment/index>`.
 
 
 .. toctree::
@@ -10,7 +10,8 @@ SimLab is a platform to perform simulation-based evaluation of conversational ag
    :hidden:
    
    environment/index
-   environment/simlab
+   environment/webapp
+   environment/eval_framework
    environment/registry
    environment/jenkins
 
@@ -19,7 +20,7 @@ SimLab is a platform to perform simulation-based evaluation of conversational ag
    :caption: Guides
 
    guides/add_system_to_registry
-   guides/submit_run_request
+   guides/submit_experiment_request
 
 .. toctree::
    :maxdepth: 1
@@ -28,10 +29,10 @@ SimLab is a platform to perform simulation-based evaluation of conversational ag
    contributing/contribute_metric
    contributing/contribute_task
 
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Developer
 
-   simlab/index
+   eval_framework/index
    webapp/index
+   deployment/index

@@ -8,7 +8,11 @@ inputs:
   test_dir:
     description: "The directory containing the Python tests."
     required: true
-    
+  artifact_prefix:
+    description: "Prefix for the artifact names."
+    required: true
+    default: "coverage"
+
 runs:
   using: "composite"
   steps:
@@ -44,7 +48,7 @@ runs:
 
     - name: PyTest with code coverage
       shell: bash
-      continue-on-error: true
+      # continue-on-error: true
       run: |
         pytest --junitxml pytest.xml --cov=${{ inputs.code_dir }} --cov-report=term-missing --cov-report=xml --cov-branch ${{ inputs.test_dir }} | tee pytest-coverage.txt
 
@@ -56,22 +60,22 @@ runs:
 
     - name: Upload Coverage Results txt
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: coverage-results-txt
+        name: ${{ inputs.artifact_prefix }}-coverage-results-txt
         path: ./pytest-coverage.txt
 
     - name: Upload Coverage Results xml
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: coverage-results-xml
+        name: ${{ inputs.artifact_prefix }}-coverage-results-xml
         path: ./coverage.xml
 
     - name: Upload Unit Test Results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: unit-test-py39
+        name: ${{ inputs.artifact_prefix }}-unit-test-py39
         path: ./pytest.xml
   

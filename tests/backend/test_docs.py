@@ -126,7 +126,17 @@ def test_agents(flask_client: FlaskLoginClient) -> None:
     data = response.get_json()
     assert len(data) > 0
     assert all(
-        key in ["id", "tags", "labels"]
+        key
+        in [
+            "id",
+            "tag",
+            "author",
+            "version",
+            "type",
+            "image_name",
+            "port",
+            "description",
+        ]
         for agent in data
         for key in agent.keys()
     )
@@ -138,15 +148,14 @@ def test_agent(flask_client: FlaskLoginClient) -> None:
     Args:
         flask_client: A Flask test client.
     """
-    response = flask_client.get("/agents/agent1")
+    response = flask_client.post(
+        "/agent", json={"image_name": "dummy/agent1:1.0"}
+    )
     assert response.status_code == 200
     data = response.get_json()
     assert data.get("id") == "agent1"
-    assert data.get("tags") == ["crs"]
-    assert data.get("labels") == {
-        "type": "agent",
-        "agent_id": "agent1",
-    }
+    assert data.get("author") == "Test Author"
+    assert data.get("type") == "agent"
 
 
 def test_agent_not_found(flask_client: FlaskLoginClient) -> None:
@@ -155,7 +164,9 @@ def test_agent_not_found(flask_client: FlaskLoginClient) -> None:
     Args:
         flask_client: A Flask test client.
     """
-    response = flask_client.get("/agents/unknown")
+    response = flask_client.post(
+        "/agent", json={"image_name": "unknown/agent:1.0"}
+    )
     assert response.status_code == 400
 
 
@@ -170,7 +181,17 @@ def test_simulators(flask_client: FlaskLoginClient) -> None:
     data = response.get_json()
     assert len(data) > 0
     assert all(
-        key in ["id", "tags", "labels"]
+        key
+        in [
+            "id",
+            "tag",
+            "author",
+            "version",
+            "type",
+            "image_name",
+            "port",
+            "description",
+        ]
         for simulator in data
         for key in simulator.keys()
     )
@@ -182,15 +203,14 @@ def test_simulator(flask_client: FlaskLoginClient) -> None:
     Args:
         flask_client: A Flask test client.
     """
-    response = flask_client.get("/simulators/simulator1")
+    response = flask_client.post(
+        "/simulator", json={"image_name": "dummy/simulator1:1.0"}
+    )
     assert response.status_code == 200
     data = response.get_json()
     assert data.get("id") == "simulator1"
-    assert data.get("tags") == ["us"]
-    assert data.get("labels") == {
-        "type": "simulator",
-        "simulator_id": "simulator1",
-    }
+    assert data.get("author") == "Test Author"
+    assert data.get("type") == "simulator"
 
 
 def test_simulator_not_found(flask_client: FlaskLoginClient) -> None:
@@ -199,5 +219,7 @@ def test_simulator_not_found(flask_client: FlaskLoginClient) -> None:
     Args:
         flask_client: A Flask test client.
     """
-    response = flask_client.get("/simulators/unknown")
+    response = flask_client.post(
+        "/simulator", json={"image_name": "unknown/simulator:1.0"}
+    )
     assert response.status_code == 400

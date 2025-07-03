@@ -128,10 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-dialoguekit/
 nginx/ssl/
 data/mongo/*
+data/datasets/*
+data/simlab/configs/*
 
 # Ignore all .DS_Store files
 **/.DS_Store

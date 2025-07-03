@@ -13,45 +13,13 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: "echo 'db.runCommand(\"ping\").ok' | mongo --quiet mongodb://admin:admin@localhost:27017"
+      test: 'echo ''db.runCommand("ping").ok'' | mongosh --quiet mongodb://admin:admin@localhost:27017'
       interval: 10s
       timeout: 5s
       retries: 5
     restart: always
     networks:
       - simlab_net
-
-  docker_auth:
-    image: cesanta/docker_auth:latest
-    container_name: docker_auth
-    ports:
-      - "5001:5001"
-    volumes:
-      - ./registry/auth_config.yaml:/config/auth_config.yml:ro
-      - ./nginx/ssl:/certs
-    secrets:
-      - mongo_root_password
-    networks:
-      - simlab_net
-    depends_on:
-      - mongo
-    restart: unless-stopped
-
-  registry:
-    image: registry:2
-    container_name: registry
-    environment:
-      - REGISTRY_STORAGE_DELETE_ENABLED=true
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./nginx/ssl:/certs
-      - ./registry/config.yaml:/etc/docker/registry/config.yaml:ro
-    depends_on:
-      - docker_auth
-    networks:
-      - simlab_net
-    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus
@@ -85,7 +53,7 @@ volumes:
 networks:
   simlab_net:
     driver: bridge
-  
+
 secrets:
   mongo_root_password:
     file: ./secrets/mongo_root_password.txt

@@ -7,32 +7,43 @@ services:
   backend:
     build: ./webapp/backend
     container_name: backend
-    environment:
-      - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=5005
-      - MONGO_URI=mongodb://admin:admin@mongo:27017
-      - DOCKER_BASE_URL=unix:///var/run/docker.sock
-      - DOCKER_REGISTRY_URI=https://localhost
-      - DOCKER_REGISTRY_USER=admin
-      - DOCKER_REGISTRY_PASSWORD=admin
+    env_file:
+      - ./webapp/backend/.env
     ports:
       - "5005:5005"
     volumes:
       - ./connectors:/connectors
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data:/data
+      - ./secrets/registry/simlab-447518-3117f021d7b5.json:/registry/simlab-447518-3117f021d7b5.json
+      - ./secrets/gcs/simlab-447518-7db13a49e1c6.json:/gcp/service-account.json:ro
     depends_on:
       - mongo
+      - redis
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    privileged: true
     networks:
       - simlab_net
 
   frontend:
     build: ./webapp/frontend
     container_name: frontend
+    env_file:
+      - ./webapp/frontend/.env
     ports:
       - "3001:3000"
     depends_on:
       - backend
+    networks:
+      - simlab_net
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - simlab_net
 
@@ -49,6 +60,5 @@ services:
     depends_on:
       - backend
       - frontend
-      - registry
     networks:
       - simlab_net

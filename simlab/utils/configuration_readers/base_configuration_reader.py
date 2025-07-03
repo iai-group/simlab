@@ -2,11 +2,13 @@
 
 import json
 import os
-from typing import List
+from copy import deepcopy
+from typing import Any, Dict, List
 
-from simlab.core.run_configuration import RunConfiguration
-from simlab.participant.wrapper_agent import WrapperAgent
-from simlab.participant.wrapper_user_simulator import WrapperUserSimulator
+from simlab.core.run_configuration import (
+    ParticipantConfiguration,
+    RunConfiguration,
+)
 from simlab.tasks.task import Task
 from simlab.utils.configuration_readers.component_generators.base_component_generator import (  # noqa: E501
     BaseComponentGenerator,
@@ -14,8 +16,24 @@ from simlab.utils.configuration_readers.component_generators.base_component_gene
 
 
 class BaseConfigurationReader:
-    def __init__(self, configuration_path: str) -> None:
+    def __init__(self, configuration_path: str = None) -> None:
         """Initializes a configuration reader.
+
+        Args:
+            configuration_path: Path to the configuration file. Defaults to
+              None.
+        """
+        self.configuration_dict: Dict[str, Any] = dict()
+        self._component_generator: BaseComponentGenerator = None
+
+        if configuration_path:
+            self.load_configuration_dict(configuration_path)
+            self.configuration = self.configuration_parser()
+        else:
+            self.configuration = None
+
+    def load_configuration_dict(self, configuration_path: str) -> None:
+        """Loads the configuration dictionary from a file.
 
         Args:
             configuration_path: Path to the configuration file.
@@ -32,36 +50,45 @@ class BaseConfigurationReader:
         if not configuration_path.endswith(".json"):
             raise RuntimeError("Configuration file must be a JSON file.")
 
-        self.configuration_path = configuration_path
         self.configuration_dict = json.load(open(configuration_path, "r"))
         self._component_generator = self._get_component_generator()
 
-    @property
-    def configuration(self) -> RunConfiguration:
-        """Returns the configuration object.
+    def configuration_parser(
+        self, configuration_path: str = None
+    ) -> RunConfiguration:
+        """Parses the configuration dictionary.
 
-        Returns:
-            Run configuration object.
-        """
-        return self._configuration_parser()
-
-    def _configuration_parser(self) -> RunConfiguration:
-        """Parses the configuration file.
+        Args:
+            configuration_path: Path to the configuration file. Defaults to
+              None.
 
         Raises:
-            ValueError: If the configuration file is invalid.
+            ValueError: If the configuration dictionary is invalid.
 
         Returns:
             RunConfiguration object.
         """
-        if "name" not in self.configuration_dict:
-            raise ValueError("Configuration file must have a name.")
-        name = self.configuration_dict.pop("name")
-        task = self._parse_task()
-        agents = self._parse_agents()
-        user_simulators = self._parse_user_simulators()
+        if configuration_path:
+            self.load_configuration_dict(configuration_path)
 
-        return RunConfiguration(name, task, agents, user_simulators)
+        if "name" not in self.configuration_dict:
+            raise ValueError("Configuration must have a name.")
+        name = self.configuration_dict.pop("name")
+        public = self.configuration_dict.pop("public", False)
+        task = self._parse_task()
+        agent_configurations = self._parse_agent_configurations()
+        user_simulator_configurations = (
+            self._parse_user_simulator_configurations()
+        )
+
+        self.configuration = RunConfiguration(
+            name,
+            public,
+            task,
+            agent_configurations,
+            user_simulator_configurations,
+        )
+        return self.configuration
 
     def _parse_task(self) -> Task:
         """Parses the task configuration.
@@ -69,61 +96,88 @@ class BaseConfigurationReader:
         Returns:
             Task object.
         """
-        task_class_name = self.configuration_dict.get("task", {}).get(
-            "class_name", "Task"
-        )
+        task_config_dict = deepcopy(self.configuration_dict.get("task", {}))
+        task_class_name = task_config_dict.get("class_name", "Task")
 
         # Parse metrics
         metrics = [
             self._component_generator.generate_component(
                 "metric", metric.get("class_name"), metric
             )
-            for metric in self.configuration_dict.get("metrics", [])
+            for metric in task_config_dict.get("arguments", {}).get(
+                "metrics", []
+            )
         ]
 
         # Include parsed metrics in the task configuration
-        self.configuration_dict.get("task", {}).get("arguments", {}).update(
-            {"metrics": metrics}
-        )
+        task_config_dict.get("arguments", {})["metrics"] = metrics
+
         task = self._component_generator.generate_component(
             "task",
             task_class_name,
-            self.configuration_dict.get("task"),
+            task_config_dict,
         )
         return task
 
-    def _parse_agents(self) -> List[WrapperAgent]:
+    def _parse_agent_configurations(
+        self,
+    ) -> List[ParticipantConfiguration]:
         """Parses the agents configuration.
 
         Returns:
-            List of agents.
+            List of agents with their associated image and custom parameters.
         """
         agents = []
-        for agent in self.configuration_dict.get("agents", []):
-            agent_class_name = agent.get("class_name", "WrapperAgent")
+        for agent_config_dict in self.configuration_dict.get("agents", []):
+            agent_class_name = agent_config_dict.get(
+                "class_name", "WrapperAgent"
+            )
+            agent = self._component_generator.generate_component(
+                "agent",
+                agent_class_name,
+                agent_config_dict,
+            )
+
+            agent_image_name = agent_config_dict.get("image", None)
+            agent_custom_parameters = agent_config_dict.get("parameters", {})
             agents.append(
-                self._component_generator.generate_component(
-                    "agent", agent_class_name, agent
+                ParticipantConfiguration(
+                    agent_image_name, agent, agent_custom_parameters
                 )
             )
         return agents
 
-    def _parse_user_simulators(self) -> List[WrapperUserSimulator]:
+    def _parse_user_simulator_configurations(
+        self,
+    ) -> List[ParticipantConfiguration]:
         """Parses the user simulators configuration.
 
         Returns:
-            List of user simulators.
+            List of user simulators with their associated image and custom
+              parameters.
         """
         user_simulators = []
-        for user_simulator in self.configuration_dict.get(
+        for user_simulator_config in self.configuration_dict.get(
             "user_simulators", []
         ):
-            user_simulator_class_name = user_simulator.get(
+            user_simulator_class_name = user_simulator_config.get(
                 "class_name", "WrapperUserSimulator"
             )
+            user_simulator = self._component_generator.generate_component(
+                "user_simulator",
+                user_simulator_class_name,
+                user_simulator_config,
+            )
+
+            user_simulator_image_name = user_simulator_config.get("image", None)
+            user_simulator_custom_parameters = user_simulator_config.get(
+                "parameters", {}
+            )
             user_simulators.append(
-                self._component_generator.generate_component(
-                    "user_simulator", user_simulator_class_name, user_simulator
+                ParticipantConfiguration(
+                    user_simulator_image_name,
+                    user_simulator,
+                    user_simulator_custom_parameters,
                 )
             )
         return user_simulators

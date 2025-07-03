@@ -5,15 +5,17 @@ from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
-from connectors.docker.docker_registry_connector import DockerRegistryConnector
+from connectors.docker.commands import DockerRegistryMetadata
+from connectors.jenkins_connector.jenkins_job_manager import JenkinsJobManager
 from connectors.mongo.mongo_connector import MongoDBConnector
 from connectors.mongo.user import User
 
-DATA_FOLDER = "data/simlab"
+DATA_FOLDER = "/mnt/gcs_bucket"
 
 login_manager = LoginManager()
 mongo_connector = MongoDBConnector()
-docker_registry_connector = DockerRegistryConnector()
+docker_registry_metadata = DockerRegistryMetadata()
+jenkins_job_manager = JenkinsJobManager()
 
 
 @login_manager.user_loader
@@ -79,13 +81,26 @@ def create_app(testing: bool = False) -> Flask:
     if testing:
         mongo_connector.set_default_db("simlab_test")
 
+    jenkins_job_manager.check_jenkins_connection()
+
+    # Celery worker
+    from webapp.backend.async_tasks.celery_worker import celery
+
+    app.config["CELERY_BROKER_URL"] = celery.conf.broker_url
+    app.config["CELERY_RESULT_BACKEND"] = celery.conf.result_backend
+    app.celery = celery
+
     # Register blueprints
     from webapp.backend.routes.auth import auth as auth_blueprint
     from webapp.backend.routes.docs import docs as docs_blueprint
+    from webapp.backend.routes.registry import registry as registry_blueprint
+    from webapp.backend.routes.results import results as results_blueprint
     from webapp.backend.routes.run import run as run_blueprint
 
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(docs_blueprint)
     app.register_blueprint(run_blueprint)
+    app.register_blueprint(results_blueprint)
+    app.register_blueprint(registry_blueprint)
 
     return app

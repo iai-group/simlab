@@ -1,0 +1,38 @@
+name: Recommendation Success Ratio
+description: The success ratio of a dialogue corresponds to ratio of successful rounds of recommendation. A round is considered successful if the user accepts a recommended item. This ratio is computed automatically based on dialogue acts recognized by a NLU module.
+class_name: RecommendationSuccessRatio
+
+arguments:
+  user_nlu:
+    type: nlu
+    class_name: LMDialogueActsExtractor
+    configurable: true
+    arguments:
+      extraction_prompt:
+      intent_labels:
+        type: list
+        configurable: true
+      slot_labels:
+        type: list
+        configurable: true
+  agent_nlu:
+    type: nlu
+    class_name: LMDialogueActsExtractor
+    configurable: true
+    arguments:
+      extraction_prompt:
+      intent_labels:
+        type: list
+        configurable: true
+      slot_labels:
+        type: list
+        configurable: true
+  reject_intent_labels:
+    type: list
+    configurable: true
+  accept_intent_labels:
+    type: list
+    configurable: true
+  recommendation_intent_labels:
+    type: list
+    configurable: true

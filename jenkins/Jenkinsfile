@@ -1,0 +1,159 @@
+pipeline {
+    agent {
+        label 'simlab && worker'
+    }
+
+    environment {
+        // --- GCP Bucket Configurations ---
+        GCP_DATA_BUCKET_NAME = 'simlab_data'     
+        GCP_DIALOGUES_BUCKET_NAME = 'dialogue_export'
+
+        // --- Local Mount Points for Buckets ---
+        MOUNT_POINT_DATA = 'data'
+        MOUNT_POINT_DIALOGUES = 'dialogue_export'
+
+        // --- Python Project Specifics ---
+        PYTHON_SIMLAB_DIR = 'simlab'
+        PYTHON_CONNECTORS_DIR = 'connectors'
+        PYTHON_DIALOGUEKIT_DIR = 'dialoguekit'
+        PYTHON_GLOBAL_REQUIREMENTS = 'requirements.txt' // Global requirements file
+
+        // --- Docker Registry Configurations ---
+        DOCKER_REGISTRY_URI = 'us-central1-docker.pkg.dev/simlab-447518'
+        DOCKER_REGISTRY_REPOSITORY = 'simlab-systems'
+        DOCKER_REGISTRY_USERNAME = '_json_key'
+
+    }
+
+    stages {
+        stage('Partial Clone and Prepare Workspace') {
+            steps {
+                script {
+                    echo "Starting sparse clone for branch: ${env.GIT_BRANCH}."
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "${env.GIT_BRANCH}"]],
+                        userRemoteConfigs: [[url: "${env.GIT_URL}", credentialsId: '']], 
+                        extensions: [
+                            [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_SIMLAB_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_CONNECTORS_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_DIALOGUEKIT_DIR}/*"],
+                                [$class: 'SparseCheckoutPath', path: "${env.PYTHON_GLOBAL_REQUIREMENTS}"]
+                            ]],
+                            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+                        ]
+                    ])
+                }
+                echo "Workspace prepared with sparse clone for branch: ${env.GIT_BRANCH}."
+            }
+        }
+
+        stage('Mount GCP Buckets') {
+            steps {
+                script {
+                    // Helper function to check if a directory is already a mount point
+                    // Returns true if mounted, false otherwise
+                    def isMounted = { mountPoint -> 
+                        return sh(script: "mountpoint -q ${mountPoint}", returnStatus: true) == 0
+                    }
+
+                    echo "Processing mount point: ${env.MOUNT_POINT_DATA}"
+                    if (isMounted(env.MOUNT_POINT_DATA)) {
+                        echo "  -> ${env.MOUNT_POINT_DATA} is already mounted. Skipping re-mount."
+                    } else {
+                        sh "mkdir -p ${env.MOUNT_POINT_DATA}"
+                        sh "sudo chown -R \$(whoami):\$(id -gn) ${env.MOUNT_POINT_DATA}"
+
+                        echo "  Mounting data bucket: ${env.GCP_DATA_BUCKET_NAME} to ${env.MOUNT_POINT_DATA}"
+                        sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DATA_BUCKET_NAME} ${env.MOUNT_POINT_DATA}"
+                    }
+
+                    echo "Processing mount point: ${env.MOUNT_POINT_DIALOGUES}"
+                    if (isMounted(env.MOUNT_POINT_DIALOGUES)) {
+                        echo "  -> ${env.MOUNT_POINT_DIALOGUES} is already mounted. Skipping re-mount."
+                    } else {
+                        sh "mkdir -p ${env.MOUNT_POINT_DIALOGUES}"
+                        sh "sudo chown -R \$(whoami):\$(id -gn) ${env.MOUNT_POINT_DIALOGUES}"
+
+                        echo "  Mounting dialogues bucket: ${env.GCP_DIALOGUES_BUCKET_NAME} to ${env.MOUNT_POINT_DIALOGUES}"
+                        sh "gcsfuse --file-mode=664 --dir-mode=775 --implicit-dirs ${env.GCP_DIALOGUES_BUCKET_NAME} ${env.MOUNT_POINT_DIALOGUES}"
+                    }
+
+                    echo "GCP Buckets processed for mounting."
+                }
+            }
+        }
+
+        stage('Install Python Requirements') {
+            steps {
+                script {
+                    echo "Installing Python requirements..."
+                    sh '''
+                        # Make conda commands available.
+                        . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
+
+                        conda create -n simlab_env python=3.9 -y
+                        conda activate simlab_env
+
+                        pip install --no-cache-dir -r ${PYTHON_GLOBAL_REQUIREMENTS}
+                        pip install --no-cache-dir -r ${PYTHON_SIMLAB_DIR}/requirements.txt
+
+                        conda deactivate
+                    '''
+                }
+                echo "Python requirements installed."
+            }
+        }
+
+        stage('Run Python Main Script') {
+            steps {
+                script {
+                    echo "Running main Python script..."
+                    withCredentials([
+                        // Secret file for GCP Docker registry authentication
+                        file(credentialsId: 'simlab-registry-key', variable: 'GCP_KEY_FILE_PATH'),
+                        // Secret text for MongoDB URI
+                        string(credentialsId: 'mongodb-uri', variable: 'MONGODB_FULL_URI')
+                    ]) {
+                        sh '''
+                            # Make conda commands available.
+                            . "/etc/profile.d/init_conda.sh" || { echo "ERROR: Could not source /etc/profile.d/init_conda.sh. Ensure it exists in your custom VM image."; exit 1; }
+
+                            export MONGO_URI="${MONGODB_FULL_URI}"
+
+                            conda activate simlab_env
+                            python3 -m simlab.main ''' + "${env.MOUNT_POINT_DATA}/${params.CONFIG_FILE_PATH_PARAM}" + ''' -o ''' + "${env.MOUNT_POINT_DIALOGUES}" + ''' --mongo_uri ''' + "${MONGODB_FULL_URI}" + ''' --registry_username ''' + "${env.DOCKER_REGISTRY_USERNAME}" + ''' --registry_uri ''' + "${env.DOCKER_REGISTRY_URI}" + ''' --registry_repository ''' + "${env.DOCKER_REGISTRY_REPOSITORY}" + ''' --registry_password_file ''' + "${GCP_KEY_FILE_PATH}" + '''
+                        '''
+                    }
+                    
+                    echo "Main Python script executed successfully."
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished for ${env.JOB_NAME} #${env.BUILD_NUMBER}."
+            script {
+                echo "Attempting to unmount GCP Buckets..."
+                // Unmount the buckets to clean up resources.
+                // '|| true' ensures the step doesn't fail the pipeline if unmount fails (e.g., already unmounted).
+                sh "fusermount -u ${env.MOUNT_POINT_DATA} || true"
+                sh "fusermount -u ${env.MOUNT_POINT_DIALOGUES} || true"
+                echo "GCP Buckets unmounted (or attempted)."
+            }
+        }
+        success {
+            echo "Pipeline succeeded!"
+        }
+        failure {
+            echo "Pipeline failed! Please check the logs above for details."
+            // Add any failure notifications here (e.g., email, Slack, etc.)
+        }
+        aborted {
+            echo "Pipeline was aborted."
+        }
+    }
+}

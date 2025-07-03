@@ -25,24 +25,43 @@ def test_run_request_invalid_form(
 ) -> None:
     """Tests run_request route with invalid form."""
     response = flask_logged_client.post(
-        "/run-request", json={"name": "invalid_test_run"}
+        "/run-request",
+        json={
+            "name": "invalid_test_run",
+            "task_id": "675728398dd85617189bd025",
+            "system": {
+                "type": "agent",
+                "image": "dummy/agent:1.0",
+                "arguments": [{"id": "TestAgent"}],
+                "parameters": {},
+                "class_name": "WrapperAgent",
+            },
+        },
     )
     assert response.status_code == 400
     assert response.json["message"] == "Run name not provided."
 
 
-def test_run_request_duplicate_name(
+def test_run_request_unknown_task(
     flask_logged_client: FlaskLoginClient,
 ) -> None:
-    """Tests run_request route with duplicate run name."""
+    """Tests run_request route with unknown task."""
     response = flask_logged_client.post(
         "/run-request",
         json={
             "run_name": "test_run",
+            "task_id": "675728398dd85617132bd025",
+            "system": {
+                "type": "agent",
+                "image": "dummy/agent:1.0",
+                "arguments": [{"id": "TestAgent"}],
+                "parameters": {},
+                "class_name": "WrapperAgent",
+            },
         },
     )
-    assert response.status_code == 400
-    assert response.json["message"] == "Run name already exists."
+    assert response.status_code == 500
+    assert response.json["message"] == "Error while retrieving task."
 
 
 def test_run_request(flask_logged_client: FlaskLoginClient) -> None:
@@ -84,10 +103,8 @@ def test_run_info(flask_logged_client: FlaskLoginClient) -> None:
     run_info = response.json.get("run_info", {})
     assert run_info["run_name"] == "test_run"
     assert run_info["username"] == "test_user"
-    assert all(
-        config_key in ["task", "metrics", "agents", "user_simulators"]
-        for config_key in run_info["run_configuration"].keys()
-    )
+    assert run_info["public"] is True
+    assert run_info.get("system", {}).get("image") == "dummy/agent:1.0"
 
 
 def test_run_delete_unauthorized(flask_client: FlaskLoginClient) -> None:

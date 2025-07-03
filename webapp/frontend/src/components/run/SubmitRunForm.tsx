@@ -1,299 +1,231 @@
-// Run submission form
+// Run submission form to add new system to public leaderboard
 
 import { APIAuth, baseURL } from "../API";
-import { Agent, Metric, Simulator, Task } from "../../types";
-import { Container, Toast, ToastContainer } from "react-bootstrap";
-import {
-  MDBBtn,
-  MDBInput,
-  MDBProgress,
-  MDBProgressBar,
-} from "mdb-react-ui-kit";
+import { Alert, Button, Container } from "react-bootstrap";
+import { MDBInput, MDBRadio, MDBTextArea } from "mdb-react-ui-kit";
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import AddResourcesList from "./AddResourcesList";
-import TaskRadioList from "./TaskRadioList";
-import axios from "axios";
+import { Form } from "react-bootstrap";
+import { System } from "../../types";
+import ToastNotification from "../ToastNotification";
 
 const RunSubmissionForm = () => {
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const task = location.state?.task;
   const [runName, setRunName] = useState("");
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTask, setSelectedTask] = useState<Task>({} as Task);
-  const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
-  const [userSimulators, setUserSimulators] = useState<Simulator[]>([]);
-  const [selectedUserSimulators, setSelectedUserSimulators] = useState<
-    Simulator[]
-  >([]);
+  const [agentEvaluated, setAgentEvaluated] = useState<boolean | null>(null);
+  const [system, setSystem] = useState<System>({} as System);
+  const [parameters, setParameters] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<string[] | null>(null);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error" | "info">(
+    "info"
+  );
 
-  const handleNext = () => {
-    if (page < 5) {
-      setPage(page + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
-  };
-
-  const convertPythonTypetoJSType = (arg: any) => {
-    // Convert argument Python types to TypeScript types
-    let type: string;
-    if (arg["type"] === "str") {
-      type = "string";
-    } else if (arg["type"] === "int") {
-      type = "number";
-    } else {
-      type = "unknown";
-    }
-    return type;
-  };
-
-  const fetchTasks = async (): Promise<Task[]> => {
-    try {
-      const response = await axios.get(`${baseURL}/tasks`);
-      const fetchedTasks = response.data.map((d: any) => {
-        const args = Object.entries(d["arguments"])
-          .map(([name, arg]: [string, any]) => {
-            if (arg["configurable"] === true) {
-              let type: string = convertPythonTypetoJSType(arg);
-              return {
-                name,
-                type: type,
-                value: arg["default"] || null,
-              };
-            }
-          })
-          .filter((arg: any) => arg !== undefined);
-
-        return {
-          id: d["_id"],
-          name: d["name"],
-          description: d["description"],
-          arguments: args,
-        };
-      });
-      return fetchedTasks;
-    } catch (error) {
-      setToastMessage("Error fetching tasks. Please reach out to the admin.");
-      return []; // Return an empty array if there's an error
-    }
-  };
-
-  const fetchMetrics = async (): Promise<Metric[]> => {
-    try {
-      const response = await axios.get(`${baseURL}/metrics`);
-
-      const fetchedMetrics = response.data.map((d: any) => {
-        const args = Object.entries(d["arguments"])
-          .map(([name, arg]: [string, any]) => {
-            if (arg["configurable"] === true) {
-              let type: string = convertPythonTypetoJSType(arg);
-              return {
-                name,
-                type: type,
-                value: arg["default"] || null,
-              };
-            }
-          })
-          .filter((arg: any) => arg !== undefined);
-        return {
-          id: d["_id"],
-          name: d["name"],
-          description: d["description"],
-          arguments: args,
-        };
-      });
-      return fetchedMetrics;
-    } catch (error) {
-      setToastMessage("Error fetching metrics. Please reach out to the admin.");
-      return []; // Return an empty array if there's an error
-    }
-  };
-
-  const fetchAgents = async (): Promise<Agent[]> => {
-    try {
-      const response = await axios.get(`${baseURL}/agents`);
-      console.log("Fetched agents:", response.data);
-      return response.data;
-    } catch (error) {
-      setToastMessage("Error fetching agents. Please reach out to the admin.");
-      return []; // Return an empty array if there's an error
-    }
-  };
-
-  const fetchUserSimulators = async (): Promise<Simulator[]> => {
-    try {
-      const response = await axios.get(`${baseURL}/simulators`);
-      console.log("Fetched simulators:", response.data);
-      return response.data;
-    } catch (error) {
-      setToastMessage(
-        "Error fetching user simulators. Please reach out to the admin."
-      );
-      return []; // Return an empty array if there's an error
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      switch (page) {
-        case 1:
-          setTasks(await fetchTasks());
-          break;
-        case 2:
-          setMetrics(await fetchMetrics());
-          break;
-        case 3:
-          setAgents(await fetchAgents());
-          break;
-        case 4:
-          setUserSimulators(await fetchUserSimulators());
-          break;
-        default:
-          break;
-      }
-    };
-
-    fetchData();
-  }, [page]);
+  // If no task are provided, redirect to the tasks page
+  if (!task) {
+    return (
+      <Alert variant="danger" className="m-3">
+        <p>
+          No task selected. Please go back to the tasks page and select a task.
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button onClick={() => navigate("/tasks")} variant="outline-danger">
+            Ok
+          </Button>
+        </div>
+      </Alert>
+    );
+  }
 
   const handleSubmit = () => {
+    if (!runName || !system || !system.image) {
+      setToastMessage("Please fill in all required fields.");
+      return;
+    }
+
+    if (parameters) {
+      try {
+        const parsedParameters = JSON.parse(parameters);
+        system.parameters = parsedParameters;
+      } catch (e) {
+        setToastMessage("Invalid JSON configuration.");
+        return;
+      }
+    }
+
     const formData = {
       run_name: runName,
-      task_id: selectedTask.id,
-      metrics: selectedMetrics.map((m) => {
-        return { id: m.id, arguments: m.arguments, name: m.name };
-      }),
-      agents: selectedAgents,
-      userSimulators: selectedUserSimulators,
+      public: true,
+      task_id: task.id,
+      system: system,
     };
 
     APIAuth.post(`${baseURL}/run-request`, formData)
       .then((response) => {
-        console.log(response);
+        if (response.status === 201) {
+          setToastMessage("Experiment request submitted successfully!");
+          setToastType("success");
+        } else {
+          setToastMessage("Error submitting experiment request.");
+          setToastType("error");
+        }
       })
       .catch((error) => {
-        setToastMessage("Error submitting run. Please reach out to the admin.");
-        console.error(error);
+        setToastMessage("Error submitting experiment request. Please reach out to the admin.");
+        setToastType("error");
+        console.error("error", error);
       });
   };
 
-  const renderPage = () => {
-    switch (page) {
-      case 1:
-        return (
-          <div>
-            <MDBInput
-              wrapperClass="mb-4"
-              label="Run name"
-              id="formRunName"
-              type="text"
-              onChange={(e) => setRunName(e.target.value)}
-            />
-            {tasks.length > 0 && (
-              <TaskRadioList
-                items={tasks}
-                selectedTask={selectedTask}
-                setSelectedTask={setSelectedTask}
-              />
-            )}
-          </div>
-        );
-      case 2:
-        return (
-          <div>
-            {metrics.length > 0 && (
-              <AddResourcesList
-                resourceType="metrics"
-                items={metrics}
-                selectedItems={selectedMetrics}
-                setSelectedItems={setSelectedMetrics}
-              />
-            )}
-          </div>
-        );
-      case 3:
-        return (
-          <div>
-            {agents.length > 0 && (
-              <AddResourcesList
-                resourceType="agents"
-                items={agents}
-                selectedItems={selectedAgents}
-                setSelectedItems={setSelectedAgents}
-              />
-            )}
-          </div>
-        );
-      case 4:
-        return (
-          <div>
-            {userSimulators.length > 0 && (
-              <AddResourcesList
-                resourceType="user simulators"
-                items={userSimulators}
-                selectedItems={selectedUserSimulators}
-                setSelectedItems={setSelectedUserSimulators}
-              />
-            )}
-          </div>
-        );
-      case 5:
-        return (
-          <div>
-            <strong>Review your run details:</strong>
-            <p>Run name: {runName}</p>
-            <p>Task: {selectedTask.name}</p>
-            <p>Metrics: {selectedMetrics.map((m) => m.name).join(", ")}</p>
-            <p>Agents: {selectedAgents.join(", ")}</p>
-            <p>User simulators: {selectedUserSimulators.join(", ")}</p>
-            <MDBBtn onClick={handleSubmit}>Submit run</MDBBtn>
-          </div>
-        );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.id;
+    if (value === "agent") {
+      setAgentEvaluated(true);
+      setSystem({ ...system, type: "agent" });
+    } else if (value === "simulator") {
+      setAgentEvaluated(false);
+      setSystem({ ...system, type: "simulator" });
     }
   };
 
+  const fetchSystemImage = async (systemImageName: string) => {
+    const response = await APIAuth.post(`${baseURL}/image`, {
+      image: systemImageName,
+    }).then((response) => response.data);
+    return response;
+  };
+
+  const fetchAgents = async () => {
+    const response = await fetch(`${baseURL}/agents`).then((response) =>
+      response.json()
+    );
+    return response;
+  };
+
+  const fetchSimulators = async () => {
+    const response = await fetch(`${baseURL}/simulators`).then((response) =>
+      response.json()
+    );
+    return response;
+  };
+
+  useEffect(() => {
+    if (agentEvaluated !== null) {
+      if (agentEvaluated) {
+        fetchAgents().then((response) => {
+          setParticipants(response.map((agent: any) => agent.image_name));
+        });
+      } else {
+        fetchSimulators().then((response) => {
+          setParticipants(response.map((simulator: any) => simulator.image_name));
+        });
+      }
+    }
+  }, [agentEvaluated]);
+
   return (
     <Container>
-      <h3>Submit a new run</h3>
-      <MDBProgress height="20">
-        <MDBProgressBar width={(page / 5) * 100} valuemin={1} valuemax={5}>
-          {Math.round((page / 5) * 100)}%
-        </MDBProgressBar>
-      </MDBProgress>
+      <h3>Submit a new experiment request</h3>
+      <p>
+        Selected Task:{" "}
+        {task
+          ? task.name
+          : "No task selected. Please go back and select a task."}
+      </p>
 
-      <br />
-      {renderPage()}
-      <br />
-      <MDBBtn onClick={handleBack} disabled={page === 1} className="me-2">
-        Back
-      </MDBBtn>
-      <MDBBtn onClick={handleNext} disabled={page === 5}>
-        Next
-      </MDBBtn>
+      {/* Exepriment Name */}
+      <p>Experiment name*</p>
+      <MDBInput
+        wrapperClass="mb-4"
+        label="Experiment name"
+        id="formRunName"
+        type="text"
+        onChange={(e) => setRunName(e.target.value)}
+      />
+
+      {/* System to evaluate (either agent or simulator) */}
+      <p>Are you evaluating a conversational agent or a user simulator?*</p>
+      <div className="d-flex">
+        <MDBRadio
+          name="system"
+          label="Conversational Agent"
+          id="agent"
+          onChange={handleChange}
+          className="me-3"
+        />
+        <MDBRadio
+          name="system"
+          label="User Simulator"
+          id="simulator"
+          onChange={handleChange}
+          className="me-3"
+        />
+      </div>
+
+      {/* System Configuration */}
+      {agentEvaluated !== null ? (
+        <>
+          <p className="mt-4">
+            {agentEvaluated ? "Conversational Agent" : "User Simulator"} image*
+          </p>
+          <Form.Select
+            className="m-4"
+            aria-label="Default select example"
+            onChange={(e) => {
+              const systemImageName = e.target.value;
+              fetchSystemImage(systemImageName).then((response) => {
+                setSystem({
+                  ...system,
+                  image: response.image,
+                  arguments: response.arguments ? response.arguments : [],
+                  class_name: response.class_name,
+                });
+              });
+            }}
+          >
+            <option>Select an image</option>
+            {participants?.map((participant) => (
+              <option key={participant} value={participant}>
+                {participant}
+              </option>
+            ))}
+          </Form.Select>
+
+          {/* Additional configuration as a JSON file (optional) */}
+          <p>
+            {agentEvaluated ? "Conversational Agent" : "User Simulator"}{" "}
+            configuration
+          </p>
+          <MDBTextArea
+            wrapperClass="m-4"
+            label="Configuration (JSON format)"
+            id="formSystemConfig"
+            onChange={(e) => {
+              setParameters(e.target.value);
+            }}
+            rows={5}
+          />
+        </>
+      ) : (
+        <></>
+      )}
+
+      {/* Submit Button */}
+      <Button variant="primary" type="submit" onClick={handleSubmit}>
+        Submit experiment request
+      </Button>
 
       {/* Toast Notifications */}
-      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
-        <Toast
-          onClose={() => setToastMessage(null)}
-          show={!!toastMessage}
-          delay={5000}
-          autohide
-          bg="danger"
-        >
-          <Toast.Header>
-            <strong className="me-auto">SimLab Error</strong>
-          </Toast.Header>
-          <Toast.Body>{toastMessage}</Toast.Body>
-        </Toast>
-      </ToastContainer>
+      <ToastNotification
+        message={toastMessage}
+        type={toastType}
+        setMessage={setToastMessage}
+      />
     </Container>
   );
 };

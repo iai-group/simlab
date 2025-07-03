@@ -333,10 +333,18 @@ paths:
                   properties:
                     id:
                       type: string
-                    tags:
-                      type: object
-                    labels:
-                      type: object
+                    image_name:
+                      type: string
+                    tag:
+                      type: string
+                    description:
+                      type: string
+                    type:
+                      type: string
+                    author:
+                      type: string
+                    version:
+                      type: string
         400:
           description: "No agents found."
           schema:
@@ -348,8 +356,8 @@ paths:
             application/json:
               message: "No agents found."
 
-  /agents/{agent_id}:
-    get:
+  /agent:
+    post:
       summary: "Get agent details."
       description: "Get details of a specific agent by agent ID."
       tags:
@@ -368,10 +376,18 @@ paths:
             properties:
               id:
                 type: string
-              tags:
-                type: object
-              labels:
-                type: object
+              image_name:
+                type: string
+              tag:
+                type: string
+              description:
+                type: string
+              type:
+                type: string
+              author:
+                type: string
+              version:
+                type: string
         400:
           description: "Agent not found."
           schema:
@@ -412,10 +428,18 @@ paths:
                   properties:
                     id:
                       type: string
-                    tags:
-                      type: object
-                    labels:
-                      type: object
+                    image_name:
+                      type: string
+                    tag:
+                      type: string
+                    description:
+                      type: string
+                    type:
+                      type: string
+                    author:
+                      type: string
+                    version:
+                      type: string
         400:
           description: "No simulators found."
           schema:
@@ -427,17 +451,17 @@ paths:
             application/json:
               message: "No simulators found."
 
-  /simulators/{simulator_id}:
-    get:
+  /simulator:
+    post:
       summary: "Get simulator details."
       description: "Get details of a specific simulator by simulator ID."
       tags:
         - "User simulators"
       parameters:
-        - name: simulator_id
-          in: path
+        - name: image_name
+          in: body
           required: true
-          description: "ID of the simulator to retrieve."
+          description: "Image name of the simulator to retrieve."
           type: string
       responses:
         200:
@@ -447,10 +471,18 @@ paths:
             properties:
               id:
                 type: string
-              tags:
-                type: object
-              labels:
-                type: object
+              image_name:
+                type: string
+              tag:
+                type: string
+              description:
+                type: string
+              type:
+                type: string
+              author:
+                type: string
+              version:
+                type: string
         400:
           description: "Simulator not found."
           schema:
