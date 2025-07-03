@@ -37,7 +37,7 @@ dummy_training_information_needs = [
     InformationNeed(
         constraints={"year": 1999},
         requests=["title", "rating"],
-    ).to_dict()
+    ).to_dict(),
 ]
 
 insert_records(

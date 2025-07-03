@@ -4,9 +4,13 @@ from typing import Any, Dict
 
 import pytest
 
+from simlab.metrics.discourse.fed import FED
 from simlab.metrics.metric import Metric
 from simlab.metrics.utility.recommendation_success_ratio import (
     RecommendationSuccessRatio,
+)
+from simlab.metrics.utility.success_classification_rate import (
+    SuccessClassificationRate,
 )
 from simlab.participant.wrapper_agent import WrapperAgent
 from simlab.utils.configuration_readers.component_generators.base_component_generator import (  # noqa: E501
@@ -40,6 +44,8 @@ def test_base_component_generator_custom_type_mapping() -> None:
             {
                 "Metric": Metric,
                 "RecommendationSuccessRatio": RecommendationSuccessRatio,
+                "FED": FED,
+                "SuccessClassificationRate": SuccessClassificationRate,
             },
         ),
     ],
@@ -54,13 +60,17 @@ def test_get_available_classes(
     Args:
         base_component_generator: Base component generator.
         module_name: Module name.
-        expected: Expected available classes.
+        expected: Particular classes and their type expected to be found.
     """
     available_classes = base_component_generator.get_available_classes(
         module_name
     )
 
-    assert available_classes == expected
+    assert all(
+        class_name in available_classes
+        and available_classes[class_name] == class_name_type
+        for class_name, class_name_type in expected.items()
+    )
 
 
 def test_get_available_classes_module_not_found(

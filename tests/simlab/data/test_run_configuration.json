@@ -13,9 +13,10 @@
             },
             "db_name": "simlab_test",
             "batch_id": "675380fa0f51790295720dac",
+            "training_batch_id": "675380fa0f51790295720edc",
             "metrics": [
                 {
-                    "class_name": "SuccessRate",
+                    "class_name": "SuccessClassificationRate",
                     "type": "metric",
                     "arguments": {
                         "name": "Success Rate"
