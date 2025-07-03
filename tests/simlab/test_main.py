@@ -141,13 +141,21 @@ def test_main(task: Task) -> None:
         patch("simlab.main.insert_record") as mocked_insert_record,
         patch("simlab.main.json_to_dialogues") as mocked_json_to_dialogues,
         patch("simlab.main.start_participant") as mocked_start_participant,
+        patch(
+            "simlab.main.docker_stop_container"
+        ) as mocked_docker_stop_container,
+        patch(
+            "simlab.main.clean_local_docker_registry"
+        ) as mocked_clean_local_docker_registry,
     ):
 
         mocked_json_to_dialogues.return_value = [MagicMock(spec=Dialogue)]
         mocked_start_participant.return_value = (
             MagicMock(spec=str),
-            MagicMock([7000]),
+            [7000],
         )
+        mocked_docker_stop_container.return_value = None
+        mocked_clean_local_docker_registry.return_value = None
 
         main(
             mocked_configuration,
