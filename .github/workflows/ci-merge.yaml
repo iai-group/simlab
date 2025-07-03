@@ -52,7 +52,7 @@ jobs:
   build-and-test-simlab:
     name: "Build and Test SimLab"
     runs-on: ubuntu-latest
-    needs: pre-commit
+    needs: [pre-commit, build-and-test-backend]
     timeout-minutes: 20
 
     steps:
