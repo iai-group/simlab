@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 
 
 def parse_API_response(
-    api_response: Dict[str, Any]
+    api_response: Dict[str, Any],
 ) -> Tuple[str, List[DialogueAct], List[Annotation], Dict[str, Any]]:
     """Parses the response from the API.
 

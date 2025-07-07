@@ -1,4 +1,5 @@
 """Module level init for backend tests."""
+
 from bson import ObjectId
 
 from connectors.mongo.mongo_connector import MongoDBConnector

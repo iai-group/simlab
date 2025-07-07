@@ -70,6 +70,16 @@ paths:
               dialogue_acts: []
               annotations: []
               metadata: {}
+        500:
+          description: Error in processing the utterance or generating the response.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Error in response generation."
 
   /configure:
     post:
@@ -159,6 +169,26 @@ paths:
           examples:
             application/json:
               message: "Information need set successfully"
+        400:
+          description: Error in the process
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Error in setting the information need."
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Internal server error."
 
   /get_information_need:
     post:
@@ -194,6 +224,16 @@ paths:
                   - "director"
                 fulfilled_slots:
                   title: "Top Gun"
+        500:
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Internal server error."
 
 definitions:
   DialogueAct:
