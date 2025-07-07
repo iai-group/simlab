@@ -86,13 +86,13 @@ jobs:
       - name: Update Coverage Backend Badge
         uses: ./.github/actions/coverage_badge
         with:
-          coverage_file: "artifacts/backend_coverage/pytest-coverage.txt"
+          coverage_file: "backend_coverage/pytest-coverage.txt"
           badge_title: "backend"
 
       - name: Update Coverage SimLab Badge
         uses: ./.github/actions/coverage_badge
         with:
-          coverage_file: "artifacts/simlab_coverage/pytest-coverage.txt"
+          coverage_file: "simlab_coverage/pytest-coverage.txt"
           badge_title: "simlab"
 
       - name: Commit Updated README.md
