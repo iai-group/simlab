@@ -124,8 +124,8 @@ def get_information_need() -> Response:
         user_id = request.json.get("user_id")
 
         # TODO: Implement the logic to retrieve the simulator's information need.
-        information_need: Dict[str, Union[Dict, List]] = (
-            None  # Placeholder for information need, defaults to None.
-        )
+        information_need: Dict[
+            str, Union[Dict, List]
+        ] = None  # Placeholder for information need, defaults to None.
     except Exception as e:
         return jsonify({"message": str(e)}), 500
