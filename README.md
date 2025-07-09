@@ -1,3 +1,5 @@
+![simlab](https://img.shields.io/badge/simlab-136%25-brightgreen)
+![backend](https://img.shields.io/badge/backend-112%25-brightgreen)
 # SimLab
 
 ![Python version](https://img.shields.io/badge/python-3.9-blue)
