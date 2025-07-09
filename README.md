@@ -39,4 +39,17 @@ The repository is structured as follows:
 
 We welcome contributions both on the high level (feedback and ideas) as well as on the more technical level (pull requests). See our [contribution guidelines](https://github.com/iai-group/guidelines/blob/main/github/Contribution.md) for more details.
 
+## Citation
 
+If you are using our platform, please cite the following paper:
+
+```
+@misc{Bernard:2025:arXiv,
+      title={SimLab: A Platform for Simulation-based Evaluation of Conversational Information Access Systems}, 
+      author={Nolwenn Bernard and Sharath Chandra Etagi Suresh and Krisztian Balog and ChengXiang Zhai},
+      year={2025},
+      eprint={2507.04888},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR},
+}
+```
