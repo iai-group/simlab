@@ -153,7 +153,7 @@ def delete_records(
 
 
 def parse_object_id_to_str(
-    data: Union[Dict[str, Any], List[Any], ObjectId]
+    data: Union[Dict[str, Any], List[Any], ObjectId],
 ) -> Union[Dict[str, Any], List[Any], str]:
     """Parses ObjectId to string recursively.
 

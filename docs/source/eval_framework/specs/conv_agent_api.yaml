@@ -74,6 +74,16 @@ paths:
               annotations: []
               metadata:
                 genre: "Action"
+        500:
+          description: Error in processing the utterance or generating the response.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Error in response generation."
 
   /configure:
     post:
