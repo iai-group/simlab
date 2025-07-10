@@ -1,0 +1,36 @@
+# Template Dockerfile to create a Docker image of a conversation agent.
+# Placeholders are indicated by `<placeholder>` and TODO comments and should be replaced with actual values.
+FROM <base_image>
+
+# Labels for the image
+LABEL type="agent"
+LABEL name=<agent_name>
+LABEL description=<agent_description>
+LABEL author=<author_name>
+LABEL version=<version_number>
+LABEL tag=<tag>
+LABEL port=5005
+
+# Set the working directory
+WORKDIR /
+
+# TODO: Install any dependencies required for the agent.
+# Example: python requirements
+# COPY requirements.txt requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the agent source code into the image
+COPY src/ src/
+
+# TODO: If the agent requires any additional files, copy them here.
+# Example: data files
+# COPY data/ data/
+
+# Expose the port the agent will run on. This should match the LABEL port, defaults to 5005.
+EXPOSE 5005
+
+# Command to run the agent. This should be replaced with the actual command to start your agent.
+# Example for a Flask app:
+# CMD ["python", "-m", "src.api_template_flask"]
+
+CMD [<start_command>]

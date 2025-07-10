@@ -41,9 +41,25 @@ Placeholders in the templates include:
 
 Start by renaming the `Dockerfile.temp` to `Dockerfile`. Then, you can edit the file based on the different placeholders and comments provided in the file. Please note that additional modifications may be required to adapt the Dockerfile to your specific agent's requirements.
 
+In its current state, the template provides the list of labels required by SimLab, as well as commands to copy the source code and expose the port used by the communication API.
+
 Placeholders in the Dockerfile include:
 
-  *
+  * `<base_image>`: The base image to use for your agent. You can choose a base image that fits your needs, such as `python:3.9-slim` or `ubuntu:20.04`.
+  * Labels to provide metadata about your agent, such as:
+    - `<agent_name>`
+    - `<agent_description>`
+    - `<author_name>`
+    - `<version_number>`
+    - `<tag>`
+  * Commands to install the necessary dependencies for your agent, such as:
+    - `pip install -r requirements.txt` for Python-based agents.
+    - `apt-get install -y <package>` for system-level dependencies.
+  * Commands to copy files required to run your agent, such as:
+    - `COPY data/ data/` to copy data files.
+    - `COPY configuration.yaml configuration.yaml` to copy configuration files.
+  * Command to run your agent, such as:
+    - `CMD ["python", "src/api_template_flask.py"]` for a Flask-based agent.
 
 ## Docker Image
 
